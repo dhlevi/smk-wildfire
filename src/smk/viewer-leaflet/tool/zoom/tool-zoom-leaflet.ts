@@ -7,6 +7,8 @@ import '../../../tool/zoom/tool-zoom'
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.ZoomTool.addInitializer( function ( this: any, smk: any ) {
+    if ( !smk.$viewer.map?.scrollWheelZoom ) return   // not a Leaflet viewer
+
     if ( this.mouseWheel )   smk.$viewer.map.scrollWheelZoom.enable()
     if ( this.doubleClick )  smk.$viewer.map.doubleClickZoom.enable()
     if ( this.box )          smk.$viewer.map.boxZoom.enable()

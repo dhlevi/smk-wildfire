@@ -21762,33 +21762,7 @@ var smkRef$56 = window.SMK, ViewerEsri3d = class extends Viewer {
 		super();
 	}
 };
-Object.assign(ViewerEsri3d.prototype, Viewer.prototype), smkRef$56.TYPE.Viewer || (smkRef$56.TYPE.Viewer = {}), smkRef$56.TYPE.Viewer.esri3d = ViewerEsri3d;
-var bm = ViewerEsri3d.prototype.basemap || {};
-[
-	"Topographic",
-	"Streets",
-	"Imagery",
-	"Oceans",
-	"NationalGeographic",
-	"ShadedRelief",
-	"DarkGray",
-	"Gray"
-].forEach((e, t) => {
-	bm[e] || (bm[e] = {});
-});
-var aliases = {
-	Topographic: "topo",
-	Streets: "streets",
-	Imagery: "satellite",
-	Oceans: "oceans",
-	NationalGeographic: "national-geographic",
-	ShadedRelief: "terrain",
-	DarkGray: "dark-gray",
-	Gray: "gray"
-};
-Object.keys(aliases).forEach((e) => {
-	bm[e] = bm[e] || {}, bm[e].esri3d = aliases[e];
-}), ViewerEsri3d.prototype.basemap = bm, ViewerEsri3d.prototype.initialize = function(e) {
+Object.assign(ViewerEsri3d.prototype, Viewer.prototype), smkRef$56.TYPE.Viewer || (smkRef$56.TYPE.Viewer = {}), smkRef$56.TYPE.Viewer.esri3d = ViewerEsri3d, ViewerEsri3d.prototype.initialize = function(e) {
 	let t = this;
 	return Viewer.prototype.initialize.apply(this, arguments), Esri3dReady.then(function(n) {
 		let i = e.addToContainer("<div class=\"smk-viewer\">");
@@ -21898,8 +21872,49 @@ Object.keys(aliases).forEach((e) => {
 		y: e[1]
 	}) : this.view.toMap(e);
 	if (t) return [t.longitude, t.latitude];
+};
+var esri3dAliases = {
+	topographic: "topo",
+	streets: "streets",
+	imagery: "satellite",
+	oceans: "oceans",
+	nationalgeographic: "national-geographic",
+	shadedrelief: "terrain",
+	darkgray: "dark-gray",
+	gray: "gray",
+	"bc-roads": "streets",
+	"bc-roads-raster": "streets",
+	topography: "topo",
+	"topography-vector": "topo",
+	"topography-hillshade": "terrain",
+	"streets-esri-v2": "streets"
+};
+ViewerEsri3d.prototype.initializeBasemaps = function(e, t) {
+	function n(t, n) {
+		if (!n) return e(t);
+		let i = esri3dAliases[t.toLowerCase()];
+		return e(t, i ? Object.assign({}, n, { esri3d: i }) : n);
+	}
+	t("esri-basemap", function(e) {
+		let t = Object.assign({ detectRetina: !0 }, e.option), n = JSON.parse(JSON.stringify(L.esri.BasemapLayer.TILES[e.key].options)), i = L.esri.basemapLayer(e.key, JSON.parse(JSON.stringify(t || {})));
+		return L.esri.BasemapLayer.TILES[e.key].options = n, [i];
+	}), t("tile", function(e) {
+		return [L.tileLayer(e.url, Object.assign({ attribution: e.attribution }, e.option))];
+	}), t("esri-vector-tile", function(e) {
+		return [L.esri.Vector.vectorTileLayer(e.url, Object.assign({ maxZoom: 30 }, e.option))];
+	}), t("esri-vector-basemap", function(e) {
+		return [L.esri.Vector.vectorBasemapLayer(e.key, Object.assign({ maxZoom: 30 }, e.option))];
+	}), t("esri-tiled-map", function(e) {
+		return [L.esri.tiledMapLayer(Object.assign({
+			url: e.url,
+			maxZoom: 30
+		}, e.option))];
+	}), t("esri-static-basemap-tile", function(e) {
+		return [L.esri.Static.staticBasemapTileLayer(e.style, Object.assign({ maxZoom: 30 }, e.option))];
+	}), Viewer.prototype.initializeBasemaps.call(this, n, t);
 }, ViewerEsri3d.prototype.setBasemap = function(e) {
-	this.map.basemap = this.basemap[e].esri3d, this.changedBaseMap({ baseMap: e });
+	let t = this.basemap[e];
+	t?.esri3d && (this.map.basemap = t.esri3d), this.changedBaseMap({ baseMap: e });
 }, ViewerEsri3d.prototype.addViewerLayer = function(e) {
 	this.map.add(e);
 }, ViewerEsri3d.prototype.positionViewerLayer = function(e, t) {
@@ -22694,7 +22709,7 @@ var factory$27 = Tool.define("BaseMapsTool", function() {
 			update() {
 				if (!n) return;
 				let t = e.$viewer.getView();
-				n.invalidateSize(), n.setView([t.center.latitude, t.center.longitude], t.zoom);
+				t && (n.invalidateSize(), n.setView([t.center.latitude, t.center.longitude], t.zoom));
 			}
 		};
 	}), this.current = e.viewer.baseMap, this.changedActive(function() {
@@ -24235,16 +24250,16 @@ var smkRef$10 = window.SMK, factory = Tool.defineComposite([
 //#endregion
 //#region src/smk/viewer-leaflet/tool/identify/tool-identify-leaflet.ts
 smkRef$10.TYPE["tool-directions"] = factory, window.SMK.TYPE.PanTool.addInitializer(function(e) {
-	e.$viewer.map.dragging.enable(), this.control = !1;
+	e.$viewer.map?.dragging && (e.$viewer.map.dragging.enable(), this.control = !1);
 }), window.SMK.TYPE.ZoomTool.addInitializer(function(e) {
-	this.mouseWheel && e.$viewer.map.scrollWheelZoom.enable(), this.doubleClick && e.$viewer.map.doubleClickZoom.enable(), this.box && e.$viewer.map.boxZoom.enable(), this.control && e.on(this.id, {
+	e.$viewer.map?.scrollWheelZoom && (this.mouseWheel && e.$viewer.map.scrollWheelZoom.enable(), this.doubleClick && e.$viewer.map.doubleClickZoom.enable(), this.box && e.$viewer.map.boxZoom.enable(), this.control && e.on(this.id, {
 		"trigger-zoom-in": function() {
 			e.$viewer.map.zoomIn();
 		},
 		"trigger-zoom-out": function() {
 			e.$viewer.map.zoomOut();
 		}
-	});
+	}));
 }), window.SMK.TYPE.IdentifyListTool.addInitializer(function(e) {
 	let t = this, n = L.layerGroup().addTo(e.$viewer.map);
 	this.clearMarker = function() {

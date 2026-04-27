@@ -7,6 +7,7 @@ import { Viewer } from '../viewer'
 import { Esri3dReady } from './types-esri3d'
 
 declare const turf: any
+declare const L: any
 
 const smkRef = ( window as any ).SMK
 
@@ -20,29 +21,6 @@ Object.assign( ViewerEsri3d.prototype, Viewer.prototype )
 
 if ( !smkRef.TYPE.Viewer ) smkRef.TYPE.Viewer = {}
 smkRef.TYPE.Viewer[ 'esri3d' ] = ViewerEsri3d
-
-// ---------------------------------------------------------------------------
-// Basemap aliases
-// ---------------------------------------------------------------------------
-
-const bm = ViewerEsri3d.prototype.basemap || {}
-;[ 'Topographic', 'Streets', 'Imagery', 'Oceans', 'NationalGeographic', 'ShadedRelief', 'DarkGray', 'Gray' ]
-    .forEach( ( k, i ) => {
-        if ( !bm[ k ] ) bm[ k ] = {}
-    } )
-
-const aliases: Record<string, string> = {
-    Topographic:       'topo',
-    Streets:           'streets',
-    Imagery:           'satellite',
-    Oceans:            'oceans',
-    NationalGeographic:'national-geographic',
-    ShadedRelief:      'terrain',
-    DarkGray:          'dark-gray',
-    Gray:              'gray',
-}
-Object.keys( aliases ).forEach( k => { bm[ k ] = bm[ k ] || {}; bm[ k ].esri3d = aliases[ k ] } )
-ViewerEsri3d.prototype.basemap = bm
 
 // ---------------------------------------------------------------------------
 // initialize
@@ -195,8 +173,84 @@ ViewerEsri3d.prototype.screenToMap = function ( screen: any ) {
     return [ ll.longitude, ll.latitude ]
 }
 
+// ---------------------------------------------------------------------------
+// initializeBasemaps
+// ---------------------------------------------------------------------------
+// 1. Wraps defineBaseMap to inject the ArcGIS basemap string alias (esri3d)
+//    for the deprecated basemaps so setBasemap() can use them.
+// 2. Registers Leaflet-based type factories so tool-baseMaps can render
+//    Leaflet thumbnail mini-maps regardless of which viewer is active.
+
+const esri3dAliases: Record<string, string> = {
+    // Legacy deprecated basemaps
+    'topographic':          'topo',
+    'streets':              'streets',
+    'imagery':              'satellite',
+    'oceans':               'oceans',
+    'nationalgeographic':   'national-geographic',
+    'shadedrelief':         'terrain',
+    'darkgray':             'dark-gray',
+    'gray':                 'gray',
+    // Current basemaps — mapped to closest ArcGIS 3D named basemap
+    'bc-roads':             'streets',
+    'bc-roads-raster':      'streets',
+    'topography':           'topo',
+    'topography-vector':    'topo',
+    'topography-hillshade': 'terrain',
+    'streets-esri-v2':      'streets',
+}
+
+ViewerEsri3d.prototype.initializeBasemaps = function (
+    defineBaseMap:     ( id: string, config?: any ) => any,
+    defineBaseMapType: ( type: string, fn?: Function ) => any,
+) {
+    // Wrap defineBaseMap to inject esri3d alias into deprecated basemap configs
+    function wrappedDefineBaseMap( id: string, def?: any ) {
+        if ( !def ) return defineBaseMap( id )
+        const alias = esri3dAliases[ id.toLowerCase() ]
+        return defineBaseMap( id, alias ? Object.assign( {}, def, { esri3d: alias } ) : def )
+    }
+
+    // Register Leaflet basemap type factories so the baseMaps tool can render
+    // Leaflet thumbnail maps for each entry in the basemap switcher panel.
+    defineBaseMapType( 'esri-basemap', function ( cfg: any ) {
+        const opt  = Object.assign( { detectRetina: true }, cfg.option )
+        const orig = JSON.parse( JSON.stringify( L.esri.BasemapLayer.TILES[ cfg.key ].options ) )
+        const ly   = L.esri.basemapLayer( cfg.key, JSON.parse( JSON.stringify( opt || {} ) ) )
+        L.esri.BasemapLayer.TILES[ cfg.key ].options = orig
+        return [ ly ]
+    } )
+
+    defineBaseMapType( 'tile', function ( cfg: any ) {
+        return [ L.tileLayer( cfg.url, Object.assign( { attribution: cfg.attribution }, cfg.option ) ) ]
+    } )
+
+    defineBaseMapType( 'esri-vector-tile', function ( cfg: any ) {
+        return [ L.esri.Vector.vectorTileLayer( cfg.url, Object.assign( { maxZoom: 30 }, cfg.option ) ) ]
+    } )
+
+    defineBaseMapType( 'esri-vector-basemap', function ( cfg: any ) {
+        return [ L.esri.Vector.vectorBasemapLayer( cfg.key, Object.assign( { maxZoom: 30 }, cfg.option ) ) ]
+    } )
+
+    defineBaseMapType( 'esri-tiled-map', function ( cfg: any ) {
+        return [ L.esri.tiledMapLayer( Object.assign( { url: cfg.url, maxZoom: 30 }, cfg.option ) ) ]
+    } )
+
+    defineBaseMapType( 'esri-static-basemap-tile', function ( cfg: any ) {
+        return [ L.esri.Static.staticBasemapTileLayer( cfg.style, Object.assign( { maxZoom: 30 }, cfg.option ) ) ]
+    } )
+
+    Viewer.prototype.initializeBasemaps.call( this, wrappedDefineBaseMap, defineBaseMapType )
+}
+
+// ---------------------------------------------------------------------------
+// setBasemap
+// ---------------------------------------------------------------------------
+
 ViewerEsri3d.prototype.setBasemap = function ( basemapId: string ) {
-    this.map.basemap = this.basemap[ basemapId ].esri3d
+    const cfg = this.basemap[ basemapId ]
+    if ( cfg?.esri3d ) this.map.basemap = cfg.esri3d
     this.changedBaseMap( { baseMap: basemapId } )
 }
 

@@ -70,6 +70,7 @@ const factory = ( Tool as any ).define( 'BaseMapsTool',
                     update() {
                         if ( !map ) return
                         const v = smk.$viewer.getView()
+                        if ( !v ) return
                         map.invalidateSize()
                         map.setView( [ v.center.latitude, v.center.longitude ], v.zoom )
                     },
