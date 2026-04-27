@@ -11,20 +11,34 @@ declare const Vue: any
 const smkRef = ( window as any ).SMK
 
 const factory = ( Tool as any ).define( 'ActionBarTool',
-    null,
+    function ( this: any ) {
+        this.model = {
+            widgets: [] as any[],
+        }
+    },
     function ( this: any, smk: any ) {
-        const container = smk.addToOverlay( actionbarHtml )
-
         this.vm = new Vue( {
-            el:   container,
-            data: {},
+            el:   smk.addToOverlay( actionbarHtml ),
+            data: this.model,
+            methods: {
+                trigger( toolId: string, event: string, arg: any, comp: any ) {
+                    smk.emit( toolId, event, arg, comp )
+                },
+            },
         } )
+    },
+    {
+        addTool( this: any, tool: any, smk: any ) {
+            if ( tool.makeWidgetComponent ) {
+                this.model.widgets.push( tool.makeWidgetComponent() )
+            }
+
+            smk.getSidepanel().addTool( tool, smk )
+
+            return true
+        },
     }
 )
-
-; ( factory as any ).addTool = function ( smk: any, tool: any ) {
-    smk.getSidepanel().addTool( smk, tool )
-}
 
 smkRef.TYPE[ 'tool-actionbar' ] = factory
 export default factory

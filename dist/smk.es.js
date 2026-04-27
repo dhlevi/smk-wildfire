@@ -20928,7 +20928,7 @@ smkRef$59 && (smkRef$59.TYPE ||= {}, smkRef$59.TYPE.Viewer || (smkRef$59.TYPE.Vi
 	let n = e.addToContainer("<div class=\"smk-viewer\">");
 	t.map = L.map(n, {
 		dragging: !1,
-		zoomControl: !1,
+		zoomControl: !0,
 		boxZoom: !1,
 		doubleClickZoom: !1,
 		zoomSnap: e.viewer.zoomSnap,
@@ -22577,16 +22577,20 @@ var toolbar_default = "<div class=\"smk-toolbar\"\n    v-bind:class=\"{ 'smk-hid
 smkRef$41.TYPE["tool-toolbar"] = factory$30;
 //#endregion
 //#region src/smk/tool/actionbar/actionbar.html?raw
-var actionbar_default = "<div class=\"smk-actionbar\"\n    v-bind:class=\"{ 'smk-hidden': widgets.length == 0 }\"\n>\n    <component\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n        v-bind:active=\"w.prop.group\"\n    ></component>\n</div>\n", smkRef$40 = window.SMK, factory$29 = Tool.define("ActionBarTool", null, function(e) {
-	let t = e.addToOverlay(actionbar_default);
+var actionbar_default = "<div class=\"smk-actionbar\"\n    v-bind:class=\"{ 'smk-hidden': widgets.length == 0 }\"\n>\n    <component\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n        v-bind:active=\"w.prop.group\"\n    ></component>\n</div>\n", smkRef$40 = window.SMK, factory$29 = Tool.define("ActionBarTool", function() {
+	this.model = { widgets: [] };
+}, function(e) {
 	this.vm = new Vue({
-		el: t,
-		data: {}
+		el: e.addToOverlay(actionbar_default),
+		data: this.model,
+		methods: { trigger(t, n, i, a) {
+			e.emit(t, n, i, a);
+		} }
 	});
-});
-factory$29.addTool = function(e, t) {
-	e.getSidepanel().addTool(e, t);
-}, smkRef$40.TYPE["tool-actionbar"] = factory$29;
+}, { addTool(e, t) {
+	return e.makeWidgetComponent && this.model.widgets.push(e.makeWidgetComponent()), t.getSidepanel().addTool(e, t), !0;
+} });
+smkRef$40.TYPE["tool-actionbar"] = factory$29;
 //#endregion
 //#region src/smk/tool/dropdown/panel-dropdown.html?raw
 var panel_dropdown_default = "<side-panel class=\"smk-dropdown-panel\">\n    <h1 slot=\"header\">{{ title }}\n        <select class=\"smk-command smk-dropdown\"\n            v-on:change=\"$$emit( 'select-tool', { id: $event.target.value } )\"\n        >\n            <option\n                v-for=\"tool in subWidgets\"\n                v-bind:value=\"tool.id\"\n            >{{ tool.widget.title }}</option>\n        </select>\n    </h1>\n\n    <component class=\"smk-panel\"\n        v-if=\"activeToolId && subPanels[ activeToolId ]\"\n        v-bind:is=\"subPanels[ activeToolId ].panelComponent\"\n        v-bind:key=\"activeToolId\"\n        v-bind=\"removeTitle( subPanels[ activeToolId ].panel )\"\n    ></component>\n\n</side-panel>", smkRef$39 = window.SMK;
@@ -38017,7 +38021,7 @@ smkRef$7.TYPE.QueryResultsTool.addInitializer(function() {
 //#region src/smk/viewer-leaflet/tool/minimap/lib/Control.MiniMap-3.6.1.min.js
 var require_Control_MiniMap_3_6_1_min = /* @__PURE__ */ __commonJSMin(((e, t) => {
 	(function(n, i) {
-		typeof define == "function" && define.amd ? define(["leaflet"], n) : typeof e == "object" && (t.exports = n(i.L)), i !== void 0 && i.L && (i.L.Control.MiniMap = n(L), i.L.control.minimap = function(e, t) {
+		typeof e == "object" && (t.exports = n(i.L)), i !== void 0 && i.L && (i.L.Control.MiniMap = n(i.L), i.L.control.minimap = function(e, t) {
 			return new i.L.Control.MiniMap(e, t);
 		});
 	})(function(e) {
@@ -38530,11 +38534,20 @@ function setupGlobalSMK() {
 		tools: [
 			{ type: "pan" },
 			{
+				type: "actionbar",
+				enabled: !0
+			},
+			{
 				type: "zoom",
 				mouseWheel: !0,
 				doubleClick: !0,
 				box: !0,
-				control: !0
+				control: !0,
+				position: "actionbar"
+			},
+			{
+				type: "reset-view",
+				position: "actionbar"
 			},
 			{
 				type: "scale",

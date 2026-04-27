@@ -58,6 +58,7 @@
                         tools: [
                             // toolbar + container tools
                             { type: 'toolbar',       enabled: true },
+                            { type: 'actionbar',     enabled: true },
                             { type: 'about',         enabled: true, position: 'toolbar', icon: 'help',         title: 'About' },
                             { type: 'baseMaps',      enabled: true, position: 'toolbar', icon: 'map',          mapStyle: { width: '110px', height: '110px' } },
                             { type: 'search',        enabled: true, position: 'toolbar', icon: 'search' },
@@ -70,10 +71,10 @@
                             { type: 'minimap',       enabled: true },
                             // map controls
                             { type: 'pan',           enabled: true },
-                            { type: 'zoom',          enabled: true, mouseWheel: true, doubleClick: true, box: true, control: true },
+                            { type: 'zoom',          enabled: true, mouseWheel: true, doubleClick: true, box: true, control: true, position: 'actionbar' },
                             { type: 'scale',         enabled: true, showFactor: true, showBar: true },
                             { type: 'coordinate',    enabled: true },
-                            { type: 'reset-view',    enabled: true },
+                            { type: 'reset-view',    enabled: true, position: 'actionbar' },
                             { type: 'version',       enabled: true },
                             { type: 'location',      enabled: true },
                         ]
