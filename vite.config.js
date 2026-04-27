@@ -35,14 +35,12 @@ export default defineConfig( {
             formats: [ 'es', 'umd' ],
         },
         outDir: 'dist',
-        // During transition: Grunt also writes dist/smk.js; keep emptyOutDir off
-        // until Grunt is fully retired.
+        // During transition: Grunt also writes dist/smk.js; keep emptyOutDir off to keep
+        // original smk.js in place  (should be functionally the same as the new versions)
         emptyOutDir: false,
         sourcemap: true,
         rollupOptions: {
-            // External dependencies that are expected to be provided by the host page
-            // (e.g. leaflet, maplibre-gl, arcgis). Update this list as modules are
-            // migrated to explicit imports in Step 2.
+            // External dependencies that are expected to be provided by the host page (e.g. leaflet, maplibre-gl, arcgis)
             external: [],
         },
     },
