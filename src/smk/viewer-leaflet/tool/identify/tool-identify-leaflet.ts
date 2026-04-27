@@ -5,6 +5,8 @@
 declare const L:    any
 declare const turf: any
 
+import '../../../tool/identify/tool-identify-list'
+
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.IdentifyListTool.addInitializer( function ( this: any, smk: any ) {

@@ -4,6 +4,8 @@
 
 import { toolFeatureListClusteringLeaflet } from '../tool-feature-list-clustering-leaflet'
 
+import '../../../tool/query/tool-query-results'
+
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.QueryResultsTool.addInitializer( function ( this: any ) {

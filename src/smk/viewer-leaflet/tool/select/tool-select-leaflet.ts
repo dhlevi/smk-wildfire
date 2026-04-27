@@ -7,6 +7,8 @@ import { toolFeatureListClusteringLeaflet } from '../tool-feature-list-clusterin
 declare const L:    any
 declare const turf: any
 
+import '../../../tool/select/tool-select-list'
+
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.SelectListTool.addInitializer( function ( this: any ) {
@@ -46,4 +48,3 @@ smkRef.TYPE.SelectListTool.addInitializer( function ( this: any, smk: any ) {
     } )
 } )
 
-void smkRef // consume import side-effects

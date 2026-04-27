@@ -3,6 +3,8 @@
  * Converted from viewer-esri3d/tool/directions/tool-directions-esri3d.js.
  */
 
+import '../../../tool/directions/tool-directions-waypoints'
+
 const smkRef = ( window as any ).SMK
 
 // Patches DirectionsWaypointsTool (not DirectionsTool — that name never existed;

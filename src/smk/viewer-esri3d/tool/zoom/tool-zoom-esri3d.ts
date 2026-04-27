@@ -3,6 +3,8 @@
  * Converted from viewer-esri3d/tool/zoom/tool-zoom-esri3d.js.
  */
 
+import '../../../tool/zoom/tool-zoom'
+
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.ZoomTool.addInitializer( function ( this: any, smk: any ) {

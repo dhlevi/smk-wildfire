@@ -5,6 +5,8 @@
 
 declare const $: any
 
+import '../../../tool/measure/tool-measure'
+
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.MeasureTool.addInitializer( function ( this: any, smk: any ) {

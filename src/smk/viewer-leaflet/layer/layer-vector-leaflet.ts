@@ -7,14 +7,13 @@ declare const L:    any
 declare const turf: any
 declare const $:    any
 
-const smkRef = ( window as any ).SMK
+import { VectorLayer }                          from '../../layer/layer-types'
+import { Layer }                                from '../../layer/layer'
+import { resolved, getProjection, makePromise } from '../../util'
 
-export function VectorLeafletLayer( this: any ) {
-    return Reflect.construct( smkRef.TYPE.Layer[ 'vector' ], Array.from( arguments ), VectorLeafletLayer )
-}
-Object.setPrototypeOf( VectorLeafletLayer.prototype, smkRef.TYPE.Layer[ 'vector' ].prototype )
+export class VectorLeafletLayer extends VectorLayer {}
 
-smkRef.TYPE.Layer[ 'vector' ][ 'leaflet' ] = VectorLeafletLayer
+;( Layer as any )[ 'vector' ][ 'leaflet' ] = VectorLeafletLayer
 
 // ---------------------------------------------------------------------------
 
@@ -98,7 +97,7 @@ VectorLeafletLayer.prototype.getFeaturesAtPoint = function ( location: any, view
 
 VectorLeafletLayer.prototype.getConfig = function ( leafLayer: any ) {
     const cfg = JSON.parse( JSON.stringify(
-        smkRef.TYPE.Layer[ 'vector' ].prototype.getConfig.call( this )
+        VectorLayer.prototype.getConfig.call( this )
     ) )
 
     if ( cfg.isInternal && leafLayer ) {
@@ -116,7 +115,7 @@ VectorLeafletLayer.prototype.getConfig = function ( leafLayer: any ) {
 // create
 // ---------------------------------------------------------------------------
 
-;( smkRef.TYPE.Layer[ 'vector' ][ 'leaflet' ] as any ).create = function ( layers: any[], zIndex: number ) {
+;( VectorLeafletLayer as any ).create = function ( layers: any[], zIndex: number ) {
     const self = this
 
     if ( layers.length !== 1 )                                                  throw new Error( 'only 1 config allowed' )
@@ -125,12 +124,12 @@ VectorLeafletLayer.prototype.getConfig = function ( leafLayer: any ) {
 
     const styles = [].concat( layers[ 0 ].config.style )
 
-    return smkRef.UTIL.resolved()
+    return resolved()
         .then( function () {
             if ( !layers[ 0 ].config.projection )
                 return L.GeoJSON.coordsToLatLng
 
-            return smkRef.UTIL.getProjection( layers[ 0 ].config.projection )
+            return getProjection( layers[ 0 ].config.projection )
                 .then( function ( projection: Function ) {
                     return function ( pt: any ) {
                         const projected = projection( pt )
@@ -199,7 +198,7 @@ VectorLeafletLayer.prototype.getConfig = function ( leafLayer: any ) {
 
             const url = self.resolveAttachmentUrl( layers[ 0 ].config.dataUrl, layers[ 0 ].config.id, 'json' )
 
-            return smkRef.UTIL.makePromise( function ( res: Function, rej: Function ) {
+            return makePromise( function ( res: Function, rej: Function ) {
                 $.get( url, null, null, 'json' ).then( res, function ( xhr: any, _status: any, err: any ) {
                     rej( 'Failed requesting ' + url + ': ' + xhr.status + ',' + err )
                 } )

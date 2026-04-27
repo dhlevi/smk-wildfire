@@ -3,6 +3,8 @@
  * Converted from viewer-esri3d/tool/select/tool-select-esri3d.js.
  */
 
+import '../../../tool/select/tool-select-list'
+
 const smkRef = ( window as any ).SMK
 
 // Patches SelectListTool (not SelectTool — that name never existed; Leaflet

@@ -7,18 +7,16 @@ declare const L: any
 
 import '../../../lib/leaflet/NonTiledLayer-src.js'
 
-const smkRef = ( window as any ).SMK
+import { WmsLayer } from '../../layer/layer-types'
+import { Layer }    from '../../layer/layer'
 
-export function WmsLeafletLayer( this: any ) {
-    return Reflect.construct( smkRef.TYPE.Layer[ 'wms' ], Array.from( arguments ), WmsLeafletLayer )
-}
-Object.setPrototypeOf( WmsLeafletLayer.prototype, smkRef.TYPE.Layer[ 'wms' ].prototype )
+export class WmsLeafletLayer extends WmsLayer {}
 
-smkRef.TYPE.Layer[ 'wms' ][ 'leaflet' ] = WmsLeafletLayer
+;( Layer as any )[ 'wms' ][ 'leaflet' ] = WmsLeafletLayer
 
 // ---------------------------------------------------------------------------
 
-;( smkRef.TYPE.Layer[ 'wms' ][ 'leaflet' ] as any ).create = function ( layers: any[], zIndex: number ) {
+;( WmsLeafletLayer as any ).create = function ( layers: any[], zIndex: number ) {
     const serviceUrl  = layers[ 0 ].config.serviceUrl
     const layerNames  = layers.map( ( c: any ) => c.config.layerName ).reverse().join( ',' )
     const styleNames  = layers.map( ( c: any ) => c.config.styleName ).reverse().join( ',' )

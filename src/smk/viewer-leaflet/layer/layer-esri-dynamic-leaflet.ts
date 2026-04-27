@@ -5,18 +5,16 @@
 
 declare const L: any
 
-const smkRef = ( window as any ).SMK
+import { EsriDynamicLayer } from '../../layer/layer-types'
+import { Layer }            from '../../layer/layer'
 
-export function EsriDynamicLeafletLayer( this: any ) {
-    return Reflect.construct( smkRef.TYPE.Layer[ 'esri-dynamic' ], Array.from( arguments ), EsriDynamicLeafletLayer )
-}
-Object.setPrototypeOf( EsriDynamicLeafletLayer.prototype, smkRef.TYPE.Layer[ 'esri-dynamic' ].prototype )
+export class EsriDynamicLeafletLayer extends EsriDynamicLayer {}
 
-smkRef.TYPE.Layer[ 'esri-dynamic' ][ 'leaflet' ] = EsriDynamicLeafletLayer
+;( Layer as any )[ 'esri-dynamic' ][ 'leaflet' ] = EsriDynamicLeafletLayer
 
 // ---------------------------------------------------------------------------
 
-;( smkRef.TYPE.Layer[ 'esri-dynamic' ][ 'leaflet' ] as any ).create = function ( layers: any[], zIndex: number ) {
+;( EsriDynamicLeafletLayer as any ).create = function ( layers: any[], zIndex: number ) {
     if ( layers.length !== 1 ) throw new Error( 'only 1 config allowed' )
 
     const serviceUrl  = layers[ 0 ].config.serviceUrl

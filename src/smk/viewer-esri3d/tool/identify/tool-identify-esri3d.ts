@@ -3,6 +3,8 @@
  * Converted from viewer-esri3d/tool/identify/tool-identify-esri3d.js.
  */
 
+import '../../../tool/identify/tool-identify-list'
+
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.IdentifyListTool.prototype.styleFeature = function ( this: any, override: any ) {

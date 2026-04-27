@@ -2,6 +2,8 @@
  * tool-zoom-leaflet — Leaflet initializer for ZoomTool.
  */
 
+import '../../../tool/zoom/tool-zoom'
+
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.ZoomTool.addInitializer( function ( this: any, smk: any ) {

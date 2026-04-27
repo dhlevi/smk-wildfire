@@ -3,6 +3,8 @@
  * Converted from viewer-esri3d/tool/query/tool-query-esri3d.js.
  */
 
+import '../../../tool/query/tool-query-results'
+
 const smkRef = ( window as any ).SMK
 
 // Patches QueryResultsTool (not QueryTool — that name never existed; Leaflet

@@ -5,18 +5,16 @@
 
 declare const L: any
 
-const smkRef = ( window as any ).SMK
+import { EsriFeatureLayer } from '../../layer/layer-types'
+import { Layer }            from '../../layer/layer'
 
-export function EsriFeatureLeafletLayer( this: any ) {
-    return Reflect.construct( smkRef.TYPE.Layer[ 'esri-feature' ], Array.from( arguments ), EsriFeatureLeafletLayer )
-}
-Object.setPrototypeOf( EsriFeatureLeafletLayer.prototype, smkRef.TYPE.Layer[ 'esri-feature' ].prototype )
+export class EsriFeatureLeafletLayer extends EsriFeatureLayer {}
 
-smkRef.TYPE.Layer[ 'esri-feature' ][ 'leaflet' ] = EsriFeatureLeafletLayer
+;( Layer as any )[ 'esri-feature' ][ 'leaflet' ] = EsriFeatureLeafletLayer
 
 // ---------------------------------------------------------------------------
 
-;( smkRef.TYPE.Layer[ 'esri-feature' ][ 'leaflet' ] as any ).create = function ( layers: any[], zIndex: number ) {
+;( EsriFeatureLeafletLayer as any ).create = function ( layers: any[], zIndex: number ) {
     if ( layers.length !== 1 ) throw new Error( 'only 1 config allowed' )
 
     const cfg: any = { url: layers[ 0 ].config.serviceUrl }

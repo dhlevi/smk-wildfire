@@ -3,6 +3,8 @@
  * Converted from viewer-esri3d/tool/search/tool-search-esri3d.js.
  */
 
+import '../../../tool/search/tool-search-list'
+
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.SearchListTool.addInitializer( function ( this: any, smk: any ) {

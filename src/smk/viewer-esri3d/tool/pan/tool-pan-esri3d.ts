@@ -3,6 +3,8 @@
  * Converted from viewer-esri3d/tool/pan/tool-pan-esri3d.js.
  */
 
+import '../../../tool/pan/tool-pan'
+
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.PanTool.addInitializer( function ( this: any, smk: any ) {
