@@ -89,10 +89,13 @@ VectorEsri3dLayer.prototype.canAddToMap = function () {
 
             layers[ 0 ].loadLayer = function ( data: any ) {
                 layers[ 0 ].loading = true
-                const gs = smkRef.UTIL.geoJsonToEsriGraphics( reproject( data ) )
-                layerData = layerData.concat( gs )
-                layer.addMany( smkRef.UTIL.mapSymbolsToGraphics( gs, symbols ) )
-                layers[ 0 ].loading = false
+                try {
+                    const gs = smkRef.UTIL.geoJsonToEsriGraphics( reproject( data ) )
+                    layerData = layerData.concat( gs )
+                    layer.addMany( smkRef.UTIL.mapSymbolsToGraphics( gs, symbols ) )
+                } finally {
+                    layers[ 0 ].loading = false
+                }
             }
 
             if ( layers[ 0 ].loadCache ) {

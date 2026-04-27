@@ -22105,8 +22105,12 @@ smkRef$52.TYPE.Layer.vector.esri3d = VectorEsri3dLayer, VectorEsri3dLayer.protot
 		let s = new i.layers.GraphicsLayer();
 		if (e[0].loadLayer = function(n) {
 			e[0].loading = !0;
-			let i = smkRef$52.UTIL.geoJsonToEsriGraphics(t(n));
-			o = o.concat(i), s.addMany(smkRef$52.UTIL.mapSymbolsToGraphics(i, a)), e[0].loading = !1;
+			try {
+				let e = smkRef$52.UTIL.geoJsonToEsriGraphics(t(n));
+				o = o.concat(e), s.addMany(smkRef$52.UTIL.mapSymbolsToGraphics(e, a));
+			} finally {
+				e[0].loading = !1;
+			}
 		}, e[0].loadCache && (e[0].loadLayer(e[0].loadCache), e[0].loadCache = null), e[0].clearLayer = function() {
 			s.removeAll(), o = [];
 		}, e[0].getData = function() {
@@ -24357,7 +24361,7 @@ smkRef$8.TYPE.SelectListTool.addInitializer(function() {
 //#region src/smk/viewer-leaflet/tool/query/tool-query-leaflet.ts
 var smkRef$7 = window.SMK;
 //#endregion
-//#region src/smk/viewer-leaflet/tool/minimap/tool-minimap-leaflet.ts
+//#region src/smk/viewer-leaflet/tool/measure/tool-measure-leaflet.ts
 smkRef$7.TYPE.QueryResultsTool.addInitializer(function() {
 	this.styleFeature = function() {
 		let e = this;
@@ -38008,7 +38012,174 @@ smkRef$7.TYPE.QueryResultsTool.addInitializer(function() {
 			t.busy = !1, t.results = [], t.measureDistance = !1, t.measureArea = !1, t.showStatusMessage("Select measurement method"), t.control._finishMeasure();
 		}
 	});
-}), SMK.TYPE.MinimapTool.addInitializer(function(e) {
+});
+//#endregion
+//#region src/smk/viewer-leaflet/tool/minimap/lib/Control.MiniMap-3.6.1.min.js
+var require_Control_MiniMap_3_6_1_min = /* @__PURE__ */ __commonJSMin(((e, t) => {
+	(function(n, i) {
+		typeof define == "function" && define.amd ? define(["leaflet"], n) : typeof e == "object" && (t.exports = n(i.L)), i !== void 0 && i.L && (i.L.Control.MiniMap = n(L), i.L.control.minimap = function(e, t) {
+			return new i.L.Control.MiniMap(e, t);
+		});
+	})(function(e) {
+		var t = e.Control.extend({
+			includes: e.Evented ? e.Evented.prototype : e.Mixin.Events,
+			options: {
+				position: "bottomright",
+				toggleDisplay: !1,
+				zoomLevelOffset: -5,
+				zoomLevelFixed: !1,
+				centerFixed: !1,
+				zoomAnimation: !1,
+				autoToggleDisplay: !1,
+				minimized: !1,
+				width: 150,
+				height: 150,
+				collapsedWidth: 19,
+				collapsedHeight: 19,
+				aimingRectOptions: {
+					color: "#ff7800",
+					weight: 1,
+					clickable: !1
+				},
+				shadowRectOptions: {
+					color: "#000000",
+					weight: 1,
+					clickable: !1,
+					opacity: 0,
+					fillOpacity: 0
+				},
+				strings: {
+					hideText: "Hide MiniMap",
+					showText: "Show MiniMap"
+				},
+				mapOptions: {}
+			},
+			initialize: function(t, n) {
+				e.Util.setOptions(this, n), this.options.aimingRectOptions.clickable = !1, this.options.shadowRectOptions.clickable = !1, this._layer = t;
+			},
+			onAdd: function(t) {
+				this._mainMap = t, this._container = e.DomUtil.create("div", "leaflet-control-minimap"), this._container.style.width = this.options.width + "px", this._container.style.height = this.options.height + "px", e.DomEvent.disableClickPropagation(this._container), e.DomEvent.on(this._container, "mousewheel", e.DomEvent.stopPropagation);
+				var n = {
+					attributionControl: !1,
+					dragging: !this.options.centerFixed,
+					zoomControl: !1,
+					zoomAnimation: this.options.zoomAnimation,
+					autoToggleDisplay: this.options.autoToggleDisplay,
+					touchZoom: this.options.centerFixed ? "center" : !this._isZoomLevelFixed(),
+					scrollWheelZoom: this.options.centerFixed ? "center" : !this._isZoomLevelFixed(),
+					doubleClickZoom: this.options.centerFixed ? "center" : !this._isZoomLevelFixed(),
+					boxZoom: !this._isZoomLevelFixed(),
+					crs: t.options.crs
+				};
+				return n = e.Util.extend(this.options.mapOptions, n), this._miniMap = new e.Map(this._container, n), this._miniMap.addLayer(this._layer), this._mainMapMoving = !1, this._miniMapMoving = !1, this._userToggledDisplay = !1, this._minimized = !1, this.options.toggleDisplay && this._addToggleButton(), this._miniMap.whenReady(e.Util.bind(function() {
+					this._aimingRect = e.rectangle(this._mainMap.getBounds(), this.options.aimingRectOptions).addTo(this._miniMap), this._shadowRect = e.rectangle(this._mainMap.getBounds(), this.options.shadowRectOptions).addTo(this._miniMap), this._mainMap.on("moveend", this._onMainMapMoved, this), this._mainMap.on("move", this._onMainMapMoving, this), this._miniMap.on("movestart", this._onMiniMapMoveStarted, this), this._miniMap.on("move", this._onMiniMapMoving, this), this._miniMap.on("moveend", this._onMiniMapMoved, this);
+				}, this)), this._container;
+			},
+			addTo: function(t) {
+				e.Control.prototype.addTo.call(this, t);
+				var n = this.options.centerFixed || this._mainMap.getCenter();
+				return this._miniMap.setView(n, this._decideZoom(!0)), this._setDisplay(this.options.minimized), this;
+			},
+			onRemove: function(e) {
+				this._mainMap.off("moveend", this._onMainMapMoved, this), this._mainMap.off("move", this._onMainMapMoving, this), this._miniMap.off("moveend", this._onMiniMapMoved, this), this._miniMap.removeLayer(this._layer);
+			},
+			changeLayer: function(e) {
+				this._miniMap.removeLayer(this._layer), this._layer = e, this._miniMap.addLayer(this._layer);
+			},
+			_addToggleButton: function() {
+				this._toggleDisplayButton = this.options.toggleDisplay ? this._createButton("", this._toggleButtonInitialTitleText(), "leaflet-control-minimap-toggle-display leaflet-control-minimap-toggle-display-" + this.options.position, this._container, this._toggleDisplayButtonClicked, this) : void 0, this._toggleDisplayButton.style.width = this.options.collapsedWidth + "px", this._toggleDisplayButton.style.height = this.options.collapsedHeight + "px";
+			},
+			_toggleButtonInitialTitleText: function() {
+				return this.options.minimized ? this.options.strings.showText : this.options.strings.hideText;
+			},
+			_createButton: function(t, n, i, a, o, s) {
+				var c = e.DomUtil.create("a", i, a);
+				c.innerHTML = t, c.href = "#", c.title = n;
+				var l = e.DomEvent.stopPropagation;
+				return e.DomEvent.on(c, "click", l).on(c, "mousedown", l).on(c, "dblclick", l).on(c, "click", e.DomEvent.preventDefault).on(c, "click", o, s), c;
+			},
+			_toggleDisplayButtonClicked: function() {
+				this._userToggledDisplay = !0, this._minimized ? this._restore() : this._minimize();
+			},
+			_setDisplay: function(e) {
+				e !== this._minimized && (this._minimized ? this._restore() : this._minimize());
+			},
+			_minimize: function() {
+				this.options.toggleDisplay ? (this._container.style.width = this.options.collapsedWidth + "px", this._container.style.height = this.options.collapsedHeight + "px", this._toggleDisplayButton.className += " minimized-" + this.options.position, this._toggleDisplayButton.title = this.options.strings.showText) : this._container.style.display = "none", this._minimized = !0, this._onToggle();
+			},
+			_restore: function() {
+				this.options.toggleDisplay ? (this._container.style.width = this.options.width + "px", this._container.style.height = this.options.height + "px", this._toggleDisplayButton.className = this._toggleDisplayButton.className.replace("minimized-" + this.options.position, ""), this._toggleDisplayButton.title = this.options.strings.hideText) : this._container.style.display = "block", this._minimized = !1, this._onToggle();
+			},
+			_onMainMapMoved: function(e) {
+				if (this._miniMapMoving) this._miniMapMoving = !1;
+				else {
+					var t = this.options.centerFixed || this._mainMap.getCenter();
+					this._mainMapMoving = !0, this._miniMap.setView(t, this._decideZoom(!0)), this._setDisplay(this._decideMinimized());
+				}
+				this._aimingRect.setBounds(this._mainMap.getBounds());
+			},
+			_onMainMapMoving: function(e) {
+				this._aimingRect.setBounds(this._mainMap.getBounds());
+			},
+			_onMiniMapMoveStarted: function(e) {
+				if (!this.options.centerFixed) {
+					var t = this._aimingRect.getBounds(), n = this._miniMap.latLngToContainerPoint(t.getSouthWest()), i = this._miniMap.latLngToContainerPoint(t.getNorthEast());
+					this._lastAimingRectPosition = {
+						sw: n,
+						ne: i
+					};
+				}
+			},
+			_onMiniMapMoving: function(t) {
+				this.options.centerFixed || !this._mainMapMoving && this._lastAimingRectPosition && (this._shadowRect.setBounds(new e.LatLngBounds(this._miniMap.containerPointToLatLng(this._lastAimingRectPosition.sw), this._miniMap.containerPointToLatLng(this._lastAimingRectPosition.ne))), this._shadowRect.setStyle({
+					opacity: 1,
+					fillOpacity: .3
+				}));
+			},
+			_onMiniMapMoved: function(e) {
+				this._mainMapMoving ? this._mainMapMoving = !1 : (this._miniMapMoving = !0, this._mainMap.setView(this._miniMap.getCenter(), this._decideZoom(!1)), this._shadowRect.setStyle({
+					opacity: 0,
+					fillOpacity: 0
+				}));
+			},
+			_isZoomLevelFixed: function() {
+				var e = this.options.zoomLevelFixed;
+				return this._isDefined(e) && this._isInteger(e);
+			},
+			_decideZoom: function(e) {
+				if (!this._isZoomLevelFixed()) {
+					if (e) return this._mainMap.getZoom() + this.options.zoomLevelOffset;
+					var t = this._miniMap.getZoom() - this._mainMap.getZoom(), n = this._miniMap.getZoom() - this.options.zoomLevelOffset, i;
+					return t > this.options.zoomLevelOffset && this._mainMap.getZoom() < this._miniMap.getMinZoom() - this.options.zoomLevelOffset ? this._miniMap.getZoom() > this._lastMiniMapZoom ? (i = this._mainMap.getZoom() + 1, this._miniMap.setZoom(this._miniMap.getZoom() - 1)) : i = this._mainMap.getZoom() : i = n, this._lastMiniMapZoom = this._miniMap.getZoom(), i;
+				} else if (e) return this.options.zoomLevelFixed;
+				else return this._mainMap.getZoom();
+			},
+			_decideMinimized: function() {
+				return this._userToggledDisplay ? this._minimized : this.options.autoToggleDisplay ? !!this._mainMap.getBounds().contains(this._miniMap.getBounds()) : this._minimized;
+			},
+			_isInteger: function(e) {
+				return typeof e == "number";
+			},
+			_isDefined: function(e) {
+				return e !== void 0;
+			},
+			_onToggle: function() {
+				e.Util.requestAnimFrame(function() {
+					e.DomEvent.on(this._container, "transitionend", this._fireToggleEvents, this), e.Browser.any3d || e.Util.requestAnimFrame(this._fireToggleEvents, this);
+				}, this);
+			},
+			_fireToggleEvents: function() {
+				e.DomEvent.off(this._container, "transitionend", this._fireToggleEvents, this);
+				var t = { minimized: this._minimized };
+				this.fire(this._minimized ? "minimize" : "restore", t), this.fire("toggle", t);
+			}
+		});
+		return e.Map.mergeOptions({ miniMapControl: !1 }), e.Map.addInitHook(function() {
+			this.options.miniMapControl && (this.miniMapControl = new t().addTo(this));
+		}), t;
+	}, window);
+})), import_Control_MiniMap_3_6_1_min = require_Control_MiniMap_3_6_1_min();
+window.SMK.TYPE.MinimapTool.addInitializer(function(e) {
 	if (e.$device === "mobile") return;
 	e.addToStatus($("<div class=\"smk-spacer\">").height(170).get(0));
 	let t = e.$viewer.createBasemapLayer(this.baseMap || "Topographic");
@@ -38421,7 +38592,7 @@ function setupGlobalSMK() {
 		branch: "unknown",
 		lastCommit: "unknown",
 		origin: "unknown",
-		version: "1.0.37"
+		version: "1.1.0"
 	}, e.HANDLER = {
 		handler: {},
 		set(e, t, n) {
