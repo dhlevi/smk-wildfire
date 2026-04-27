@@ -1,0 +1,95 @@
+{
+    "viewer": {
+        "type": "esri3d"
+    },
+    "surround": {
+        "subtitles": [ "Esri 3D — All Tools + All Layer Types" ]
+    },
+    "tools": [
+        { "type": "pan" },
+        { "type": "zoom",
+            "mouseWheel": true,
+            "doubleClick": true,
+            "box": true,
+            "control": true
+        },
+        { "type": "scale",
+            "showFactor": true,
+            "showBar": true
+        },
+        { "type": "coordinate" },
+        { "type": "about",
+            "content": "Esri 3D viewer — all supported tools and layer types."
+        },
+        { "type": "baseMaps" },
+        { "type": "layers", "position": "toolbar" },
+        { "type": "search" },
+        { "type": "identify" },
+        { "type": "select" },
+        { "type": "measure", "enabled": true },
+        { "type": "directions" },
+        { "type": "menu", "enabled": true },
+        { "type": "query", "enabled": true }
+    ],
+    "layers": [
+        {
+            "type": "vector",
+            "id": "4-points",
+            "title": "Vector — 4 Points",
+            "isVisible": true,
+            "opacity": 0.9,
+            "dataUrl": "/debug/data/4-points.json",
+            "style": {
+                "strokeColor": "#003366",
+                "strokeWidth": 2,
+                "fillColor": "#003366",
+                "fillOpacity": 0.8
+            }
+        },
+        {
+            "type": "vector",
+            "id": "3-polygons",
+            "title": "Vector — 3 Polygons",
+            "isVisible": false,
+            "opacity": 0.65,
+            "dataUrl": "/debug/data/3-polygons.json",
+            "style": {
+                "strokeColor": "red",
+                "strokeWidth": 3,
+                "fillColor": "blue",
+                "fillOpacity": 0.4
+            }
+        },
+        {
+            "type": "wms",
+            "id": "whse-tantalis-ta-crown-leases-svw",
+            "serviceUrl": "https://openmaps.gov.bc.ca/geo/pub/wms",
+            "title": "WMS — Crown Leases",
+            "layerName": "WHSE_TANTALIS.TA_CROWN_LEASES_SVW",
+            "styleName": "Lease_Applications_Tantalis_Colour_Filled",
+            "titleAttribute": "INTRID_SID",
+            "geometryAttribute": "SHAPE",
+            "isVisible": false,
+            "attributes": [
+                { "name": "INTRID_SID",         "title": "Intrid SID" },
+                { "name": "TENURE_STATUS",       "title": "Tenure Status" },
+                { "name": "TENURE_TYPE",         "title": "Tenure Type" },
+                { "name": "CROWN_LANDS_FILE",    "title": "Crown Lands File" }
+            ]
+        },
+        {
+            "type": "esri-dynamic",
+            "id": "active-wildfires",
+            "title": "Esri Dynamic — Active Wildfires",
+            "isVisible": true,
+            "serviceUrl": "https://services6.arcgis.com/ubm4tcTYICKBpist/arcgis/rest/services/BCWS_ActiveFires_PublicView/FeatureServer/0",
+            "opacity": 0.8,
+            "attributes": [
+                { "name": "FIRE_NUMBER",    "title": "Fire Number" },
+                { "name": "FIRE_STATUS",    "title": "Status" },
+                { "name": "FIRE_CAUSE",     "title": "Cause" },
+                { "name": "GEOGRAPHIC_DESCRIPTION", "title": "Location" }
+            ]
+        }
+    ]
+}

@@ -2,8 +2,21 @@
 <html>
     <head>
         <title>Minimal</title>
-        
-        <script src="../../../dist/smk.js"></script>
+
+        <!-- Runtime dependencies required by smk.umd.js (previously bundled in dist/smk.js) -->
+        <script src="../../../src/lib/jquery-3.3.1.min.js"></script>
+        <script src="../../../src/lib/vue-2.5.11.min.js"></script>
+        <link rel="stylesheet" href="../../../src/lib/leaflet/leaflet-1.7.1.css"/>
+        <script src="../../../src/lib/leaflet/leaflet-1.7.1.js"></script>
+        <script src="../../../src/lib/leaflet/esri-leaflet-3.0.19.min.js"></script>
+        <script src="../../../src/lib/leaflet/maplibre-gl-3.6.2.min.js"></script>
+        <script src="../../../src/lib/leaflet/esri-leaflet-vector-4.3.1.min.js"></script>
+        <script src="../../../src/lib/leaflet/esri-leaflet-static-basemap-tile-1.0.0.min.js"></script>
+        <script src="../../../src/lib/proj4-2.4.4.min.js"></script>
+        <script src="../../../src/lib/turf-5.1.6.min.js"></script>
+
+        <script src="../../../dist/smk.umd.js"></script>
+        <link rel="stylesheet" type="text/css" href="../../../dist/smk.css"/>
         <link rel="stylesheet" type="text/css" href="style.css"/>
     </head>
     <body>

@@ -3,44 +3,85 @@
     <head>
         <title>Everything</title>
 
-        <script src="../../../dist/smk.js"></script>
+        <script src="../../../src/lib/jquery-3.3.1.min.js"></script>
+        <script src="../../../src/lib/vue-2.5.11.min.js"></script>
+        <link rel="stylesheet" href="../../../src/lib/leaflet/leaflet-1.7.1.css"/>
+        <script src="../../../src/lib/leaflet/leaflet-1.7.1.js"></script>
+        <script src="../../../src/lib/leaflet/esri-leaflet-3.0.19.min.js"></script>
+        <script src="../../../src/lib/leaflet/maplibre-gl-3.6.2.min.js"></script>
+        <script src="../../../src/lib/leaflet/esri-leaflet-vector-4.3.1.min.js"></script>
+        <script src="../../../src/lib/leaflet/esri-leaflet-static-basemap-tile-1.0.0.min.js"></script>
+        <script src="../../../src/lib/proj4-2.4.4.min.js"></script>
+        <script src="../../../src/lib/turf-5.1.6.min.js"></script>
+
+        <script src="../../../dist/smk.umd.js"></script>
+        <link rel="stylesheet" type="text/css" href="../../../dist/smk.css"/>
         <link rel="stylesheet" type="text/css" href="style.css"/>
     </head>
     <body>
-<!--***************************************************************************
-    This example shows all the parameters that can be passed to SMK.INIT().
-
-    - `id` sets identifier that will be for this instance of map in SMK.MAP[].
-    - `containerSel` is the selector for element that will contain the map.
-    - `baseUrl` is base path for resources used by smk.js, it defaults to the 
-        path from where smk.js was loaded.
-    - `config` is an array consisting any of 
-        - SMK configuration objects
-        - URLs pointing to JSON blobs containing configuration
-        - SMK commands
-        - a prefix to use when parsing URL parameters for SMK commands 
-        All configuration objects are merged together to produce final
-        configuration object.
--->
         <div id="smk-map-frame"></div>
         <script>
             SMK.INIT( {
-                id:             'map',
-                containerSel:   '#smk-map-frame',
-                baseUrl:        SMK.BASE_URL + '../dist/',
-                config: [ 
-                    // literal configuration
-                    { tools: [ { type: 'markup', enabled: false } ] },
-                    // URL to JSON object
-                    './map-config.json', 
-                    // SMK command
-                    'theme=alpha',
-                    // prefix for URL parameter commands
-                    '?smk-' 
-                ],
+                containerSel: '#smk-map-frame',
+                config: [
+                    '../../../debug/layer/basemapping-gba-railway-tracks-sp-railway-tracks.json',
+                    '../../../debug/layer/forest-tenure-ften-map-notatn-poly.json',
+                    '../../../debug/layer/forest-tenure-ften-recreation-poly.json',
+                    '../../../debug/layer/imagery-and-base-maps-drp-bctc-transmission-lines.json',
+                    '../../../debug/layer/int-da.json',
+                    '../../../debug/layer/int-land-act-crown-grant.json',
+                    '../../../debug/layer/int-land-act-inclusion.json',
+                    '../../../debug/layer/int-land-act-inventory.json',
+                    '../../../debug/layer/int-land-act-lease.json',
+                    '../../../debug/layer/int-land-act-licence.json',
+                    '../../../debug/layer/int-land-act-permission.json',
+                    '../../../debug/layer/int-land-act-permit.json',
+                    '../../../debug/layer/int-land-act-reserve.json',
+                    '../../../debug/layer/int-land-act-right-of-way.json',
+                    '../../../debug/layer/int-oa.json',
+                    '../../../debug/layer/survey-parcels.json',
+                    '../../../debug/layer/transportation-corridor.json',
+                    '../../../debug/layer/waa-guide-outfitter-area.json',
+                    '../../../debug/layer/waa-trapline-areas.json',
+                    '../../../debug/layer/whse-basemapping-gba-railway-tracks-names.json',
+                    '../../../debug/layer/whse-basemapping-gba-railway-tracks-railway-ties.json',
+                    '../../../debug/layer/whse-basemapping-gba-railway-tracks-skytrain-line-names.json',
+                    '../../../debug/layer/whse-basemapping-gba-railway-tracks-skytrain.json',
+                    '../../../debug/layer/whse-basemapping-gba-railway-tracks.json',
+                    '../../../debug/layer/whse-basemapping-trim-water-lines.json',
+                    '../../../debug/layer/wms-imagery-and-base-maps-gsr-frph-early-childcare.json',
+                    '../../../debug/layer/wms-imagery-and-base-maps-gsr-frph-hlth-professional.json',
+                    '../../../debug/layer/wms-imagery-and-base-maps-gsr-frph-service-directory.json',
+                    '../../../debug/layer/wms-imagery-and-base-maps-gsr-frph-tourism.json',
+                    '../../../debug/layer/wms-imagery-and-base-maps-gsr-schools-k-to-12.json',
+                    {
+                        tools: [
+                            // toolbar + container tools
+                            { type: 'toolbar',       enabled: true },
+                            { type: 'about',         enabled: true, position: 'toolbar', icon: 'help',         title: 'About' },
+                            { type: 'baseMaps',      enabled: true, position: 'toolbar', icon: 'map',          mapStyle: { width: '110px', height: '110px' } },
+                            { type: 'search',        enabled: true, position: 'toolbar', icon: 'search' },
+                            { type: 'identify',      enabled: true, position: 'toolbar', icon: 'info_outline' },
+                            { type: 'layers',        enabled: true, position: 'toolbar', icon: 'layers' },
+                            { type: 'legend',        enabled: true, position: 'toolbar', icon: 'list' },
+                            { type: 'measure',       enabled: true, position: 'toolbar', icon: 'straighten' },
+                            { type: 'markup',        enabled: true, position: 'toolbar', icon: 'edit' },
+                            { type: 'bookmarks',     enabled: true, position: 'toolbar', icon: 'bookmark' },
+                            { type: 'minimap',       enabled: true },
+                            // map controls
+                            { type: 'pan',           enabled: true },
+                            { type: 'zoom',          enabled: true, mouseWheel: true, doubleClick: true, box: true, control: true },
+                            { type: 'scale',         enabled: true, showFactor: true, showBar: true },
+                            { type: 'coordinate',    enabled: true },
+                            { type: 'reset-view',    enabled: true },
+                            { type: 'version',       enabled: true },
+                            { type: 'location',      enabled: true },
+                        ]
+                    },
+                    '?'
+                ]
             } )
         </script>
-<!--***************************************************************************-->
     </body>
 </html>
 
