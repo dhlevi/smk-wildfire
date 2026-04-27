@@ -129,8 +129,8 @@ function setupGlobalSMK(): void {
             tools: [
                 { type: 'pan' },
                 { type: 'actionbar', enabled: true },
-                { type: 'zoom',      mouseWheel: true, doubleClick: true, box: true, control: true, position: 'actionbar' },
-                { type: 'reset-view', position: 'actionbar' },
+                { type: 'zoom',      mouseWheel: true, doubleClick: true, box: true, control: true, position: 'actionbar', order: 1,  icon: { zoomIn: 'add', zoomOut: 'remove' }, title: { zoomIn: 'Zoom In', zoomOut: 'Zoom Out' } },
+                { type: 'reset-view', position: 'actionbar', order: 10, icon: 'zoom_out_map', title: 'Reset View' },
                 { type: 'scale', showFactor: true, showBar: true },
                 { type: 'coordinate' },
                 { type: 'toolbar',  enabled: true },

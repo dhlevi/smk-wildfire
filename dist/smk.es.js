@@ -20928,7 +20928,7 @@ smkRef$59 && (smkRef$59.TYPE ||= {}, smkRef$59.TYPE.Viewer || (smkRef$59.TYPE.Vi
 	let n = e.addToContainer("<div class=\"smk-viewer\">");
 	t.map = L.map(n, {
 		dragging: !1,
-		zoomControl: !0,
+		zoomControl: !1,
 		boxZoom: !1,
 		doubleClickZoom: !1,
 		zoomSnap: e.viewer.zoomSnap,
@@ -38543,11 +38543,23 @@ function setupGlobalSMK() {
 				doubleClick: !0,
 				box: !0,
 				control: !0,
-				position: "actionbar"
+				position: "actionbar",
+				order: 1,
+				icon: {
+					zoomIn: "add",
+					zoomOut: "remove"
+				},
+				title: {
+					zoomIn: "Zoom In",
+					zoomOut: "Zoom Out"
+				}
 			},
 			{
 				type: "reset-view",
-				position: "actionbar"
+				position: "actionbar",
+				order: 10,
+				icon: "zoom_out_map",
+				title: "Reset View"
 			},
 			{
 				type: "scale",
