@@ -1,0 +1,12 @@
+/* Mode toggle widget — render literal "2D" / "3D" label sized like a Material icon. */
+.smk-tool-mode-label {
+    font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 24px;
+    width: 24px;
+    text-align: center;
+    display: inline-block;
+    letter-spacing: -1px;
+    user-select: none;
+}

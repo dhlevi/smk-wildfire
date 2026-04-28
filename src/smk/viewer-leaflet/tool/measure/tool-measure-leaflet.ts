@@ -7,6 +7,8 @@ declare const L: any
 declare const turf: any
 
 SMK.TYPE.MeasureTool.addInitializer( function ( this: any, smk: SmkInstance ) {
+    if ( ( smk as any ).$viewer.type !== 'leaflet' ) return
+
     const self = this
 
     self.viewer.leaflet = true

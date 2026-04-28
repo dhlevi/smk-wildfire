@@ -1,40 +1,39 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Minimal</title>
+        <title>MapLibre</title>
 
-        <!-- Runtime dependencies required by smk.umd.js (previously bundled in dist/smk.js) -->
+        <!-- Runtime dependencies expected as window globals by smk.es.js -->
         <script src="../../../src/lib/jquery-3.3.1.min.js"></script>
         <script src="../../../src/lib/vue-2.5.11.min.js"></script>
+
+        <!-- Leaflet is still required for the basemap thumbnails (mini-maps)
+             and for esri-leaflet's BasemapLayer.TILES URL templates that the
+             MapLibre viewer reads when configuring esri-basemap raster sources. -->
         <link rel="stylesheet" href="../../../src/lib/leaflet/leaflet-1.7.1.css"/>
         <script src="../../../src/lib/leaflet/leaflet-1.7.1.js"></script>
         <script src="../../../src/lib/leaflet/esri-leaflet-3.0.19.min.js"></script>
+
+        <!-- MapLibre GL JS 5.24.0 — provides window.maplibregl -->
         <link rel="stylesheet" href="../../../src/lib/leaflet/maplibre-gl-5.24.0.css"/>
         <script src="../../../src/lib/leaflet/maplibre-gl-5.24.0.min.js"></script>
-        <script src="../../../src/lib/leaflet/esri-leaflet-vector-4.3.1.min.js"></script>
-        <script src="../../../src/lib/leaflet/esri-leaflet-static-basemap-tile-1.0.0.min.js"></script>
+
         <script src="../../../src/lib/proj4-2.4.4.min.js"></script>
         <script src="../../../src/lib/turf-5.1.6.min.js"></script>
+        <script src="../../../src/lib/terraformer/terraformer-1.0.7.js"></script>
+        <script src="../../../src/lib/terraformer/terraformer-arcgis-parser-1.0.5.js"></script>
 
-        <script src="../../../dist/smk.umd.js"></script>
+        <script type="module" src="../../../dist/smk.es.js"></script>
         <link rel="stylesheet" type="text/css" href="../../../dist/smk.css"/>
         <link rel="stylesheet" type="text/css" href="style.css"/>
     </head>
     <body>
-<!--***************************************************************************
-    This example shows a minimal SMK application.
-
-    The only parameter required by SMK.INIT() is 'containerSel', to set the 
-    element id that will contain the map.
--->
         <div id="smk-map-frame"></div>
-        <script>
+        <script type="module">
             SMK.INIT( {
-                containerSel:   "#smk-map-frame",
-                config:         [ '?' ]
+                containerSel: '#smk-map-frame',
+                config:       [ '?', '../../../debug/config/maplibre.json' ]
             } )
         </script>
-<!--***************************************************************************-->
     </body>
 </html>
-

@@ -28,6 +28,8 @@ smkRef.TYPE.SelectListTool.addInitializer( function ( this: any ) {
 } )
 
 smkRef.TYPE.SelectListTool.addInitializer( function ( this: any, smk: any ) {
+    if ( smk.$viewer.type !== 'leaflet' ) return
+
     const self = this
 
     self.featureSet.addedFeatures( function ( ev: any ) {

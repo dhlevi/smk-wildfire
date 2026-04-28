@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Everything</title>
+        <title>Everything (MapLibre)</title>
 
         <script src="../../../src/lib/jquery-3.3.1.min.js"></script>
         <script src="../../../src/lib/vue-2.5.11.min.js"></script>
@@ -25,6 +25,7 @@
             SMK.INIT( {
                 containerSel: '#smk-map-frame',
                 config: [
+                    { viewer: { type: 'maplibre' } },
                     '../../../debug/layer/basemapping-gba-railway-tracks-sp-railway-tracks.json',
                     '../../../debug/layer/forest-tenure-ften-map-notatn-poly.json',
                     '../../../debug/layer/forest-tenure-ften-recreation-poly.json',
@@ -73,6 +74,7 @@
                             // map controls
                             { type: 'pan',           enabled: true },
                             { type: 'zoom',          enabled: true, mouseWheel: true, doubleClick: true, box: true, control: true, position: 'actionbar' },
+                            { type: 'mode',          enabled: true, position: 'actionbar', order: 5 },
                             { type: 'scale',         enabled: true, showFactor: true, showBar: true },
                             { type: 'coordinate',    enabled: true },
                             { type: 'reset-view',    enabled: true, position: 'actionbar' },

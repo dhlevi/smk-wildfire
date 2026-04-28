@@ -4,6 +4,8 @@ declare const SMK: any
 declare const L: any
 
 SMK.TYPE.DirectionsWaypointsTool.addInitializer( function ( this: any, smk: SmkInstance ) {
+    if ( ( smk as any ).$viewer.type !== 'leaflet' ) return
+
     const self = this
 
     this.changedGroup( function () {

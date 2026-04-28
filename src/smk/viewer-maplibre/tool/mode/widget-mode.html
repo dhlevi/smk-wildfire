@@ -1,0 +1,8 @@
+<div class="smk-tool"
+    v-bind:class="classes"
+    v-on:click="$$emit( 'trigger' )"
+    v-bind:title="title"
+>
+    <span class="smk-tool-mode-label">{{ status === '3d' ? '3D' : '2D' }}</span>
+    <span v-if="showTitle && title">{{ title }}</span>
+</div>

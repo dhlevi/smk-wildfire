@@ -13,6 +13,8 @@ declare const $:    any
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.MinimapTool.addInitializer( function ( this: any, smk: any ) {
+    if ( smk.$viewer.type !== 'leaflet' ) return
+
     if ( smk.$device === 'mobile' ) return
 
     smk.addToStatus( $( '<div class="smk-spacer">' ).height( 170 ).get( 0 ) )

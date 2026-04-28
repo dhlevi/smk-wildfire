@@ -291,7 +291,11 @@ SmkMap.prototype.getSidepanel = function () {
     this.$sidepanel = new smkType.Sidepanel( this )
 
     this.$sidepanel.changedVisible( function () {
-        $( self.$container ).toggleClass( 'smk-sidepanel-active', self.$sidepanel.isPanelVisible() )
+        //$( self.$container ).toggleClass( 'smk-sidepanel-active', self.$sidepanel.isPanelVisible() )
+        self.$container.classList.toggle( 
+            'smk-sidepanel-active', 
+            self.$sidepanel.isPanelVisible() 
+        );
     } )
 
     this.$sidepanel.changedSize( function () {} )
@@ -315,7 +319,11 @@ SmkMap.prototype.getSidepanelPosition = function () {
 }
 
 SmkMap.prototype.setEditFocus = function ( focus: boolean ) {
-    $( this.$container ).toggleClass( 'smk-edit-focus', focus )
+    //$( this.$container ).toggleClass( 'smk-edit-focus', focus )
+    this.$container.classList.toggle( 
+        'smk-edit-focus', 
+        focus 
+    );
 }
 
 SmkMap.prototype.debugMessage = function ( opt: Record<string, any> ) {

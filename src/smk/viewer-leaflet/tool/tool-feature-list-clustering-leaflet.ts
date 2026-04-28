@@ -10,6 +10,8 @@ const smkRef = ( window as any ).SMK
 
 /** Called with tool instance as `this` context; smk is first arg */
 export function toolFeatureListClusteringLeaflet( this: any, smk: any ) {
+    if ( smk.$viewer.type !== 'leaflet' ) return
+
     const self = this
 
     this.marker  = {}

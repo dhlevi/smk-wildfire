@@ -10,6 +10,11 @@ import '../../../tool/identify/tool-identify-list'
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.IdentifyListTool.addInitializer( function ( this: any, smk: any ) {
+    // This initializer is Leaflet-specific; bail out for other viewer types
+    // (e.g. maplibre, esri3d) which use the IdentifyListTool but don't expose
+    // the Leaflet map API.
+    if ( smk.$viewer.type !== 'leaflet' ) return
+
     const self = this
 
     const lg = L.layerGroup().addTo( smk.$viewer.map )

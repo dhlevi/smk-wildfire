@@ -3,8 +3,6 @@
  * Converted from api/geocoder.js.
  */
 
-declare const $: any
-
 const smkRef = ( window as any ).SMK
 
 function Geocoder( this: any, config: any ) {
@@ -101,14 +99,44 @@ Geocoder.prototype.fetchOccupants    = function ( _points: any, _option?: any ) 
 Geocoder.prototype.fetchGeocoder = function ( endpoint: string, query: any ) {
     const self = this
 
-    return smkRef.UTIL.makePromise( function ( res: any, rej: any ) {
-        $.ajax( {
-            timeout:  self.timeout,
-            dataType: 'json',
-            url:      self.url + endpoint + '.geojson',
-            data:     query,
-        } ).then( res, rej )
-    } )
+    return self.fetchData(endpoint, query)
+}
+
+Geocoder.prototype.fetchData = async function (endpoint: string, query: any) {
+    const self = this
+    // 1. Handle Query Parameters
+    const url = new URL(self.url + endpoint + '.geojson');
+    if (query) {
+        Object.keys(query).forEach(key => url.searchParams.append(key, query[key]));
+    }
+
+    // 2. Handle Timeout using AbortController
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), self.timeout);
+
+    try {
+        const response = await fetch(url, {
+            signal: controller.signal,
+            method: 'GET', // Default
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        clearTimeout(id);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // 3. Parse JSON
+        return await response.json();
+    } catch (err) {
+        if (err.name === 'AbortError') {
+            throw new Error('Request timed out');
+        }
+        throw err;
+    }
 }
 
 smkRef.TYPE.Geocoder = Geocoder

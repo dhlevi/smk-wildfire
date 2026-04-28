@@ -1,0 +1,31 @@
+{
+    "viewer": {
+        "type":    "maplibre",
+        "baseMap": "Topographic",
+        "location": {
+            "center": [ -123.37, 48.43 ],
+            "zoom":   10
+        },
+        "minZoom": 2,
+        "maxZoom": 19
+    },
+    "surround": {
+        "subtitles": [ "MapLibre — minimal" ]
+    },
+    "tools": [
+        { "type": "pan" },
+        { "type": "zoom",
+            "mouseWheel":  true,
+            "doubleClick": true,
+            "box":         true,
+            "control":     true
+        },
+        { "type": "scale",      "showFactor": true, "showBar": true },
+        { "type": "coordinate" },
+        { "type": "about", "content": "MapLibre viewer — initial implementation. Use the **3D** button in the actionbar to toggle terrain mode." },
+        { "type": "baseMaps" },
+        { "type": "mode", "position": "actionbar", "order": 5, "icon": "threed_rotation", "title": "Switch to 3D" },
+        { "type": "menu", "enabled": true }
+    ],
+    "layers": []
+}

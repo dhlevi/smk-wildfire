@@ -17,13 +17,13 @@
         >Distance</command-button>
 
         <command-button class="smk-cancel"
-            v-if="viewer.leaflet"
+            v-if="viewer.leaflet || viewer.maplibre"
             v-bind:disabled="!busy"
             v-on:click="$$emit( 'cancel' )"
         >Cancel</command-button>
 
         <select-dropdown class="smk-units"
-            v-if="viewer.leaflet"
+            v-if="viewer.leaflet || viewer.maplibre"
             v-bind:disabled="busy"
             v-model="unitProp"
             v-bind:options="[

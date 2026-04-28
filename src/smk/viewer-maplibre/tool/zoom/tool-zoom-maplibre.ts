@@ -1,5 +1,5 @@
 /**
- * tool-zoom-leaflet — Leaflet initializer for ZoomTool.
+ * MapLibre initializer for ZoomTool.
  */
 
 import '../../../tool/zoom/tool-zoom'
@@ -7,11 +7,9 @@ import '../../../tool/zoom/tool-zoom'
 const smkRef = ( window as any ).SMK
 
 smkRef.TYPE.ZoomTool.addInitializer( function ( this: any, smk: any ) {
-    if ( smk.$viewer.type !== 'leaflet' ) return
+    if ( !smk.$viewer.map?.scrollZoom ) return    // not a MapLibre viewer so ignore
 
-    if ( !smk.$viewer.map?.scrollWheelZoom ) return   // not a Leaflet viewer
-
-    if ( this.mouseWheel )   smk.$viewer.map.scrollWheelZoom.enable()
+    if ( this.mouseWheel )   smk.$viewer.map.scrollZoom.enable()
     if ( this.doubleClick )  smk.$viewer.map.doubleClickZoom.enable()
     if ( this.box )          smk.$viewer.map.boxZoom.enable()
 

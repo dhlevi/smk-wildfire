@@ -5,6 +5,8 @@ import './lib/leaflet-geoman-2.11.2.css'
 declare const SMK: any
 
 SMK.TYPE.MarkupTool.addInitializer( function ( this: any, smk: SmkInstance ) {
+    if ( ( smk as any ).$viewer.type !== 'leaflet' ) return
+
     const self = this
 
     this.changedActive( function () {
