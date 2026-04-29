@@ -5,20 +5,6 @@
  * Core modules are being converted from include.module()
  * to ES imports. Converted modules are imported here and also assigned to
  * window.SMK.* for backward compatibility with unconverted modules.
- *
- * Migration checklist:
- *   [x] src/smk/util.ts              — UTIL namespace, no framework deps
- *   [x] src/smk/event.ts             — SMKEvent base class, Vue 2 removed
- *   [x] src/smk/layer/layer.ts       — base Layer class
- *   [x] src/smk/feature-set.ts       — FeatureSet
- *   [x] src/smk/layer-display.ts     — LayerDisplay / LayerDisplayContext
- *   [x] src/smk/query/query.ts       — Query + all subtypes + QueryParameter
- *   [x] src/smk/layer/layer-types.ts — VectorLayer, WmsLayer, EsriDynamicLayer, EsriFeatureLayer, EsriTiledLayer, ClusterLayer
- *   [x] src/smk/viewer.ts            — base Viewer class (unconverted deps stubbed)
- *   [x] src/smk/smk-map.ts
- *   [x] src/smk/viewer-leaflet/viewer-leaflet.ts and all tool leaflet files
- *   [x] src/smk/viewer-esri3d/viewer-esri3d.ts and all tool esri3d files
- *   [x] all tools, config stubs, query/layer subtypes, API modules
  * 
  * Note: some modules (e.g. viewer-leaflet) still have unconverted deps (e.g. turf, jQuery) that are imported via global vars. These will be converted in a future pass.
  * Additionally esri3d viewer is not functional yet, but considering dropping support
