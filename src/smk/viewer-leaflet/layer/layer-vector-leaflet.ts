@@ -123,6 +123,65 @@ VectorLeafletLayer.prototype.getConfig = function ( leafLayer: any ) {
 
     const styles = [].concat( layers[ 0 ].config.style )
 
+    // ------------------------------------------------------------------
+    // Label config — same schema as the MapLibre vector adapter.
+    //   "label": "NAME"                              shorthand
+    //   "label": { "field": "NAME" }
+    //   "label": { "format": "{NAME} ({STATUS})", color, size, ... }
+    // Renders as a permanent Leaflet tooltip per feature.
+    // ------------------------------------------------------------------
+
+    const labelCfg: any = ( typeof layers[ 0 ].config.label === 'string' )
+        ? { field: layers[ 0 ].config.label }
+        : ( layers[ 0 ].config.label && typeof layers[ 0 ].config.label === 'object'
+              ? layers[ 0 ].config.label
+              : null )
+
+    const labelTemplate: string | null = labelCfg
+        ? ( labelCfg.format || ( labelCfg.field ? '{' + labelCfg.field + '}' : null ) )
+        : null
+
+    function formatLabel( props: any ): string {
+        if ( !labelTemplate || !props ) return ''
+        return labelTemplate.replace( /\{([^{}]+)\}/g, ( _m, key ) => {
+            const v = props[ key ]
+            return v == null ? '' : String( v )
+        } )
+    }
+
+    function bindFeatureLabel( feature: any, leafLayer: any ) {
+        if ( !labelTemplate || !leafLayer || !leafLayer.bindTooltip ) return
+        const text = formatLabel( feature && feature.properties )
+        if ( !text ) return
+
+        const opts: any = {
+            permanent:   true,
+            direction:   labelCfg.direction   || 'center',
+            className:   labelCfg.className   || 'smk-vector-label',
+            offset:      labelCfg.offset      || [ 0, 0 ],
+            opacity:     labelCfg.opacity     != null ? labelCfg.opacity : 1,
+            sticky:      !!labelCfg.sticky,
+            interactive: false,
+        }
+
+        // Inline style override so "color" / "size" / "haloColor" work
+        // without requiring users to write CSS.
+        const style: string[] = []
+        if ( labelCfg.color )     style.push( 'color: ' + labelCfg.color )
+        if ( labelCfg.size )      style.push( 'font-size: ' + labelCfg.size + 'px' )
+        if ( labelCfg.haloColor ) {
+            const hw = labelCfg.haloWidth != null ? labelCfg.haloWidth : 1.5
+            const sh = `0 0 ${ hw }px ${ labelCfg.haloColor }, 0 0 ${ hw }px ${ labelCfg.haloColor }, 0 0 ${ hw }px ${ labelCfg.haloColor }`
+            style.push( 'text-shadow: ' + sh )
+        }
+
+        const html = style.length
+            ? '<span style="' + style.join( ';' ) + '">' + escapeHtml( text ) + '</span>'
+            : escapeHtml( text )
+
+        leafLayer.bindTooltip( html, opts )
+    }
+
     return resolved()
         .then( function () {
             if ( !layers[ 0 ].config.projection )
@@ -152,6 +211,7 @@ VectorLeafletLayer.prototype.getConfig = function ( leafLayer: any ) {
                 onEachFeature: function ( feature: any, layer: any ) {
                     if ( layer.setStyle )
                         layer.setStyle( convertStyle( feature.style, feature.geometry.type ) )
+                    bindFeatureLabel( feature, layer )
                 },
                 renderer:    L.svg(),
                 interactive: false,
@@ -271,6 +331,15 @@ function convertStyle( styleConfig: any, type: string ) {
             fillOpacity: styleConfig.fillOpacity,
         }
     }
+}
+
+function escapeHtml( s: string ): string {
+    return String( s )
+        .replace( /&/g, '&amp;' )
+        .replace( /</g, '&lt;' )
+        .replace( />/g, '&gt;' )
+        .replace( /"/g, '&quot;' )
+        .replace( /'/g, '&#39;' )
 }
 
 function markerForStyle( viewer: any, latlng: any, styleConfig: any, layerConfig: any ) {

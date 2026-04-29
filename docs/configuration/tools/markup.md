@@ -4,7 +4,10 @@
 
 Adds markup tools to the map.
 
-*This tool only works with the [leaflet viewer](#type-viewer).*
+*Supported by the [leaflet](../viewer#type-property) and [maplibre](../viewer#type-property) viewers.*
+Leaflet uses [Geoman](https://geoman.io/) and supports the full
+`drawMode` set; the MapLibre implementation is native and supports
+`Polygon`, `Line`, `Marker`, and `Rectangle`.
 
 This is default configuration for the Markup tool (click on a property name for more information):
 <pre>

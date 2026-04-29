@@ -20,7 +20,8 @@ The `"layers"` and `"tools"` collections can contain a variety of possible objec
         <a href="viewer#type-property"      >"type"</a>:     "leaflet",
         <a href="viewer#device-property"    >"device"</a>:   "auto",
         <a href="viewer#basemap-property"   >"baseMap"</a>:  "Topographic",
-        <a href="viewer#location-property"  >"location"</a>: { ... }
+        <a href="viewer#location-property"  >"location"</a>: { ... },
+        <a href="viewer#dem-property"       >"dem"</a>:      { ... }
     },
 
     <a href="layers"  >"layers"</a>: [

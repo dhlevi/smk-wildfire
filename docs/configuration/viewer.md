@@ -20,6 +20,13 @@ Click on a property name for more information:
         <a href="#extent-sub-property"          >"extent"</a>:  [ -139.1782, 47.6039, -110.3533, 60.5939 ],
         <a href="#center-sub-property"          >"center"</a>:  [ -124.76575, 54.0989 ],
         <a href="#zoom-sub-property"            >"zoom"</a>:    5,
+    },
+    <a href="#dem-property"                     >"dem"</a>: {
+        <a href="#dem-property"                 >"url"</a>:          "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png",
+        <a href="#dem-property"                 >"encoding"</a>:     "terrarium",
+        <a href="#dem-property"                 >"tileSize"</a>:     256,
+        <a href="#dem-property"                 >"maxzoom"</a>:      15,
+        <a href="#dem-property"                 >"exaggeration"</a>: 1.2
     }
 } }
 </pre>
@@ -28,9 +35,14 @@ Click on a property name for more information:
 `"type": String`
 
 The type of map viewer to use.
-There is one option:
+Available options:
 
-- `"leaflet"` - use the [Leaflet](https://leafletjs.com/) viewer.
+- `"leaflet"`  - use the [Leaflet](https://leafletjs.com/) viewer (default).
+- `"maplibre"` - use the [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/) viewer.
+  Adds an actionbar 2D / 3D mode toggle and supports terrain via the
+  [`"dem"` property](#dem-property).  Loaded via a `<script>` tag pointing at
+  the MapLibre GL JS bundle (the host page must include it).
+- `"esri3d"`   - use the ArcGIS 3D viewer.
 
 
 ## Device Property
@@ -124,3 +136,22 @@ The array contains 2 values, which are in order: *`[LONG]`*,*`[LAT]`*.
 The zoom level of the map at startup.
 This is a value from 0 (whole world) to 30.
 The default value is 5, which shows the whole province of BC.
+
+
+## Dem Property
+`"dem": Object`
+
+*MapLibre viewer only.*  Configures the digital elevation model (DEM) source
+used by the 2D / 3D mode toggle to render terrain.  All sub-properties are
+optional and fall back to the defaults shown above.
+
+- `"url"` — DEM raster tile URL template.  Defaults to the public AWS
+  Terrarium tileset.
+- `"encoding"` — `"terrarium"` or `"mapbox"`, matching the tileset's
+  elevation encoding.
+- `"tileSize"` — Tile size in pixels (typically `256` or `512`).
+- `"maxzoom"` — Maximum native zoom of the DEM tileset.
+- `"exaggeration"` — Vertical exaggeration applied when 3D mode is enabled.
+
+MapLibre GL JS supports only a single DEM source per map, so this is a
+global setting rather than a per-basemap option.

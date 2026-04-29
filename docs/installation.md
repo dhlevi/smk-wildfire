@@ -55,3 +55,17 @@ Include this in your application:
     <script src="[url of smk deployment]/smk.js"></script>
 
 
+## Optional dependencies
+
+Some viewer types require additional libraries to be loaded by the host page
+*before* `smk.js`:
+
+- **MapLibre viewer** (`"viewer": { "type": "maplibre" }`) requires the
+  MapLibre GL JS bundle and stylesheet:
+
+        <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" />
+        <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+
+  When 3D mode is enabled the viewer also fetches DEM tiles from the
+  configured [`"dem"` source](configuration/viewer#dem-property).
+

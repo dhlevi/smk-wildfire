@@ -467,6 +467,9 @@ ViewerMapLibre.prototype.addViewerLayer = function ( viewerLayer: any ) {
         layers.forEach( ( ly: any ) => {
             if ( !self.map.getLayer( ly.id ) ) self.map.addLayer( ly )
         } )
+        if ( typeof viewerLayer._smk_onAdd === 'function' ) {
+            viewerLayer._smk_cleanup = viewerLayer._smk_onAdd( self.map )
+        }
         self.viewerLayers[ viewerLayer._smk_id || layers[ 0 ]?.id || viewerLayer.sourceId ] = viewerLayer
         return
     }
@@ -497,6 +500,11 @@ function self_hasLayer( self: any, id: string ): boolean {
 function removeViewerLayer( self: any, id: string ) {
     const vl = self.viewerLayers[ id ]
     if ( !vl ) return
+
+    if ( typeof vl._smk_cleanup === 'function' ) {
+        try { vl._smk_cleanup() } catch ( err ) { console.warn( err ) }
+        vl._smk_cleanup = null
+    }
 
     specLayers( vl ).forEach( ( ly: any ) => {
         if ( ly.id && self.map.getLayer( ly.id ) ) self.map.removeLayer( ly.id )

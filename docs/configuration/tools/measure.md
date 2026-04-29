@@ -4,6 +4,8 @@
 
 Add a button to the toolbar, that shows a panel that allows the user to measure distances or areas on the map.
 
+*Supported by the [leaflet](../viewer#type-property) and [maplibre](../viewer#type-property) viewers.*
+
 This is default configuration for the Measure tool (click on a property name for more information):
 <pre>
 { "tools": [ {

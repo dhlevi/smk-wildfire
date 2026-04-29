@@ -1,0 +1,102 @@
+{
+    "layers": [
+        {
+            "type": "vector",
+            "id": "sample-4-points",
+            "title": "Vector — 4 Points",
+            "isVisible": true,
+            "opacity": 0.9,
+            "dataUrl": "/debug/data/4-points.json",
+            "style": {
+                "strokeColor": "#003366",
+                "strokeWidth": 2,
+                "fillColor": "#003366",
+                "fillOpacity": 0.8
+            },
+            "label": {
+                "field":     "NAME",
+                "format":    "{NAME} — {STATUS}",
+                "color":     "#222",
+                "size":      12,
+                "haloColor": "#fff",
+                "haloWidth": 1.5,
+                "font":      [ "Open Sans Regular", "Arial Unicode MS Regular" ],
+                "anchor":    "center",
+                "offset":    [ 0, 1 ],
+                "placement": "point",
+                "minZoom":   0,
+                "maxZoom":   24,
+                "allowOverlap": false,
+                "opacity":   1
+            }
+        },
+        {
+            "type": "vector",
+            "id": "sample-3-polygons",
+            "title": "Vector — 3 Polygons",
+            "isVisible": true,
+            "opacity": 0.65,
+            "dataUrl": "/debug/data/3-polygons.json",
+            "style": {
+                "strokeColor": "red",
+                "strokeWidth": 3,
+                "fillColor": "blue",
+                "fillOpacity": 0.4
+            }
+        },
+        {
+            "type": "vector",
+            "id": "sample-3-linestrings",
+            "title": "Vector — 3 Linestrings",
+            "isVisible": true,
+            "opacity": 0.9,
+            "dataUrl": "/debug/data/3-linestrings.json",
+            "style": {
+                "strokeColor": "#cc6600",
+                "strokeWidth": 3
+            }
+        },
+        {
+            "type": "vector",
+            "id": "sample-1-multipolygon",
+            "title": "Vector — Multipolygon",
+            "isVisible": true,
+            "opacity": 0.5,
+            "dataUrl": "/debug/data/1-multipolygon.json",
+            "style": {
+                "strokeColor": "#006633",
+                "strokeWidth": 2,
+                "fillColor": "#33cc66",
+                "fillOpacity": 0.4
+            }
+        },
+        {
+            "type": "vector",
+            "id": "sample-multipoint",
+            "title": "Vector — Multipoint",
+            "isVisible": true,
+            "opacity": 0.9,
+            "dataUrl": "/debug/data/multipoint.json",
+            "style": {
+                "strokeColor": "#660066",
+                "strokeWidth": 2,
+                "fillColor": "#cc66cc",
+                "fillOpacity": 0.8
+            }
+        },
+        {
+            "type": "vector",
+            "id": "sample-mixed",
+            "title": "Vector — Polygon + Polyline + Point",
+            "isVisible": true,
+            "opacity": 0.7,
+            "dataUrl": "/debug/data/polygon-polyline-point.json",
+            "style": {
+                "strokeColor": "#333333",
+                "strokeWidth": 2,
+                "fillColor": "#ffcc00",
+                "fillOpacity": 0.5
+            }
+        }
+    ]
+}

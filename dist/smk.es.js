@@ -21190,7 +21190,33 @@ Layer.vector.leaflet = VectorLeafletLayer, VectorLeafletLayer.prototype.getFeatu
 	let n = this;
 	if (e.length !== 1) throw Error("only 1 config allowed");
 	if (e[0].useClustering + e[0].useHeatmap + e[0].useRaw > 1) throw Error("raw or heatmap or clustering");
-	let i = [].concat(e[0].config.style);
+	let i = [].concat(e[0].config.style), a = typeof e[0].config.label == "string" ? { field: e[0].config.label } : e[0].config.label && typeof e[0].config.label == "object" ? e[0].config.label : null, o = a ? a.format || (a.field ? "{" + a.field + "}" : null) : null;
+	function s(e) {
+		return !o || !e ? "" : o.replace(/\{([^{}]+)\}/g, (t, n) => {
+			let i = e[n];
+			return i == null ? "" : String(i);
+		});
+	}
+	function c(e, t) {
+		if (!o || !t || !t.bindTooltip) return;
+		let n = s(e && e.properties);
+		if (!n) return;
+		let i = {
+			permanent: !0,
+			direction: a.direction || "center",
+			className: a.className || "smk-vector-label",
+			offset: a.offset || [0, 0],
+			opacity: a.opacity == null ? 1 : a.opacity,
+			sticky: !!a.sticky,
+			interactive: !1
+		}, c = [];
+		if (a.color && c.push("color: " + a.color), a.size && c.push("font-size: " + a.size + "px"), a.haloColor) {
+			let e = a.haloWidth == null ? 1.5 : a.haloWidth, t = `0 0 ${e}px ${a.haloColor}, 0 0 ${e}px ${a.haloColor}, 0 0 ${e}px ${a.haloColor}`;
+			c.push("text-shadow: " + t);
+		}
+		let l = c.length ? "<span style=\"" + c.join(";") + "\">" + escapeHtml(n) + "</span>" : escapeHtml(n);
+		t.bindTooltip(l, i);
+	}
 	return resolved().then(function() {
 		return e[0].config.projection ? getProjection(e[0].config.projection).then(function(e) {
 			return function(t) {
@@ -21214,7 +21240,7 @@ Layer.vector.leaflet = VectorLeafletLayer, VectorLeafletLayer.prototype.getFeatu
 				});
 			},
 			onEachFeature: function(e, t) {
-				t.setStyle && t.setStyle(convertStyle(e.style, e.geometry.type));
+				t.setStyle && t.setStyle(convertStyle(e.style, e.geometry.type)), c(e, t);
 			},
 			renderer: L.svg(),
 			interactive: !1
@@ -21283,6 +21309,9 @@ function convertStyle(e, t) {
 		fillColor: e.fillColor,
 		fillOpacity: e.fillOpacity
 	} : {};
+}
+function escapeHtml(e) {
+	return String(e).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 function markerForStyle(e, t, n, i) {
 	return n && n.markerUrl ? L.marker(t, {
@@ -22481,7 +22510,7 @@ ViewerMapLibre.prototype.addViewerLayer = function(e) {
 			t.map.getSource(e) || t.map.addSource(e, n);
 		}), n.forEach((e) => {
 			t.map.getLayer(e.id) || t.map.addLayer(e);
-		}), t.viewerLayers[e._smk_id || n[0]?.id || e.sourceId] = e;
+		}), typeof e._smk_onAdd == "function" && (e._smk_cleanup = e._smk_onAdd(t.map)), t.viewerLayers[e._smk_id || n[0]?.id || e.sourceId] = e;
 		return;
 	}
 	e.id && e.type && !t.map.getLayer(e.id) && (t.map.addLayer(e), t.viewerLayers[e._smk_id || e.id] = e);
@@ -22501,11 +22530,21 @@ function self_hasLayer(e, t) {
 }
 function removeViewerLayer(e, t) {
 	let n = e.viewerLayers[t];
-	n && (specLayers(n).forEach((t) => {
-		t.id && e.map.getLayer(t.id) && e.map.removeLayer(t.id);
-	}), specSources(n).forEach(([t]) => {
-		t && e.map.getSource(t) && e.map.removeSource(t);
-	}), n.id && e.map.getLayer(n.id) && e.map.removeLayer(n.id), delete e.viewerLayers[t]);
+	if (n) {
+		if (typeof n._smk_cleanup == "function") {
+			try {
+				n._smk_cleanup();
+			} catch (e) {
+				console.warn(e);
+			}
+			n._smk_cleanup = null;
+		}
+		specLayers(n).forEach((t) => {
+			t.id && e.map.getLayer(t.id) && e.map.removeLayer(t.id);
+		}), specSources(n).forEach(([t]) => {
+			t && e.map.getSource(t) && e.map.removeSource(t);
+		}), n.id && e.map.getLayer(n.id) && e.map.removeLayer(n.id), delete e.viewerLayers[t];
+	}
 }
 ViewerMapLibre.prototype.getPanelPadding = function() {
 	let e = this.getSidepanelPosition(), t = this.map.getCanvas(), n = t.clientWidth || t.width, i = t.clientHeight || t.height, a = e.top, o = i - e.top - e.height, s = e.left, c = n - e.left - e.width;
@@ -39617,6 +39656,11 @@ SMK.TYPE.MinimapTool.addInitializer(function(e) {
 });
 //#endregion
 //#region src/smk/viewer-maplibre/layer/layer-wms-maplibre.ts
+var BLANK_PNG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", EARTH_R = 6378137, D2R = Math.PI / 180;
+function lngLatToMercator(e, t) {
+	let n = Math.max(Math.min(t, 85.05112878), -85.05112878);
+	return [EARTH_R * e * D2R, EARTH_R * Math.log(Math.tan(Math.PI / 4 + n * D2R / 2))];
+}
 var WmsMapLibreLayer = class extends WmsLayer {};
 Layer.wms.maplibre = WmsMapLibreLayer, WmsMapLibreLayer.create = function(e, t) {
 	return resolveSLD(e[0].config.sld).then(function(t) {
@@ -39626,9 +39670,6 @@ Layer.wms.maplibre = WmsMapLibreLayer, WmsMapLibreLayer.create = function(e, t) 
 			"version=" + encodeURIComponent(o),
 			"layers=" + encodeURIComponent(i),
 			c,
-			"bbox={bbox-epsg-3857}",
-			"width=256",
-			"height=256",
 			"format=image%2Fpng",
 			"transparent=" + (s ? "true" : "false")
 		];
@@ -39639,16 +39680,74 @@ Layer.wms.maplibre = WmsMapLibreLayer, WmsMapLibreLayer.create = function(e, t) 
 		return {
 			sourceId: p,
 			source: {
-				type: "raster",
-				tiles: [f],
-				tileSize: 256,
-				attribution: n.attribution || ""
+				type: "image",
+				url: BLANK_PNG,
+				coordinates: [
+					[0, 0],
+					[0, 0],
+					[0, 0],
+					[0, 0]
+				]
 			},
 			layer: {
 				id: p,
 				type: "raster",
 				source: p,
 				paint: { "raster-opacity": h }
+			},
+			_smk_onAdd: function(t) {
+				let n = null, i = null, a = !1;
+				function o() {
+					let e = t.getBounds(), n = e.getSouthWest(), i = e.getNorthEast(), a = t.getCanvas(), o = Math.max(1, Math.round(a.clientWidth || a.width)), s = Math.max(1, Math.round(a.clientHeight || a.height)), [c, l] = lngLatToMercator(n.lng, n.lat), [u, d] = lngLatToMercator(i.lng, i.lat);
+					return {
+						url: f + "&bbox=" + [
+							c,
+							l,
+							u,
+							d
+						].join(",") + "&width=" + o + "&height=" + s,
+						coordinates: [
+							[n.lng, i.lat],
+							[i.lng, i.lat],
+							[i.lng, n.lat],
+							[n.lng, n.lat]
+						]
+					};
+				}
+				function s(t) {
+					e.forEach((e) => {
+						e.loading = t;
+					});
+				}
+				function c() {
+					n ??= requestAnimationFrame(function() {
+						if (n = null, a || !t.getSource(p)) return;
+						let { url: e, coordinates: c } = o();
+						i &&= (i.onload = i.onerror = null, null);
+						let l = new Image();
+						l.crossOrigin = "anonymous", i = l, s(!0), l.onload = function() {
+							if (!(a || i !== l)) {
+								i = null;
+								try {
+									let n = t.getSource(p);
+									n && n.updateImage({
+										url: e,
+										coordinates: c
+									});
+								} catch (e) {
+									console.warn("WMS updateImage failed:", e);
+								} finally {
+									s(!1);
+								}
+							}
+						}, l.onerror = function(t) {
+							a || i !== l || (i = null, console.warn("WMS image fetch failed:", e, t), s(!1));
+						}, l.src = e;
+					});
+				}
+				return t.on("moveend", c), t.on("resize", c), c(), function() {
+					a = !0, t.off("moveend", c), t.off("resize", c), n != null && (cancelAnimationFrame(n), n = null), i &&= (i.onload = i.onerror = null, null), s(!1);
+				};
 			}
 		};
 	});
@@ -39810,14 +39909,55 @@ Layer["esri-feature"].maplibre = EsriFeatureMapLibreLayer, EsriFeatureMapLibreLa
 	}));
 }, init_util();
 var VectorMapLibreLayer = class extends VectorLayer {};
-Layer.vector.maplibre = VectorMapLibreLayer;
+Layer.vector.maplibre = VectorMapLibreLayer, VectorMapLibreLayer.prototype.getFeaturesInArea = function(e, t, n) {
+	let i = n && n.layer, a = i && i.source && i.source.data;
+	if (!a || !Array.isArray(a.features)) return [];
+	let o = [];
+	return a.features.forEach((t) => {
+		if (!(!t || !t.geometry)) try {
+			switch (t.geometry.type) {
+				case "Polygon":
+					turf.intersect(t, e) && o.push(t);
+					break;
+				case "MultiPolygon":
+					t.geometry.coordinates.reduce((t, n) => t || !!turf.intersect(turf.polygon(n), e), !1) && o.push(t);
+					break;
+				case "LineString":
+					(turf.booleanCrosses(e, t) || turf.booleanContains(e, t)) && o.push(t);
+					break;
+				case "MultiLineString":
+					turf.segmentReduce(t, (t, n) => t || turf.booleanCrosses(e, n) || turf.booleanContains(e, n), !1) && o.push(t);
+					break;
+				case "Point":
+				case "MultiPoint":
+					turf.coordReduce(t, (t, n) => t || turf.booleanPointInPolygon(n, e), !1) && o.push(t);
+					break;
+				default: console.warn("identify: skip", t.geometry.type);
+			}
+		} catch (e) {
+			console.warn("identify feature failed:", e, t);
+		}
+	}), o;
+};
 var EMPTY = {
 	type: "FeatureCollection",
 	features: []
 };
 VectorMapLibreLayer.create = function(e, t) {
 	if (e.length !== 1) throw Error("only 1 config allowed");
-	let n = this, i = e[0].config, a = [].concat(i.style || [])[0] || {}, o = "_smk_vec_" + i.id, s = o + "_fill", c = o + "_line", l = o + "_circle", u = i.opacity == null ? 1 : i.opacity, d = a.strokeColor || a.color || "#3388ff", f = a.strokeWidth || a.weight || 2, p = (a.strokeOpacity == null ? a.opacity == null ? 1 : a.opacity : a.strokeOpacity) * u, h = a.fillColor || d, _ = (a.fillOpacity == null ? .3 : a.fillOpacity) * u, v = a.radius || 5, y = {
+	let n = this, i = e[0].config, a = [].concat(i.style || [])[0] || {}, o = "_smk_vec_" + i.id, s = o + "_fill", c = o + "_line", l = o + "_circle", u = o + "_label", d = i.opacity == null ? 1 : i.opacity, f = typeof i.label == "string" ? { field: i.label } : i.label && typeof i.label == "object" ? i.label : null, p = f ? f.format || (f.field ? "{" + f.field + "}" : null) : null;
+	function h(e) {
+		return !p || !e ? "" : p.replace(/\{([^{}]+)\}/g, (t, n) => {
+			let i = e[n];
+			return i == null ? "" : String(i);
+		});
+	}
+	function _(e) {
+		return !p || !e || !Array.isArray(e.features) || e.features.forEach((e) => {
+			e && (e.properties ||= {}, e.properties._smk_label = h(e.properties));
+		}), e;
+	}
+	let v = a.strokeColor || a.color || "#3388ff", y = a.strokeWidth || a.weight || 2, x = (a.strokeOpacity == null ? a.opacity == null ? 1 : a.opacity : a.strokeOpacity) * d, S = a.fillColor || v, C = (a.fillOpacity == null ? .3 : a.fillOpacity) * d, w = a.radius || 5, T = {
 		sourceId: o,
 		source: {
 			type: "geojson",
@@ -39834,9 +39974,9 @@ VectorMapLibreLayer.create = function(e, t) {
 					["literal", ["Polygon", "MultiPolygon"]]
 				],
 				paint: {
-					"fill-color": h,
-					"fill-opacity": _,
-					"fill-outline-color": d
+					"fill-color": S,
+					"fill-opacity": C,
+					"fill-outline-color": v
 				}
 			},
 			{
@@ -39854,9 +39994,9 @@ VectorMapLibreLayer.create = function(e, t) {
 					]]
 				],
 				paint: {
-					"line-color": d,
-					"line-width": f,
-					"line-opacity": p
+					"line-color": v,
+					"line-width": y,
+					"line-opacity": x
 				}
 			},
 			{
@@ -39869,50 +40009,78 @@ VectorMapLibreLayer.create = function(e, t) {
 					["literal", ["Point", "MultiPoint"]]
 				],
 				paint: {
-					"circle-radius": v,
-					"circle-color": h,
-					"circle-opacity": _ || p,
-					"circle-stroke-color": d,
-					"circle-stroke-width": Math.max(1, f - 1)
+					"circle-radius": w,
+					"circle-color": S,
+					"circle-opacity": C || x,
+					"circle-stroke-color": v,
+					"circle-stroke-width": Math.max(1, y - 1)
 				}
 			}
 		]
-	}, x = e[0];
-	x.loadLayer = function(e) {
-		let t = n.map && n.map.getSource && n.map.getSource(o);
-		t ? t.setData(e || EMPTY) : x.loadCache = e;
-	}, x.clearLayer = function() {
-		let e = n.map && n.map.getSource && n.map.getSource(o);
-		e && e.setData(EMPTY), x.loadCache = null;
 	};
-	function S(e) {
-		e && (y.source.data = e);
-		let t = n.map && n.map.getSource && n.map.getSource(o);
-		return t && e && t.setData(e), y;
+	if (p) {
+		let e = f.placement === "line" || f.placement === "line-center" ? f.placement : "point", t = {
+			id: u,
+			type: "symbol",
+			source: o,
+			minzoom: f.minZoom == null ? 0 : f.minZoom,
+			maxzoom: f.maxZoom == null ? 24 : f.maxZoom,
+			layout: {
+				"text-field": ["get", "_smk_label"],
+				"text-font": f.font || ["Open Sans Regular", "Arial Unicode MS Regular"],
+				"text-size": f.size == null ? 12 : f.size,
+				"text-allow-overlap": !!f.allowOverlap,
+				"text-ignore-placement": !!f.allowOverlap,
+				"text-anchor": f.anchor || "center",
+				"text-offset": f.offset || [0, 0],
+				"symbol-placement": e
+			},
+			paint: {
+				"text-color": f.color || "#222",
+				"text-halo-color": f.haloColor || "#fff",
+				"text-halo-width": f.haloWidth == null ? 1.5 : f.haloWidth,
+				"text-opacity": (f.opacity == null ? 1 : f.opacity) * d
+			}
+		};
+		T.layers.push(t);
 	}
-	function C() {
-		if (x.loadCache) {
-			let e = x.loadCache;
-			x.loadCache = null, x.loadLayer(e);
+	let E = e[0];
+	E.loadLayer = function(e) {
+		let t = _(e), i = n.map && n.map.getSource && n.map.getSource(o);
+		i ? i.setData(t || EMPTY) : E.loadCache = t;
+	}, E.clearLayer = function() {
+		let e = n.map && n.map.getSource && n.map.getSource(o);
+		e && e.setData(EMPTY), E.loadCache = null;
+	};
+	function D(e) {
+		let t = _(e);
+		t && (T.source.data = t);
+		let i = n.map && n.map.getSource && n.map.getSource(o);
+		return i && t && i.setData(t), T;
+	}
+	function O() {
+		if (E.loadCache) {
+			let e = E.loadCache;
+			E.loadCache = null, E.loadLayer(e);
 		}
-		return y;
+		return T;
 	}
 	return (i.projection ? getProjection(i.projection) : Promise.resolve((e) => e)).then(function(e) {
 		function t(t) {
 			return i.projection && t ? reprojectGeoJSON(t, e) : t;
 		}
-		if (i.isInternal) return C();
+		if (i.isInternal) return O();
 		let a = i.dataUrl ? n.resolveAttachmentUrl(i.dataUrl, i.id, "json") : null;
-		if (!a) return C();
+		if (!a) return O();
 		if (a.startsWith("data:")) try {
-			return S(t(JSON.parse(decodeURIComponent(a.replace(/^data:application\/json,/, "")))));
+			return D(t(JSON.parse(decodeURIComponent(a.replace(/^data:application\/json,/, "")))));
 		} catch (e) {
-			return console.warn("vector maplibre layer \"" + i.id + "\" inline parse failed:", e), C();
+			return console.warn("vector maplibre layer \"" + i.id + "\" inline parse failed:", e), O();
 		}
 		return fetch(a).then((e) => {
 			if (!e.ok) throw Error("Failed requesting " + a + ": " + e.status);
 			return e.json();
-		}).then((e) => S(t(e))).catch((e) => (console.warn("vector maplibre layer \"" + i.id + "\" load failed:", e), C()));
+		}).then((e) => D(t(e))).catch((e) => (console.warn("vector maplibre layer \"" + i.id + "\" load failed:", e), O()));
 	});
 };
 //#endregion
