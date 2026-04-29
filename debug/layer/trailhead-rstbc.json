@@ -1,0 +1,16 @@
+{
+    "layers": [
+        {
+            "type": "esri-feature",
+            "id": "trailhead-rstbc-test",
+            "title": "Trailheads (RSTBC) - Test",
+            "isVisible": false,
+            "attribution": "Recreation Sites and Trails BC, Government of British Columbia",
+            "serviceUrl": "https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/Trailhead_RSTBC/FeatureServer/0",
+            "where": "",
+            "opacity": 1,
+            "scaleMin": 0,
+            "scaleMax": 0
+        }
+    ]
+}

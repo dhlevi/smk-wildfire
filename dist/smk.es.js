@@ -1309,7 +1309,12 @@ function cssColorAsRGBA(e, t) {
 }
 function esriResultToFeature(e) {
 	let t = window.Terraformer, n = { type: "Feature" };
-	return e.displayFieldName && (n.title = e.attributes[e.displayFieldName]), n.geometry = t.ArcGIS.parse(e.geometry), n.geometry.type === "MultiPoint" && n.geometry.coordinates.length === 1 && (n.geometry.type = "Point", n.geometry.coordinates = n.geometry.coordinates[0]), n.properties = e.attributes, n;
+	e.displayFieldName && (n.title = e.attributes[e.displayFieldName]);
+	let i = t.ArcGIS.parse(e.geometry);
+	return n.geometry = {
+		type: i.type,
+		coordinates: i.coordinates
+	}, n.geometry.type === "MultiPoint" && n.geometry.coordinates.length === 1 && (n.geometry.type = "Point", n.geometry.coordinates = n.geometry.coordinates[0]), n.properties = e.attributes, n;
 }
 var VectorLayer = class extends Layer {
 	initLegends(e, t, n) {
@@ -3205,9 +3210,21 @@ RoutePlanner.prototype.fetchDirections = function(e, t) {
 		url: this.url + a,
 		data: o,
 		headers: { apikey: this.apiKey }
-	};
-	return smkRef$62.UTIL.makePromise(function(e, t) {
-		(n.request = $.ajax(s)).then(e, t);
+	}, c = new AbortController(), l = setTimeout(function() {
+		c.abort();
+	}, s.timeout);
+	n.request = { abort: function() {
+		c.abort();
+	} };
+	let u = new URLSearchParams(o).toString(), d = s.url + (u ? "?" + u : "");
+	return fetch(d, {
+		headers: s.headers,
+		signal: c.signal
+	}).then(function(e) {
+		if (!e.ok) throw Error("Route request failed: " + e.status);
+		return e.json();
+	}).finally(function() {
+		clearTimeout(l);
 	}).then(function(e) {
 		if (!e.routeFound) throw Error("failed to find route");
 		function t(t) {
@@ -3278,30 +3295,59 @@ function close$1(e, t, n) {
 //#endregion
 //#region src/smk/smk-map.ts
 smkRef$62.TYPE.RoutePlanner = RoutePlanner, init_util();
+function htmlToElement(e) {
+	let t = document.createElement("template");
+	t.innerHTML = e.trim();
+	let n = t.content.firstElementChild;
+	if (!n) throw Error("htmlToElement: invalid HTML \"" + e + "\"");
+	return n;
+}
+function setAttrs(e, t) {
+	t && Object.keys(t).forEach((n) => e.setAttribute(n, String(t[n])));
+}
+function fadeIn(e, t) {
+	return new Promise((n) => {
+		e.style.opacity = "0", e.style.display = "", e.style.transition = "opacity " + t + "ms", e.offsetWidth, e.style.opacity = "1";
+		let i = () => {
+			e.style.transition = "", e.removeEventListener("transitionend", i), n();
+		};
+		e.addEventListener("transitionend", i), setTimeout(i, t + 50);
+	});
+}
+function fadeOut(e, t) {
+	return new Promise((n) => {
+		e.style.transition = "opacity " + t + "ms", e.style.opacity = "0";
+		let i = () => {
+			e.style.transition = "", e.removeEventListener("transitionend", i), n();
+		};
+		e.addEventListener("transitionend", i), setTimeout(i, t + 50);
+	});
+}
 function SmkMap(e) {
 	this.$option = e, this.$dispatcher = new Vue(), this.$group = {};
 }
 SmkMap.prototype.resolveAssetUrl = function(e) {
 	return new URL(e, this.$option.baseUrl + "assets/src/").toString();
 }, SmkMap.prototype.initialize = function() {
-	let e = this, t = $(this.$option.containerSel);
+	let e = this, t = document.querySelectorAll(this.$option.containerSel);
 	if (t.length !== 1) throw Error("smk-container-sel \"" + this.$option.containerSel + "\" doesn't match a unique element");
-	t.empty(), t.addClass("smk-map-frame smk-hidden");
-	let n = t.position(), i = $("<img>").attr("src", spinner_default).insertAfter(t).css({
-		zIndex: 99999,
+	let n = t[0];
+	n.innerHTML = "", n.classList.add("smk-map-frame", "smk-hidden");
+	let i = document.createElement("img");
+	i.src = spinner_default, n.parentNode && n.parentNode.insertBefore(i, n.nextSibling), Object.assign(i.style, {
+		zIndex: "99999",
 		visibility: "visible",
 		position: "absolute",
-		width: 64,
-		height: 64,
-		left: n.left + t.outerWidth() / 2 - 32,
-		top: n.top + t.outerHeight() / 2 - 32
-	});
-	t.empty(), this.$container = t.get(0);
+		width: "64px",
+		height: "64px",
+		left: n.offsetLeft + n.offsetWidth / 2 - 32 + "px",
+		top: n.offsetTop + n.offsetHeight / 2 - 32 + "px"
+	}), n.innerHTML = "", this.$container = n;
 	let a = window.dojoConfig;
 	return a && a.packages && a.packages[0] && (a.packages[0].location = this.resolveAssetUrl("lib/esri3d")), resolved().then(o).then(s).then(c).then(l).then(u).then(d).then(f).then(p).then(h).then(_).finally(function() {
-		return new Promise(function(e) {
-			t.hide().removeClass("smk-hidden").fadeIn(1e3, e), i.fadeOut(1e3);
-		}).then(function() {
+		n.style.display = "none", n.classList.remove("smk-hidden");
+		let e = fadeIn(n, 1e3), t = fadeOut(i, 1e3);
+		return Promise.all([e, t]).then(function() {
 			i.remove();
 		});
 	});
@@ -3326,9 +3372,7 @@ SmkMap.prototype.resolveAssetUrl = function(e) {
 		}
 	}
 	function c() {
-		$(e.$container).addClass("smk-viewer-" + e.viewer.type);
-		let t = ["base"].concat(e.viewer.themes || []).map((e) => "theme-" + e);
-		return $(e.$container).addClass(t.map((e) => "smk-" + e).join(" ")), e.detectDevice(), e.viewer.panelWidth && e.setVar("panel-width", e.viewer.panelWidth + "px"), resolved();
+		return e.$container.classList.add("smk-viewer-" + e.viewer.type), ["base"].concat(e.viewer.themes || []).map((e) => "theme-" + e).forEach((t) => e.$container.classList.add("smk-" + t)), e.detectDevice(), e.viewer.panelWidth && e.setVar("panel-width", e.viewer.panelWidth + "px"), resolved();
 	}
 	function l() {
 		findProperty(e, "tools", "enabled", function(t) {
@@ -3404,11 +3448,16 @@ SmkMap.prototype.resolveAssetUrl = function(e) {
 	let e = window.SMK && window.SMK.MAP;
 	e && delete e[this.$option.id];
 }, SmkMap.prototype.addToContainer = function(e, t, n) {
-	return $(e)[n ? "prependTo" : "appendTo"](this.$container).attr(t || {}).get(0);
+	let i = typeof e == "string" ? htmlToElement(e) : e;
+	return setAttrs(i, t), n ? this.$container.insertBefore(i, this.$container.firstChild) : this.$container.appendChild(i), i;
 }, SmkMap.prototype.addToOverlay = function(e) {
-	return this.$overlay ||= this.addToContainer("<div class=\"smk-overlay\">"), $(e).appendTo(this.$overlay).get(0);
+	this.$overlay ||= this.addToContainer("<div class=\"smk-overlay\"></div>");
+	let t = typeof e == "string" ? htmlToElement(e) : e;
+	return this.$overlay.appendChild(t), t;
 }, SmkMap.prototype.addToStatus = function(e) {
-	return this.$status ||= this.addToOverlay("<div class=\"smk-status smk-elastic-container\">"), $(e).appendTo(this.$status).get(0);
+	this.$status ||= this.addToOverlay("<div class=\"smk-status smk-elastic-container\"></div>");
+	let t = typeof e == "string" ? htmlToElement(e) : e;
+	return this.$status.appendChild(t), t;
 }, SmkMap.prototype.getSidepanel = function() {
 	let e = this;
 	if (this.$sidepanel) return this.$sidepanel;
@@ -3445,9 +3494,9 @@ SmkMap.prototype.resolveAssetUrl = function(e) {
 		Vue.set(t.status, n, e[n]);
 	});
 }, SmkMap.prototype.getVar = function(e) {
-	return $(this.$container).css("--" + e);
+	return getComputedStyle(this.$container).getPropertyValue("--" + e);
 }, SmkMap.prototype.setVar = function(e, t) {
-	return $(this.$container).css("--" + e, t);
+	return this.$container.style.setProperty("--" + e, t), this;
 }, SmkMap.prototype.emit = function(e, t, n, i) {
 	return this.$dispatcher.$emit(e + "." + t, n, i), this;
 }, SmkMap.prototype.on = function(e, t) {
@@ -3457,7 +3506,7 @@ SmkMap.prototype.resolveAssetUrl = function(e) {
 	}), this;
 }, SmkMap.prototype.detectDevice = function() {
 	let e = this.viewer.device;
-	if (e === "auto" && (e = $(window).width() >= this.viewer.deviceAutoBreakpoint ? "desktop" : "mobile"), e !== this.$device) return this.$device && $(this.$container).removeClass("smk-device-" + this.$device), this.$device = e, $(this.$container).addClass("smk-device-" + this.$device), this.$device;
+	if (e === "auto" && (e = window.innerWidth >= this.viewer.deviceAutoBreakpoint ? "desktop" : "mobile"), e !== this.$device) return this.$device && this.$container.classList.remove("smk-device-" + this.$device), this.$device = e, this.$container.classList.add("smk-device-" + this.$device), this.$device;
 }, SmkMap.prototype.showFeature = function(e, t, n) {
 	this.$viewer.temporaryFeature && this.$viewer.temporaryFeature(e, t, n);
 }, SmkMap.prototype.getToolGroup = function(e) {
@@ -21182,10 +21231,9 @@ Layer.vector.leaflet = VectorLeafletLayer, VectorLeafletLayer.prototype.getFeatu
 			o.clearLayers();
 		}, e[0].config.isInternal) return o;
 		let s = n.resolveAttachmentUrl(e[0].config.dataUrl, e[0].config.id, "json");
-		return makePromise(function(e, t) {
-			$.get(s, null, null, "json").then(e, function(e, n, i) {
-				t("Failed requesting " + s + ": " + e.status + "," + i);
-			});
+		return fetch(s).then(function(e) {
+			if (!e.ok) throw Error("Failed requesting " + s + ": " + e.status);
+			return e.json();
 		}).then(function(e) {
 			console.log("loaded", s);
 			let t = [];
@@ -21253,10 +21301,14 @@ function markerForStyle(e, t, n, i) {
 function clusterOptions(e, t) {
 	let n = t.clusterOption || {};
 	return e.clusterStyle && (n.iconCreateFunction = function(n) {
-		let i = $("<div>").append($("<img>").attr("src", t.resolveAttachmentUrl(e.clusterStyle.markerUrl, null, "png"))).append($("<span>").text(n.getChildCount())).get(0).innerHTML;
+		let i = document.createElement("div"), a = document.createElement("img");
+		a.src = t.resolveAttachmentUrl(e.clusterStyle.markerUrl, null, "png"), i.appendChild(a);
+		let o = document.createElement("span");
+		o.textContent = String(n.getChildCount()), i.appendChild(o);
+		let s = i.innerHTML;
 		return L.divIcon({
 			className: "smk-cluster-icon",
-			html: i,
+			html: s,
 			iconSize: e.clusterStyle.markerSize,
 			iconAnchor: e.clusterStyle.markerOffset
 		});
@@ -22144,10 +22196,9 @@ smkRef$54.TYPE.Layer.vector.esri3d = VectorEsri3dLayer, VectorEsri3dLayer.protot
 			}, t.attributes));
 		}, e[0].config.isInternal) return s;
 		let c = n.resolveAttachmentUrl(e[0].config.dataUrl, e[0].config.id, "json");
-		return smkRef$54.UTIL.makePromise(function(e, t) {
-			$.get(c, null, null, "json").then(e, function(e, n, i) {
-				t("Failed requesting " + c + ": " + e.status + "," + i);
-			});
+		return fetch(c).then(function(e) {
+			if (!e.ok) throw Error("Failed requesting " + c + ": " + e.status);
+			return e.json();
 		}).then(function(t) {
 			return e[0].loadLayer(t), s;
 		});
@@ -22304,6 +22355,9 @@ ViewerMapLibre.prototype.initialize = function(e) {
 		return L.esri?.Static?.staticBasemapTileLayer ? [L.esri.Static.staticBasemapTileLayer(e.style, Object.assign({ maxZoom: 30 }, e.option))] : [];
 	}), Viewer.prototype.initializeBasemaps.call(this, e, t);
 };
+function basemapSpecForConfig(e) {
+	return specForConfig(e);
+}
 function specForConfig(e) {
 	switch (e.type) {
 		case "tile": return [rasterSpec(e.id, [resolveTileUrl(e.url)], e)];
@@ -23776,21 +23830,28 @@ function doAddressSearch(e) {
 		autoComplete: !0
 	};
 	return smkRef$25.UTIL.resolved().then(function() {
-		return request = $.ajax({
-			timeout: 10 * 1e3,
-			dataType: "json",
-			url: "https://geocoder.api.gov.bc.ca/addresses.geojson",
-			data: t
+		let e = new AbortController(), n = setTimeout(function() {
+			e.abort();
+		}, 10 * 1e3);
+		request = { abort: function() {
+			e.abort();
+		} };
+		let i = new URLSearchParams(t).toString();
+		return fetch("https://geocoder.api.gov.bc.ca/addresses.geojson?" + i, { signal: e.signal }).then(function(e) {
+			if (!e.ok) throw Error("geocoder failed: " + e.status);
+			return e.json();
+		}).finally(function() {
+			clearTimeout(n);
 		});
 	}).then(function(e) {
-		return $.map(e.features, function(e) {
-			if (e.geometry.coordinates && e.properties.fullAddress !== "BC") return e.properties.intersectionName ? e.title = e.properties.intersectionName : e.properties.streetName ? e.title = [
+		return e.features.map(function(e) {
+			return !e.geometry.coordinates || e.properties.fullAddress === "BC" ? null : (e.properties.intersectionName ? e.title = e.properties.intersectionName : e.properties.streetName ? e.title = [
 				e.properties.civicNumber,
 				e.properties.streetName,
 				e.properties.streetQualifier,
 				e.properties.streetType
-			].filter(Boolean).join(" ") : e.properties.localityName && (e.title = e.properties.localityName), e;
-		});
+			].filter(Boolean).join(" ") : e.properties.localityName && (e.title = e.properties.localityName), e);
+		}).filter(Boolean);
 	});
 }
 Vue.component("search-widget", {
@@ -24140,7 +24201,7 @@ var factory$8 = Tool.define("QueryParametersTool", function() {
 			t.featureSet.clear(), t.busy = !0, t.showStatusMessage("Searching for features", "progress");
 			let n = {};
 			return t.parameters.forEach(function(e) {
-				n[e.prop.id] = $.extend({}, e.prop);
+				n[e.prop.id] = Object.assign({}, e.prop);
 			}), smkRef$19.UTIL.resolved().then(function() {
 				return t.query.queryLayer(n, { within: t.within }, e.$viewer);
 			}).then(function(e) {
@@ -30661,13 +30722,13 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 			if (Array.isArray(e) && e.length >= 2 && e[0].length === void 0 && e[1].length === void 0) return e;
 			throw Error("coord must be GeoJSON Point or an Array of numbers");
 		}
-		var rt = function(e, t, n) {
+		var X = function(e, t, n) {
 			if (!tt(n ||= {})) throw Error("options is invalid");
 			var i = n.units, a = nt(e), o = nt(t), s = et(o[1] - a[1]), c = et(o[0] - a[0]), l = et(a[1]), u = et(o[1]), d = Math.sin(s / 2) ** 2 + Math.sin(c / 2) ** 2 * Math.cos(l) * Math.cos(u);
 			return $e(2 * Math.atan2(Math.sqrt(d), Math.sqrt(1 - d)), i);
-		}, it = function(e) {
+		}, rt = function(e) {
 			var t = e[0], n = e[1], i = e[2], a = e[3];
-			if (rt(e.slice(0, 2), [i, n]) >= rt(e.slice(0, 2), [t, a])) {
+			if (X(e.slice(0, 2), [i, n]) >= X(e.slice(0, 2), [t, a])) {
 				var o = (n + a) / 2;
 				return [
 					t,
@@ -30683,7 +30744,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				s + (a - n) / 2,
 				a
 			];
-		}, at = function(e) {
+		}, it = function(e) {
 			var t = [
 				Infinity,
 				Infinity,
@@ -30694,10 +30755,10 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				t[0] > e[0] && (t[0] = e[0]), t[1] > e[1] && (t[1] = e[1]), t[2] < e[0] && (t[2] = e[0]), t[3] < e[1] && (t[3] = e[1]);
 			})), t;
 		};
-		function ot(e) {
+		function at(e) {
 			return !!e && e.constructor === Object;
 		}
-		function st(e, t, n) {
+		function ot(e, t, n) {
 			if (e !== null) for (var i, a, o, s, c, l, u, d, f = 0, p = 0, h = e.type, _ = h === "FeatureCollection", v = h === "Feature", y = _ ? e.features.length : 1, x = 0; x < y; x++) {
 				c = (d = !!(u = _ ? e.features[x].geometry : v ? e.geometry : e) && u.type === "GeometryCollection") ? u.geometries.length : 1;
 				for (var S = 0; S < c; S++) {
@@ -30743,7 +30804,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 								}
 								break;
 							case "GeometryCollection":
-								for (i = 0; i < s.geometries.length; i++) if (!1 === st(s.geometries[i], t, n)) return !1;
+								for (i = 0; i < s.geometries.length; i++) if (!1 === ot(s.geometries[i], t, n)) return !1;
 								break;
 							default: throw Error("Unknown Geometry Type");
 						}
@@ -30751,42 +30812,42 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				}
 			}
 		}
-		var ct = function(e, t) {
-			if (!ot(t ||= {})) throw Error("options is invalid");
+		var st = function(e, t) {
+			if (!at(t ||= {})) throw Error("options is invalid");
 			var n = t.precision, i = t.coordinates, a = t.mutate;
 			if (n = n == null || isNaN(n) ? 6 : n, i = i == null || isNaN(i) ? 3 : i, !e) throw Error("<geojson> is required");
 			if (typeof n != "number") throw Error("<precision> must be a number");
 			if (typeof i != "number") throw Error("<coordinates> must be a number");
 			!1 !== a && a !== void 0 || (e = JSON.parse(JSON.stringify(e)));
 			var o = 10 ** n;
-			return st(e, (function(e) {
+			return ot(e, (function(e) {
 				(function(e, t, n) {
 					e.length > n && e.splice(n, e.length);
 					for (var i = 0; i < e.length; i++) e[i] = Math.round(e[i] * t) / t;
 				})(e, o, i);
 			})), e;
 		};
-		function lt(e) {
+		function ct(e) {
 			if (!e) throw Error("coord is required");
 			if (e.type === "Feature" && e.geometry !== null && e.geometry.type === "Point") return e.geometry.coordinates;
 			if (e.type === "Point") return e.coordinates;
 			if (Array.isArray(e) && e.length >= 2 && e[0].length === void 0 && e[1].length === void 0) return e;
 			throw Error("coord must be GeoJSON Point or an Array of numbers");
 		}
-		function X(e) {
+		function Z(e) {
 			if (!e) throw Error("coords is required");
 			if (e.type === "Feature" && e.geometry !== null) return e.geometry.coordinates;
 			if (e.coordinates) return e.coordinates;
 			if (Array.isArray(e)) return e;
 			throw Error("coords must be GeoJSON Feature, Geometry Object or an Array");
 		}
-		function ut(e, t) {
+		function lt(e, t) {
 			if (!e) throw Error((t || "geojson") + " is required");
 			if (e.geometry && e.geometry.type) return e.geometry.type;
 			if (e.type) return e.type;
 			throw Error((t || "geojson") + " is invalid");
 		}
-		var dt = function(e) {
+		var ut = function(e) {
 			if (!e) throw Error("geojson is required");
 			var t = [];
 			return Je(e, (function(e) {
@@ -30794,9 +30855,9 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 					var n = [], i = e.geometry;
 					switch (i.type) {
 						case "Polygon":
-							n = X(i);
+							n = Z(i);
 							break;
-						case "LineString": n = [X(i)];
+						case "LineString": n = [Z(i)];
 					}
 					n.forEach((function(n) {
 						(function(e, t) {
@@ -30817,8 +30878,8 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				})(e, t);
 			})), Y(t);
 		};
-		function ft(e, t) {
-			var n = X(e), i = X(t);
+		function dt(e, t) {
+			var n = Z(e), i = Z(t);
 			if (n.length !== 2) throw Error("<intersects> line1 must only contain 2 coordinates");
 			if (i.length !== 2) throw Error("<intersects> line2 must only contain 2 coordinates");
 			var a = n[0][0], o = n[0][1], s = n[1][0], c = n[1][1], l = i[0][0], u = i[0][1], d = i[1][0], f = i[1][1], p = (f - u) * (s - a) - (d - l) * (c - o), h = (d - l) * (o - u) - (f - u) * (a - l), _ = (s - a) * (o - u) - (c - o) * (a - l);
@@ -30826,51 +30887,51 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 			var v = h / p, y = _ / p;
 			return v >= 0 && v <= 1 && y >= 0 && y <= 1 ? ze([a + v * (s - a), o + v * (c - o)]) : null;
 		}
-		var pt = function(e, t) {
+		var ft = function(e, t) {
 			var n = {}, i = [];
 			if (e.type === "LineString" && (e = Re(e)), t.type === "LineString" && (t = Re(t)), e.type === "Feature" && t.type === "Feature" && e.geometry.type === "LineString" && t.geometry.type === "LineString" && e.geometry.coordinates.length === 2 && t.geometry.coordinates.length === 2) {
-				var a = ft(e, t);
+				var a = dt(e, t);
 				return a && i.push(a), Y(i);
 			}
 			var o = Ze();
-			return o.load(dt(t)), Ke(dt(e), (function(e) {
+			return o.load(ut(t)), Ke(ut(e), (function(e) {
 				Ke(o.search(e), (function(t) {
-					var a = ft(e, t);
+					var a = dt(e, t);
 					if (a) {
-						var o = X(a).join(",");
+						var o = Z(a).join(",");
 						n[o] || (n[o] = !0, i.push(a));
 					}
 				}));
 			})), Y(i);
 		};
-		function mt(e) {
+		function pt(e) {
 			if (e == null) throw Error("radians is required");
 			return 180 * (e % (2 * Math.PI)) / Math.PI;
 		}
-		function ht(e) {
+		function mt(e) {
 			if (e == null) throw Error("degrees is required");
 			return e % 360 * Math.PI / 180;
 		}
-		function gt(e) {
+		function ht(e) {
 			return !!e && e.constructor === Object;
 		}
-		function _t(e) {
+		function gt(e) {
 			if (!e) throw Error("coord is required");
 			if (e.type === "Feature" && e.geometry !== null && e.geometry.type === "Point") return e.geometry.coordinates;
 			if (e.type === "Point") return e.coordinates;
 			if (Array.isArray(e) && e.length >= 2 && e[0].length === void 0 && e[1].length === void 0) return e;
 			throw Error("coord must be GeoJSON Point or an Array of numbers");
 		}
-		function vt(e, t, n) {
-			if (!gt(n ||= {})) throw Error("options is invalid");
+		function _t(e, t, n) {
+			if (!ht(n ||= {})) throw Error("options is invalid");
 			if (!0 === n.final) return function(e, t) {
-				var n = vt(t, e);
+				var n = _t(t, e);
 				return n = (n + 180) % 360;
 			}(e, t);
-			var i = _t(e), a = _t(t), o = ht(i[0]), s = ht(a[0]), c = ht(i[1]), l = ht(a[1]), u = Math.sin(s - o) * Math.cos(l), d = Math.cos(c) * Math.sin(l) - Math.sin(c) * Math.cos(l) * Math.cos(s - o);
-			return mt(Math.atan2(u, d));
+			var i = gt(e), a = gt(t), o = mt(i[0]), s = mt(a[0]), c = mt(i[1]), l = mt(a[1]), u = Math.sin(s - o) * Math.cos(l), d = Math.cos(c) * Math.sin(l) - Math.sin(c) * Math.cos(l) * Math.cos(s - o);
+			return pt(Math.atan2(u, d));
 		}
-		var yt = vt, bt = {
+		var vt = _t, yt = {
 			meters: 6371008.8,
 			metres: 6371008.8,
 			millimeters: 6371008800,
@@ -30887,77 +30948,77 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 			radians: 1,
 			degrees: 6371008.8 / 111325
 		};
-		function xt(e, t, n) {
-			if (!Dt(n ||= {})) throw Error("options is invalid");
+		function bt(e, t, n) {
+			if (!Et(n ||= {})) throw Error("options is invalid");
 			var i = n.bbox, a = n.id;
 			if (e === void 0) throw Error("geometry is required");
 			if (t && t.constructor !== Object) throw Error("properties must be an Object");
-			i && Ot(i), a && kt(a);
+			i && Dt(i), a && Ot(a);
 			var o = { type: "Feature" };
 			return a && (o.id = a), i && (o.bbox = i), o.properties = t || {}, o.geometry = e, o;
 		}
-		function St(e, t, n) {
+		function xt(e, t, n) {
 			if (!e) throw Error("coordinates is required");
 			if (!Array.isArray(e)) throw Error("coordinates must be an Array");
 			if (e.length < 2) throw Error("coordinates must be at least 2 numbers long");
-			if (!Et(e[0]) || !Et(e[1])) throw Error("coordinates must contain numbers");
-			return xt({
+			if (!Tt(e[0]) || !Tt(e[1])) throw Error("coordinates must contain numbers");
+			return bt({
 				type: "Point",
 				coordinates: e
 			}, t, n);
 		}
-		function Ct(e, t) {
+		function St(e, t) {
 			if (e == null) throw Error("distance is required");
 			if (t && typeof t != "string") throw Error("units must be a string");
-			var n = bt[t || "kilometers"];
+			var n = yt[t || "kilometers"];
 			if (!n) throw Error(t + " units is invalid");
 			return e / n;
 		}
-		function wt(e) {
+		function Ct(e) {
 			if (e == null) throw Error("radians is required");
 			return 180 * (e % (2 * Math.PI)) / Math.PI;
 		}
-		function Tt(e) {
+		function wt(e) {
 			if (e == null) throw Error("degrees is required");
 			return e % 360 * Math.PI / 180;
 		}
-		function Et(e) {
+		function Tt(e) {
 			return !isNaN(e) && e !== null && !Array.isArray(e);
 		}
-		function Dt(e) {
+		function Et(e) {
 			return !!e && e.constructor === Object;
 		}
-		function Ot(e) {
+		function Dt(e) {
 			if (!e) throw Error("bbox is required");
 			if (!Array.isArray(e)) throw Error("bbox must be an Array");
 			if (e.length !== 4 && e.length !== 6) throw Error("bbox must be an Array of 4 or 6 numbers");
 			e.forEach((function(e) {
-				if (!Et(e)) throw Error("bbox must only contain numbers");
+				if (!Tt(e)) throw Error("bbox must only contain numbers");
 			}));
 		}
-		function kt(e) {
+		function Ot(e) {
 			if (!e) throw Error("id is required");
 			if (["string", "number"].indexOf(typeof e) === -1) throw Error("id must be a number or a string");
 		}
-		var At = function(e, t, n, i) {
-			if (!Dt(i ||= {})) throw Error("options is invalid");
+		var kt = function(e, t, n, i) {
+			if (!Et(i ||= {})) throw Error("options is invalid");
 			var a = i.units, o = i.properties, s = function(e) {
 				if (!e) throw Error("coord is required");
 				if (e.type === "Feature" && e.geometry !== null && e.geometry.type === "Point") return e.geometry.coordinates;
 				if (e.type === "Point") return e.coordinates;
 				if (Array.isArray(e) && e.length >= 2 && e[0].length === void 0 && e[1].length === void 0) return e;
 				throw Error("coord must be GeoJSON Point or an Array of numbers");
-			}(e), c = Tt(s[0]), l = Tt(s[1]), u = Tt(n), d = Ct(t, a), f = Math.asin(Math.sin(l) * Math.cos(d) + Math.cos(l) * Math.sin(d) * Math.cos(u));
-			return St([wt(c + Math.atan2(Math.sin(u) * Math.sin(d) * Math.cos(l), Math.cos(d) - Math.sin(l) * Math.sin(f))), wt(f)], o);
+			}(e), c = wt(s[0]), l = wt(s[1]), u = wt(n), d = St(t, a), f = Math.asin(Math.sin(l) * Math.cos(d) + Math.cos(l) * Math.sin(d) * Math.cos(u));
+			return xt([Ct(c + Math.atan2(Math.sin(u) * Math.sin(d) * Math.cos(l), Math.cos(d) - Math.sin(l) * Math.sin(f))), Ct(f)], o);
 		};
-		function jt(e, t, n) {
+		function At(e, t, n) {
 			var i = e[t];
 			e[t] = e[n], e[n] = i;
 		}
-		function Mt(e, t) {
+		function jt(e, t) {
 			return e < t ? -1 : +(e > t);
 		}
-		var Nt = function(e, t, n, i, a) {
+		var Mt = function(e, t, n, i, a) {
 			(function e(t, n, i, a, o) {
 				for (; a > i;) {
 					if (a - i > 600) {
@@ -30965,53 +31026,53 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 						e(t, n, Math.max(i, Math.floor(n - c * u / s + d)), Math.min(a, Math.floor(n + (s - c) * u / s + d)), o);
 					}
 					var f = t[n], p = i, h = a;
-					for (jt(t, i, n), o(t[a], f) > 0 && jt(t, i, a); p < h;) {
-						for (jt(t, p, h), p++, h--; o(t[p], f) < 0;) p++;
+					for (At(t, i, n), o(t[a], f) > 0 && At(t, i, a); p < h;) {
+						for (At(t, p, h), p++, h--; o(t[p], f) < 0;) p++;
 						for (; o(t[h], f) > 0;) h--;
 					}
-					o(t[i], f) === 0 ? jt(t, i, h) : (h++, jt(t, h, a)), h <= n && (i = h + 1), n <= h && (a = h - 1);
+					o(t[i], f) === 0 ? At(t, i, h) : (h++, At(t, h, a)), h <= n && (i = h + 1), n <= h && (a = h - 1);
 				}
-			})(e, t, n || 0, i || e.length - 1, a || Mt);
+			})(e, t, n || 0, i || e.length - 1, a || jt);
 		};
-		function Pt(e, t) {
-			if (!(this instanceof Pt)) return new Pt(e, t);
+		function Nt(e, t) {
+			if (!(this instanceof Nt)) return new Nt(e, t);
 			this._maxEntries = Math.max(4, e || 9), this._minEntries = Math.max(2, Math.ceil(.4 * this._maxEntries)), t && this._initFormat(t), this.clear();
 		}
-		function Ft(e, t, n) {
+		function Pt(e, t, n) {
 			if (!n) return t.indexOf(e);
 			for (var i = 0; i < t.length; i++) if (n(e, t[i])) return i;
 			return -1;
 		}
-		function It(e, t) {
-			Lt(e, 0, e.children.length, t, e);
+		function Ft(e, t) {
+			It(e, 0, e.children.length, t, e);
 		}
-		function Lt(e, t, n, i, a) {
-			a ||= Gt(null), a.minX = Infinity, a.minY = Infinity, a.maxX = -Infinity, a.maxY = -Infinity;
-			for (var o, s = t; s < n; s++) o = e.children[s], Rt(a, e.leaf ? i(o) : o);
+		function It(e, t, n, i, a) {
+			a ||= Wt(null), a.minX = Infinity, a.minY = Infinity, a.maxX = -Infinity, a.maxY = -Infinity;
+			for (var o, s = t; s < n; s++) o = e.children[s], Lt(a, e.leaf ? i(o) : o);
 			return a;
 		}
-		function Rt(e, t) {
+		function Lt(e, t) {
 			return e.minX = Math.min(e.minX, t.minX), e.minY = Math.min(e.minY, t.minY), e.maxX = Math.max(e.maxX, t.maxX), e.maxY = Math.max(e.maxY, t.maxY), e;
 		}
-		function zt(e, t) {
+		function Rt(e, t) {
 			return e.minX - t.minX;
 		}
-		function Bt(e, t) {
+		function zt(e, t) {
 			return e.minY - t.minY;
 		}
-		function Vt(e) {
+		function Bt(e) {
 			return (e.maxX - e.minX) * (e.maxY - e.minY);
 		}
-		function Ht(e) {
+		function Vt(e) {
 			return e.maxX - e.minX + (e.maxY - e.minY);
 		}
-		function Ut(e, t) {
+		function Ht(e, t) {
 			return e.minX <= t.minX && e.minY <= t.minY && t.maxX <= e.maxX && t.maxY <= e.maxY;
 		}
-		function Wt(e, t) {
+		function Ut(e, t) {
 			return t.minX <= e.maxX && t.minY <= e.maxY && t.maxX >= e.minX && t.maxY >= e.minY;
 		}
-		function Gt(e) {
+		function Wt(e) {
 			return {
 				children: e,
 				height: 1,
@@ -31022,28 +31083,28 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				maxY: -Infinity
 			};
 		}
-		function Kt(e, t, n, i, a) {
-			for (var o, s = [t, n]; s.length;) (n = s.pop()) - (t = s.pop()) <= i || (o = t + Math.ceil((n - t) / i / 2) * i, Nt(e, o, t, n, a), s.push(t, o, o, n));
+		function Gt(e, t, n, i, a) {
+			for (var o, s = [t, n]; s.length;) (n = s.pop()) - (t = s.pop()) <= i || (o = t + Math.ceil((n - t) / i / 2) * i, Mt(e, o, t, n, a), s.push(t, o, o, n));
 		}
-		Pt.prototype = {
+		Nt.prototype = {
 			all: function() {
 				return this._all(this.data, []);
 			},
 			search: function(e) {
 				var t = this.data, n = [], i = this.toBBox;
-				if (!Wt(e, t)) return n;
+				if (!Ut(e, t)) return n;
 				for (var a, o, s, c, l = []; t;) {
-					for (a = 0, o = t.children.length; a < o; a++) s = t.children[a], Wt(e, c = t.leaf ? i(s) : s) && (t.leaf ? n.push(s) : Ut(e, c) ? this._all(s, n) : l.push(s));
+					for (a = 0, o = t.children.length; a < o; a++) s = t.children[a], Ut(e, c = t.leaf ? i(s) : s) && (t.leaf ? n.push(s) : Ht(e, c) ? this._all(s, n) : l.push(s));
 					t = l.pop();
 				}
 				return n;
 			},
 			collides: function(e) {
 				var t = this.data, n = this.toBBox;
-				if (!Wt(e, t)) return !1;
+				if (!Ut(e, t)) return !1;
 				for (var i, a, o, s, c = []; t;) {
-					for (i = 0, a = t.children.length; i < a; i++) if (o = t.children[i], Wt(e, s = t.leaf ? n(o) : o)) {
-						if (t.leaf || Ut(e, s)) return !0;
+					for (i = 0, a = t.children.length; i < a; i++) if (o = t.children[i], Ut(e, s = t.leaf ? n(o) : o)) {
+						if (t.leaf || Ht(e, s)) return !0;
 						c.push(o);
 					}
 					t = c.pop();
@@ -31072,21 +31133,21 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				return e && this._insert(e, this.data.height - 1), this;
 			},
 			clear: function() {
-				return this.data = Gt([]), this;
+				return this.data = Wt([]), this;
 			},
 			remove: function(e, t) {
 				if (!e) return this;
 				for (var n, i, a, o, s = this.data, c = this.toBBox(e), l = [], u = []; s || l.length;) {
-					if (s || (s = l.pop(), i = l[l.length - 1], n = u.pop(), o = !0), s.leaf && (a = Ft(e, s.children, t)) !== -1) return s.children.splice(a, 1), l.push(s), this._condense(l), this;
-					o || s.leaf || !Ut(s, c) ? i ? (n++, s = i.children[n], o = !1) : s = null : (l.push(s), u.push(n), n = 0, i = s, s = s.children[0]);
+					if (s || (s = l.pop(), i = l[l.length - 1], n = u.pop(), o = !0), s.leaf && (a = Pt(e, s.children, t)) !== -1) return s.children.splice(a, 1), l.push(s), this._condense(l), this;
+					o || s.leaf || !Ht(s, c) ? i ? (n++, s = i.children[n], o = !1) : s = null : (l.push(s), u.push(n), n = 0, i = s, s = s.children[0]);
 				}
 				return this;
 			},
 			toBBox: function(e) {
 				return e;
 			},
-			compareMinX: zt,
-			compareMinY: Bt,
+			compareMinX: Rt,
+			compareMinY: zt,
 			toJSON: function() {
 				return this.data;
 			},
@@ -31099,54 +31160,54 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 			},
 			_build: function(e, t, n, i) {
 				var a, o = n - t + 1, s = this._maxEntries;
-				if (o <= s) return It(a = Gt(e.slice(t, n + 1)), this.toBBox), a;
-				i || (i = Math.ceil(Math.log(o) / Math.log(s)), s = Math.ceil(o / s ** (i - 1))), (a = Gt([])).leaf = !1, a.height = i;
+				if (o <= s) return Ft(a = Wt(e.slice(t, n + 1)), this.toBBox), a;
+				i || (i = Math.ceil(Math.log(o) / Math.log(s)), s = Math.ceil(o / s ** (i - 1))), (a = Wt([])).leaf = !1, a.height = i;
 				var c, l, u, d, f = Math.ceil(o / s), p = f * Math.ceil(Math.sqrt(s));
-				for (Kt(e, t, n, p, this.compareMinX), c = t; c <= n; c += p) for (Kt(e, c, u = Math.min(c + p - 1, n), f, this.compareMinY), l = c; l <= u; l += f) d = Math.min(l + f - 1, u), a.children.push(this._build(e, l, d, i - 1));
-				return It(a, this.toBBox), a;
+				for (Gt(e, t, n, p, this.compareMinX), c = t; c <= n; c += p) for (Gt(e, c, u = Math.min(c + p - 1, n), f, this.compareMinY), l = c; l <= u; l += f) d = Math.min(l + f - 1, u), a.children.push(this._build(e, l, d, i - 1));
+				return Ft(a, this.toBBox), a;
 			},
 			_chooseSubtree: function(e, t, n, i) {
 				for (var a, o, s, c, l, u, d, f, p, h; i.push(t), !t.leaf && i.length - 1 !== n;) {
-					for (d = f = Infinity, a = 0, o = t.children.length; a < o; a++) l = Vt(s = t.children[a]), p = e, h = s, (u = (Math.max(h.maxX, p.maxX) - Math.min(h.minX, p.minX)) * (Math.max(h.maxY, p.maxY) - Math.min(h.minY, p.minY)) - l) < f ? (f = u, d = l < d ? l : d, c = s) : u === f && l < d && (d = l, c = s);
+					for (d = f = Infinity, a = 0, o = t.children.length; a < o; a++) l = Bt(s = t.children[a]), p = e, h = s, (u = (Math.max(h.maxX, p.maxX) - Math.min(h.minX, p.minX)) * (Math.max(h.maxY, p.maxY) - Math.min(h.minY, p.minY)) - l) < f ? (f = u, d = l < d ? l : d, c = s) : u === f && l < d && (d = l, c = s);
 					t = c || t.children[0];
 				}
 				return t;
 			},
 			_insert: function(e, t, n) {
 				var i = this.toBBox, a = n ? e : i(e), o = [], s = this._chooseSubtree(a, this.data, t, o);
-				for (s.children.push(e), Rt(s, a); t >= 0 && o[t].children.length > this._maxEntries;) this._split(o, t), t--;
+				for (s.children.push(e), Lt(s, a); t >= 0 && o[t].children.length > this._maxEntries;) this._split(o, t), t--;
 				this._adjustParentBBoxes(a, o, t);
 			},
 			_split: function(e, t) {
 				var n = e[t], i = n.children.length, a = this._minEntries;
 				this._chooseSplitAxis(n, a, i);
-				var o = this._chooseSplitIndex(n, a, i), s = Gt(n.children.splice(o, n.children.length - o));
-				s.height = n.height, s.leaf = n.leaf, It(n, this.toBBox), It(s, this.toBBox), t ? e[t - 1].children.push(s) : this._splitRoot(n, s);
+				var o = this._chooseSplitIndex(n, a, i), s = Wt(n.children.splice(o, n.children.length - o));
+				s.height = n.height, s.leaf = n.leaf, Ft(n, this.toBBox), Ft(s, this.toBBox), t ? e[t - 1].children.push(s) : this._splitRoot(n, s);
 			},
 			_splitRoot: function(e, t) {
-				this.data = Gt([e, t]), this.data.height = e.height + 1, this.data.leaf = !1, It(this.data, this.toBBox);
+				this.data = Wt([e, t]), this.data.height = e.height + 1, this.data.leaf = !1, Ft(this.data, this.toBBox);
 			},
 			_chooseSplitIndex: function(e, t, n) {
 				var i, a, o, s, c, l, u, d, f, p, h, _, v, y;
-				for (l = u = Infinity, i = t; i <= n - t; i++) a = Lt(e, 0, i, this.toBBox), o = Lt(e, i, n, this.toBBox), f = a, p = o, h = void 0, _ = void 0, v = void 0, y = void 0, h = Math.max(f.minX, p.minX), _ = Math.max(f.minY, p.minY), v = Math.min(f.maxX, p.maxX), y = Math.min(f.maxY, p.maxY), s = Math.max(0, v - h) * Math.max(0, y - _), c = Vt(a) + Vt(o), s < l ? (l = s, d = i, u = c < u ? c : u) : s === l && c < u && (u = c, d = i);
+				for (l = u = Infinity, i = t; i <= n - t; i++) a = It(e, 0, i, this.toBBox), o = It(e, i, n, this.toBBox), f = a, p = o, h = void 0, _ = void 0, v = void 0, y = void 0, h = Math.max(f.minX, p.minX), _ = Math.max(f.minY, p.minY), v = Math.min(f.maxX, p.maxX), y = Math.min(f.maxY, p.maxY), s = Math.max(0, v - h) * Math.max(0, y - _), c = Bt(a) + Bt(o), s < l ? (l = s, d = i, u = c < u ? c : u) : s === l && c < u && (u = c, d = i);
 				return d;
 			},
 			_chooseSplitAxis: function(e, t, n) {
-				var i = e.leaf ? this.compareMinX : zt, a = e.leaf ? this.compareMinY : Bt;
+				var i = e.leaf ? this.compareMinX : Rt, a = e.leaf ? this.compareMinY : zt;
 				this._allDistMargin(e, t, n, i) < this._allDistMargin(e, t, n, a) && e.children.sort(i);
 			},
 			_allDistMargin: function(e, t, n, i) {
 				e.children.sort(i);
-				var a, o, s = this.toBBox, c = Lt(e, 0, t, s), l = Lt(e, n - t, n, s), u = Ht(c) + Ht(l);
-				for (a = t; a < n - t; a++) o = e.children[a], Rt(c, e.leaf ? s(o) : o), u += Ht(c);
-				for (a = n - t - 1; a >= t; a--) o = e.children[a], Rt(l, e.leaf ? s(o) : o), u += Ht(l);
+				var a, o, s = this.toBBox, c = It(e, 0, t, s), l = It(e, n - t, n, s), u = Vt(c) + Vt(l);
+				for (a = t; a < n - t; a++) o = e.children[a], Lt(c, e.leaf ? s(o) : o), u += Vt(c);
+				for (a = n - t - 1; a >= t; a--) o = e.children[a], Lt(l, e.leaf ? s(o) : o), u += Vt(l);
 				return u;
 			},
 			_adjustParentBBoxes: function(e, t, n) {
-				for (var i = n; i >= 0; i--) Rt(t[i], e);
+				for (var i = n; i >= 0; i--) Lt(t[i], e);
 			},
 			_condense: function(e) {
-				for (var t, n = e.length - 1; n >= 0; n--) e[n].children.length === 0 ? n > 0 ? (t = e[n - 1].children).splice(t.indexOf(e[n]), 1) : this.clear() : It(e[n], this.toBBox);
+				for (var t, n = e.length - 1; n >= 0; n--) e[n].children.length === 0 ? n > 0 ? (t = e[n - 1].children).splice(t.indexOf(e[n]), 1) : this.clear() : Ft(e[n], this.toBBox);
 			},
 			_initFormat: function(e) {
 				var t = [
@@ -31157,63 +31218,63 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				this.compareMinX = Function("a", "b", t.join(e[0])), this.compareMinY = Function("a", "b", t.join(e[1])), this.toBBox = Function("a", "return {minX: a" + e[0] + ", minY: a" + e[1] + ", maxX: a" + e[2] + ", maxY: a" + e[3] + "};");
 			}
 		};
-		var Z = Pt;
-		function qt(e, t, n) {
-			if (!Qt(n ||= {})) throw Error("options is invalid");
+		var Q = Nt;
+		function Kt(e, t, n) {
+			if (!Zt(n ||= {})) throw Error("options is invalid");
 			var i = n.bbox, a = n.id;
 			if (e === void 0) throw Error("geometry is required");
 			if (t && t.constructor !== Object) throw Error("properties must be an Object");
-			i && $t(i), a && en(a);
+			i && Qt(i), a && $t(a);
 			var o = { type: "Feature" };
 			return a && (o.id = a), i && (o.bbox = i), o.properties = t || {}, o.geometry = e, o;
 		}
-		function Jt(e, t, n) {
+		function qt(e, t, n) {
 			if (!e) throw Error("coordinates is required");
 			if (!Array.isArray(e)) throw Error("coordinates must be an Array");
 			if (e.length < 2) throw Error("coordinates must be at least 2 numbers long");
-			if (!Zt(e[0]) || !Zt(e[1])) throw Error("coordinates must contain numbers");
-			return qt({
+			if (!Xt(e[0]) || !Xt(e[1])) throw Error("coordinates must contain numbers");
+			return Kt({
 				type: "Point",
 				coordinates: e
 			}, t, n);
 		}
-		function Yt(e, t, n) {
+		function Jt(e, t, n) {
 			if (!e) throw Error("coordinates is required");
 			if (e.length < 2) throw Error("coordinates must be an array of two or more positions");
-			if (!Zt(e[0][1]) || !Zt(e[0][1])) throw Error("coordinates must contain numbers");
-			return qt({
+			if (!Xt(e[0][1]) || !Xt(e[0][1])) throw Error("coordinates must contain numbers");
+			return Kt({
 				type: "LineString",
 				coordinates: e
 			}, t, n);
 		}
-		function Xt(e, t) {
-			if (!Qt(t ||= {})) throw Error("options is invalid");
+		function Yt(e, t) {
+			if (!Zt(t ||= {})) throw Error("options is invalid");
 			var n = t.bbox, i = t.id;
 			if (!e) throw Error("No features passed");
 			if (!Array.isArray(e)) throw Error("features must be an Array");
-			n && $t(n), i && en(i);
+			n && Qt(n), i && $t(i);
 			var a = { type: "FeatureCollection" };
 			return i && (a.id = i), n && (a.bbox = n), a.features = e, a;
 		}
-		function Zt(e) {
+		function Xt(e) {
 			return !isNaN(e) && e !== null && !Array.isArray(e);
 		}
-		function Qt(e) {
+		function Zt(e) {
 			return !!e && e.constructor === Object;
 		}
-		function $t(e) {
+		function Qt(e) {
 			if (!e) throw Error("bbox is required");
 			if (!Array.isArray(e)) throw Error("bbox must be an Array");
 			if (e.length !== 4 && e.length !== 6) throw Error("bbox must be an Array of 4 or 6 numbers");
 			e.forEach((function(e) {
-				if (!Zt(e)) throw Error("bbox must only contain numbers");
+				if (!Xt(e)) throw Error("bbox must only contain numbers");
 			}));
 		}
-		function en(e) {
+		function $t(e) {
 			if (!e) throw Error("id is required");
 			if (["string", "number"].indexOf(typeof e) === -1) throw Error("id must be a number or a string");
 		}
-		function tn(e, t, n) {
+		function en(e, t, n) {
 			if (e !== null) for (var i, a, o, s, c, l, u, d, f = 0, p = 0, h = e.type, _ = h === "FeatureCollection", v = h === "Feature", y = _ ? e.features.length : 1, x = 0; x < y; x++) {
 				c = (d = !!(u = _ ? e.features[x].geometry : v ? e.geometry : e) && u.type === "GeometryCollection") ? u.geometries.length : 1;
 				for (var S = 0; S < c; S++) {
@@ -31259,7 +31320,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 								}
 								break;
 							case "GeometryCollection":
-								for (i = 0; i < s.geometries.length; i++) if (!1 === tn(s.geometries[i], t, n)) return !1;
+								for (i = 0; i < s.geometries.length; i++) if (!1 === en(s.geometries[i], t, n)) return !1;
 								break;
 							default: throw Error("Unknown Geometry Type");
 						}
@@ -31267,11 +31328,11 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				}
 			}
 		}
-		function nn(e, t) {
+		function tn(e, t) {
 			if (e.type === "Feature") t(e, 0);
 			else if (e.type === "FeatureCollection") for (var n = 0; n < e.features.length && !1 !== t(e.features[n], n); n++);
 		}
-		function rn(e, t) {
+		function nn(e, t) {
 			var n, i, a, o, s, c, l, u, d, f, p = 0, h = e.type === "FeatureCollection", _ = e.type === "Feature", v = h ? e.features.length : 1;
 			for (n = 0; n < v; n++) {
 				for (c = h ? e.features[n].geometry : _ ? e.geometry : e, u = h ? e.features[n].properties : _ ? e.properties : {}, d = h ? e.features[n].bbox : _ ? e.bbox : void 0, f = h ? e.features[n].id : _ ? e.id : void 0, s = (l = !!c && c.type === "GeometryCollection") ? c.geometries.length : 1, a = 0; a < s; a++) if ((o = l ? c.geometries[a] : c) !== null) switch (o.type) {
@@ -31292,14 +31353,14 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				p++;
 			}
 		}
-		function an(e, t) {
-			rn(e, (function(e, n, i, a, o) {
+		function rn(e, t) {
+			nn(e, (function(e, n, i, a, o) {
 				var s, c = e === null ? null : e.type;
 				switch (c) {
 					case null:
 					case "Point":
 					case "LineString":
-					case "Polygon": return !1 !== t(qt(e, i, {
+					case "Polygon": return !1 !== t(Kt(e, i, {
 						bbox: a,
 						id: o
 					}), n, 0) && void 0;
@@ -31315,14 +31376,14 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				}
 				for (var l = 0; l < e.coordinates.length; l++) {
 					var u = e.coordinates[l];
-					if (!1 === t(qt({
+					if (!1 === t(Kt({
 						type: s,
 						coordinates: u
 					}, i), n, l)) return !1;
 				}
 			}));
 		}
-		function on(e) {
+		function an(e) {
 			var t = [e[0], e[1]], n = [e[0], e[3]], i = [e[2], e[3]];
 			return {
 				type: "Feature",
@@ -31340,91 +31401,91 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				}
 			};
 		}
-		function sn(e) {
+		function on(e) {
 			var t = [
 				Infinity,
 				Infinity,
 				-Infinity,
 				-Infinity
 			];
-			return tn(e, (function(e) {
+			return en(e, (function(e) {
 				t[0] > e[0] && (t[0] = e[0]), t[1] > e[1] && (t[1] = e[1]), t[2] < e[0] && (t[2] = e[0]), t[3] < e[1] && (t[3] = e[1]);
 			})), t;
 		}
-		var cn = function(e) {
-			var t = Z(e);
+		var sn = function(e) {
+			var t = Q(e);
 			return t.insert = function(e) {
 				if (Array.isArray(e)) {
 					var t = e;
-					(e = on(t)).bbox = t;
-				} else e.bbox = e.bbox ? e.bbox : sn(e);
-				return Z.prototype.insert.call(this, e);
+					(e = an(t)).bbox = t;
+				} else e.bbox = e.bbox ? e.bbox : on(e);
+				return Q.prototype.insert.call(this, e);
 			}, t.load = function(e) {
 				var t = [];
 				return Array.isArray(e) ? e.forEach((function(e) {
-					var n = on(e);
+					var n = an(e);
 					n.bbox = e, t.push(n);
-				})) : nn(e, (function(e) {
-					e.bbox = e.bbox ? e.bbox : sn(e), t.push(e);
-				})), Z.prototype.load.call(this, t);
+				})) : tn(e, (function(e) {
+					e.bbox = e.bbox ? e.bbox : on(e), t.push(e);
+				})), Q.prototype.load.call(this, t);
 			}, t.remove = function(e) {
 				if (Array.isArray(e)) {
 					var t = e;
-					(e = on(t)).bbox = t;
+					(e = an(t)).bbox = t;
 				}
-				return Z.prototype.remove.call(this, e);
+				return Q.prototype.remove.call(this, e);
 			}, t.clear = function() {
-				return Z.prototype.clear.call(this);
+				return Q.prototype.clear.call(this);
 			}, t.search = function(e) {
 				return {
 					type: "FeatureCollection",
-					features: Z.prototype.search.call(this, this.toBBox(e))
+					features: Q.prototype.search.call(this, this.toBBox(e))
 				};
 			}, t.collides = function(e) {
-				return Z.prototype.collides.call(this, this.toBBox(e));
+				return Q.prototype.collides.call(this, this.toBBox(e));
 			}, t.all = function() {
 				return {
 					type: "FeatureCollection",
-					features: Z.prototype.all.call(this)
+					features: Q.prototype.all.call(this)
 				};
 			}, t.toJSON = function() {
-				return Z.prototype.toJSON.call(this);
+				return Q.prototype.toJSON.call(this);
 			}, t.fromJSON = function(e) {
-				return Z.prototype.fromJSON.call(this, e);
+				return Q.prototype.fromJSON.call(this, e);
 			}, t.toBBox = function(e) {
 				var t;
 				return {
-					minX: (t = e.bbox ? e.bbox : Array.isArray(e) && e.length === 4 ? e : sn(e))[0],
+					minX: (t = e.bbox ? e.bbox : Array.isArray(e) && e.length === 4 ? e : on(e))[0],
 					minY: t[1],
 					maxX: t[2],
 					maxY: t[3]
 				};
 			}, t;
 		};
-		function ln(e) {
+		function cn(e) {
 			if (!e) throw Error("coords is required");
 			if (e.type === "Feature" && e.geometry !== null) return e.geometry.coordinates;
 			if (e.coordinates) return e.coordinates;
 			if (Array.isArray(e)) return e;
 			throw Error("coords must be GeoJSON Feature, Geometry Object or an Array");
 		}
-		var un = function(e) {
+		var ln = function(e) {
 			if (!e) throw Error("geojson is required");
 			var t = [];
-			return an(e, (function(e) {
+			return rn(e, (function(e) {
 				(function(e, t) {
 					var n = [], i = e.geometry;
 					switch (i.type) {
 						case "Polygon":
-							n = ln(i);
+							n = cn(i);
 							break;
-						case "LineString": n = [ln(i)];
+						case "LineString": n = [cn(i)];
 					}
 					n.forEach((function(n) {
 						(function(e, t) {
 							var n = [];
 							return e.reduce((function(e, i) {
-								var a, o, s, c, l, u, d = Yt([e, i], t);
+								var a, o, s, c, l, u, d = Jt([e, i], t);
 								return d.bbox = (o = i, s = (a = e)[0], c = a[1], l = o[0], u = o[1], [
 									s < l ? s : l,
 									c < u ? c : u,
@@ -31437,50 +31498,50 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 						}));
 					}));
 				})(e, t);
-			})), Xt(t);
+			})), Yt(t);
 		};
-		function dn(e, t) {
-			var n = ln(e), i = ln(t);
+		function un(e, t) {
+			var n = cn(e), i = cn(t);
 			if (n.length !== 2) throw Error("<intersects> line1 must only contain 2 coordinates");
 			if (i.length !== 2) throw Error("<intersects> line2 must only contain 2 coordinates");
 			var a = n[0][0], o = n[0][1], s = n[1][0], c = n[1][1], l = i[0][0], u = i[0][1], d = i[1][0], f = i[1][1], p = (f - u) * (s - a) - (d - l) * (c - o), h = (d - l) * (o - u) - (f - u) * (a - l), _ = (s - a) * (o - u) - (c - o) * (a - l);
 			if (p === 0) return null;
 			var v = h / p, y = _ / p;
-			return v >= 0 && v <= 1 && y >= 0 && y <= 1 ? Jt([a + v * (s - a), o + v * (c - o)]) : null;
+			return v >= 0 && v <= 1 && y >= 0 && y <= 1 ? qt([a + v * (s - a), o + v * (c - o)]) : null;
 		}
-		var fn = function(e, t) {
+		var dn = function(e, t) {
 			var n = {}, i = [];
-			if (e.type === "LineString" && (e = qt(e)), t.type === "LineString" && (t = qt(t)), e.type === "Feature" && t.type === "Feature" && e.geometry.type === "LineString" && t.geometry.type === "LineString" && e.geometry.coordinates.length === 2 && t.geometry.coordinates.length === 2) {
-				var a = dn(e, t);
-				return a && i.push(a), Xt(i);
+			if (e.type === "LineString" && (e = Kt(e)), t.type === "LineString" && (t = Kt(t)), e.type === "Feature" && t.type === "Feature" && e.geometry.type === "LineString" && t.geometry.type === "LineString" && e.geometry.coordinates.length === 2 && t.geometry.coordinates.length === 2) {
+				var a = un(e, t);
+				return a && i.push(a), Yt(i);
 			}
-			var o = cn();
-			return o.load(un(t)), nn(un(e), (function(e) {
-				nn(o.search(e), (function(t) {
-					var a = dn(e, t);
+			var o = sn();
+			return o.load(ln(t)), tn(ln(e), (function(e) {
+				tn(o.search(e), (function(t) {
+					var a = un(e, t);
 					if (a) {
-						var o = ln(a).join(",");
+						var o = cn(a).join(",");
 						n[o] || (n[o] = !0, i.push(a));
 					}
 				}));
-			})), Xt(i);
-		}, pn = function(e, t, n) {
-			if (!Qt(n ||= {})) throw Error("options is invalid");
+			})), Yt(i);
+		}, fn = function(e, t, n) {
+			if (!Zt(n ||= {})) throw Error("options is invalid");
 			var i = e.geometry ? e.geometry.type : e.type;
 			if (i !== "LineString" && i !== "MultiLineString") throw Error("lines must be LineString or MultiLineString");
-			var a = Jt([Infinity, Infinity], { dist: Infinity }), o = 0;
-			return an(e, (function(e) {
-				for (var i = ln(e), s = 0; s < i.length - 1; s++) {
-					var c = Jt(i[s]);
-					c.properties.dist = rt(t, c, n);
-					var l = Jt(i[s + 1]);
-					l.properties.dist = rt(t, l, n);
-					var u = rt(c, l, n), d = Math.max(c.properties.dist, l.properties.dist), f = yt(c, l), p = At(t, d, f + 90, n), h = At(t, d, f - 90, n), _ = fn(Yt([p.geometry.coordinates, h.geometry.coordinates]), Yt([c.geometry.coordinates, l.geometry.coordinates])), v = null;
-					_.features.length > 0 && ((v = _.features[0]).properties.dist = rt(t, v, n), v.properties.location = o + rt(c, v, n)), c.properties.dist < a.properties.dist && ((a = c).properties.index = s, a.properties.location = o), l.properties.dist < a.properties.dist && ((a = l).properties.index = s + 1, a.properties.location = o + u), v && v.properties.dist < a.properties.dist && ((a = v).properties.index = s), o += u;
+			var a = qt([Infinity, Infinity], { dist: Infinity }), o = 0;
+			return rn(e, (function(e) {
+				for (var i = cn(e), s = 0; s < i.length - 1; s++) {
+					var c = qt(i[s]);
+					c.properties.dist = X(t, c, n);
+					var l = qt(i[s + 1]);
+					l.properties.dist = X(t, l, n);
+					var u = X(c, l, n), d = Math.max(c.properties.dist, l.properties.dist), f = vt(c, l), p = kt(t, d, f + 90, n), h = kt(t, d, f - 90, n), _ = dn(Jt([p.geometry.coordinates, h.geometry.coordinates]), Jt([c.geometry.coordinates, l.geometry.coordinates])), v = null;
+					_.features.length > 0 && ((v = _.features[0]).properties.dist = X(t, v, n), v.properties.location = o + X(c, v, n)), c.properties.dist < a.properties.dist && ((a = c).properties.index = s, a.properties.location = o), l.properties.dist < a.properties.dist && ((a = l).properties.index = s + 1, a.properties.location = o + u), v && v.properties.dist < a.properties.dist && ((a = v).properties.index = s), o += u;
 				}
 			})), a;
 		};
-		function mn(e, t) {
+		function pn(e, t) {
 			var n = [], i = Ze();
 			return Je(t, (function(t) {
 				if (n.forEach((function(e, t) {
@@ -31488,113 +31549,113 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				})), n.length) {
 					var a = i.search(t);
 					if (a.features.length) {
-						var o = gn(t, a);
+						var o = hn(t, a);
 						n = n.filter((function(e) {
 							return e.id !== o.id;
-						})), i.remove(o), Ke(hn(o, t), (function(e) {
+						})), i.remove(o), Ke(mn(o, t), (function(e) {
 							n.push(e), i.insert(e);
 						}));
 					}
-				} else (n = hn(e, t).features).forEach((function(e) {
-					e.bbox ||= it(at(e));
+				} else (n = mn(e, t).features).forEach((function(e) {
+					e.bbox ||= rt(it(e));
 				})), i.load(Y(n));
 			})), Y(n);
 		}
-		function hn(e, t) {
-			var n = [], i = X(e)[0], a = X(e)[e.geometry.coordinates.length - 1];
-			if (_n(i, lt(t)) || _n(a, lt(t))) return Y([e]);
-			var o = Ze(), s = dt(e);
+		function mn(e, t) {
+			var n = [], i = Z(e)[0], a = Z(e)[e.geometry.coordinates.length - 1];
+			if (gn(i, ct(t)) || gn(a, ct(t))) return Y([e]);
+			var o = Ze(), s = ut(e);
 			o.load(s);
 			var c = o.search(t);
 			if (!c.features.length) return Y([e]);
-			var l = gn(t, c), u = function(e, t, n) {
+			var l = hn(t, c), u = function(e, t, n) {
 				var i = n;
 				return Ke(e, (function(e, a) {
 					i = a === 0 && n === void 0 ? e : t(i, e, a);
 				})), i;
 			}(s, (function(e, i, a) {
-				var o = X(i)[1], s = lt(t);
-				return a === l.id ? (e.push(s), n.push(Be(e)), _n(s, o) ? [s] : [s, o]) : (e.push(o), e);
+				var o = Z(i)[1], s = ct(t);
+				return a === l.id ? (e.push(s), n.push(Be(e)), gn(s, o) ? [s] : [s, o]) : (e.push(o), e);
 			}), [i]);
 			return u.length > 1 && n.push(Be(u)), Y(n);
 		}
-		function gn(e, t) {
+		function hn(e, t) {
 			if (!t.features.length) throw Error("lines must contain features");
 			if (t.features.length === 1) return t.features[0];
 			var n, i = Infinity;
 			return Ke(t, (function(t) {
-				var a = pn(t, e).properties.dist;
+				var a = fn(t, e).properties.dist;
 				a < i && (n = t, i = a);
 			})), n;
 		}
-		function _n(e, t) {
+		function gn(e, t) {
 			return e[0] === t[0] && e[1] === t[1];
 		}
-		var vn = function(e, t) {
+		var _n = function(e, t) {
 			if (!e) throw Error("line is required");
 			if (!t) throw Error("splitter is required");
-			var n = ut(e), i = ut(t);
+			var n = lt(e), i = lt(t);
 			if (n !== "LineString") throw Error("line must be LineString");
 			if (i === "FeatureCollection") throw Error("splitter cannot be a FeatureCollection");
 			if (i === "GeometryCollection") throw Error("splitter cannot be a GeometryCollection");
-			var a = ct(t, { precision: 7 });
+			var a = st(t, { precision: 7 });
 			switch (i) {
-				case "Point": return hn(e, a);
-				case "MultiPoint": return mn(e, a);
+				case "Point": return mn(e, a);
+				case "MultiPoint": return pn(e, a);
 				case "LineString":
 				case "MultiLineString":
 				case "Polygon":
-				case "MultiPolygon": return mn(e, pt(e, a));
+				case "MultiPolygon": return pn(e, ft(e, a));
 			}
-		}, yn = n(67), bn = n.n(yn), xn = n(27), Sn = n.n(xn);
-		function Cn(e) {
+		}, vn = n(67), yn = n.n(vn), bn = n(27), xn = n.n(bn);
+		function Sn(e) {
 			var t = { type: "Feature" };
 			return t.geometry = e, t;
 		}
-		function wn(e) {
+		function Cn(e) {
 			return e.type === "Feature" ? e.geometry : e;
 		}
-		function Tn(e) {
+		function wn(e) {
 			return e.geometry.coordinates;
 		}
-		function En(e) {
-			return Cn({
+		function Tn(e) {
+			return Sn({
 				type: "Polygon",
 				coordinates: e
 			});
 		}
-		function Dn(e) {
-			return Cn({
+		function En(e) {
+			return Sn({
 				type: "MultiPolygon",
 				coordinates: e
 			});
 		}
-		function On(e) {
+		function Dn(e) {
 			e instanceof L.Polyline && (e = e.toGeoJSON(15));
-			var t = Tn(e), n = function e(t) {
+			var t = wn(e), n = function e(t) {
 				return Array.isArray(t) ? 1 + e(t[0]) : -1;
 			}(t), i = [];
 			return n > 1 ? t.forEach((function(e) {
 				i.push(function(e) {
-					return Cn({
+					return Sn({
 						type: "LineString",
 						coordinates: e
 					});
 				}(e));
 			})) : i.push(e), i;
 		}
-		function kn(e) {
+		function On(e) {
 			var t = [];
 			return e.eachLayer((function(e) {
-				t.push(Tn(e.toGeoJSON(15)));
+				t.push(wn(e.toGeoJSON(15)));
 			})), function(e) {
-				return Cn({
+				return Sn({
 					type: "MultiLineString",
 					coordinates: e
 				});
 			}(t);
 		}
-		function An(e, t) {
+		function kn(e, t) {
 			return function(e) {
 				if (Array.isArray(e)) return e;
 			}(e) || function(e, t) {
@@ -31615,16 +31676,16 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				}
 			}(e, t) || function(e, t) {
 				if (e) {
-					if (typeof e == "string") return jn(e, t);
+					if (typeof e == "string") return An(e, t);
 					var n = Object.prototype.toString.call(e).slice(8, -1);
 					if (n === "Object" && e.constructor && (n = e.constructor.name), n === "Map" || n === "Set") return Array.from(e);
-					if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return jn(e, t);
+					if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return An(e, t);
 				}
 			}(e, t) || function() {
 				throw TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 			}();
 		}
-		function jn(e, t) {
+		function An(e, t) {
 			(t == null || t > e.length) && (t = e.length);
 			for (var n = 0, i = Array(t); n < t; n++) i[n] = e[n];
 			return i;
@@ -31666,7 +31727,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				})).filter((function(t) {
 					try {
 						var n = !!xe()(e.toGeoJSON(15), t.toGeoJSON(15)).features.length > 0;
-						return n || t instanceof L.Polyline && !(t instanceof L.Polygon) ? n : (i = e.toGeoJSON(15), a = t.toGeoJSON(15), o = wn(i), s = wn(a), !((c = Sn.a.intersection(o.coordinates, s.coordinates)).length === 0 || !(c.length === 1 ? En(c[0]) : Dn(c))));
+						return n || t instanceof L.Polyline && !(t instanceof L.Polygon) ? n : (i = e.toGeoJSON(15), a = t.toGeoJSON(15), o = Cn(i), s = Cn(a), !((c = xn.a.intersection(o.coordinates, s.coordinates)).length === 0 || !(c.length === 1 ? Tn(c[0]) : En(c))));
 					} catch {
 						return t instanceof L.Polygon && console.error("You can't cut polygons with self-intersections"), !1;
 					}
@@ -31689,7 +31750,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 						}));
 					} else a = n;
 					var s = t._cutLayer(e, a), c = L.geoJSON(s, n.options);
-					c.getLayers().length === 1 && (c = An(c.getLayers(), 1)[0]), t._setPane(c, "layerPane");
+					c.getLayers().length === 1 && (c = kn(c.getLayers(), 1)[0]), t._setPane(c, "layerPane");
 					var l = c.addTo(t._map.pm._getContainingLayer());
 					if (l.pm.enable(n.pm.options), l.pm.disable(), n._pmTempLayer = !0, e._pmTempLayer = !0, n.remove(), n.removeFrom(t._map.pm._getContainingLayer()), e.remove(), e.removeFrom(t._map.pm._getContainingLayer()), l.getLayers && l.getLayers().length === 0 && t._map.pm.removeLayer({ target: l }), l instanceof L.LayerGroup && l.eachLayer((function(e) {
 						t._addDrawnLayerProp(e);
@@ -31705,20 +31766,20 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 			},
 			_cutLayer: function(e, t) {
 				var n, i, a, o, s, c, l = L.geoJSON();
-				if (t instanceof L.Polygon) i = t.toGeoJSON(15), a = e.toGeoJSON(15), o = wn(i), s = wn(a), n = (c = Sn.a.difference(o.coordinates, s.coordinates)).length === 0 ? null : c.length === 1 ? En(c[0]) : Dn(c);
+				if (t instanceof L.Polygon) i = t.toGeoJSON(15), a = e.toGeoJSON(15), o = Cn(i), s = Cn(a), n = (c = xn.a.difference(o.coordinates, s.coordinates)).length === 0 ? null : c.length === 1 ? Tn(c[0]) : En(c);
 				else {
-					var u = On(t);
+					var u = Dn(t);
 					u.forEach((function(t) {
-						var n = vn(t, e.toGeoJSON(15));
+						var n = _n(t, e.toGeoJSON(15));
 						(n && n.features.length > 0 ? L.geoJSON(n) : L.geoJSON(t)).getLayers().forEach((function(t) {
-							bn()(e.toGeoJSON(15), t.toGeoJSON(15)) || t.addTo(l);
+							yn()(e.toGeoJSON(15), t.toGeoJSON(15)) || t.addTo(l);
 						}));
-					})), n = u.length > 1 ? kn(l) : l.toGeoJSON(15);
+					})), n = u.length > 1 ? On(l) : l.toGeoJSON(15);
 				}
 				return n;
 			}
 		});
-		var Mn = {
+		var jn = {
 			enableLayerDrag: function() {
 				var e;
 				this.options.draggable && (this.disable(), this._layerDragEnabled = !0, this._map ||= this._layer._map, (this._layer instanceof L.Marker || this._layer instanceof L.ImageOverlay) && L.DomEvent.on(this._getDOMElem(), "dragstart", this._stopDOMImageDrag), this._layer.dragging && this._layer.dragging.disable(), this._tempDragCoord = null, this._layer._map?.options.preferCanvas ? (this._layer.on("mouseout", this.removeDraggingClass, this), this._layer.on("mouseover", this.addDraggingClass, this)) : this.addDraggingClass(), this._originalMapDragState = this._layer._map.dragging._enabled, this._safeToCacheDragState = !0, this._layer.on("mousedown", this._dragMixinOnMouseDown, this));
@@ -31819,27 +31880,27 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				return e.preventDefault(), !1;
 			}
 		};
-		function Nn(e, t) {
+		function Mn(e, t) {
 			t instanceof L.Layer && (t = t.getLatLng());
 			var n = e.getMaxZoom();
 			return n === Infinity && (n = e.getZoom()), e.project(t, n);
 		}
-		function Pn(e, t) {
+		function Nn(e, t) {
 			var n = e.getMaxZoom();
 			return n === Infinity && (n = e.getZoom()), e.unproject(t, n);
 		}
-		var Q = L.Class.extend({
+		var $ = L.Class.extend({
 			includes: [
-				Mn,
+				jn,
 				de,
 				{
 					_onRotateStart: function(e) {
-						this._preventRenderingMarkers(!0), this._rotationOriginLatLng = this._getRotationCenter().clone(), this._rotationOriginPoint = Nn(this._map, this._rotationOriginLatLng), this._rotationStartPoint = Nn(this._map, e.target.getLatLng()), this._initialRotateLatLng = G(this._layer), this._startAngle = this.getAngle();
+						this._preventRenderingMarkers(!0), this._rotationOriginLatLng = this._getRotationCenter().clone(), this._rotationOriginPoint = Mn(this._map, this._rotationOriginLatLng), this._rotationStartPoint = Mn(this._map, e.target.getLatLng()), this._initialRotateLatLng = G(this._layer), this._startAngle = this.getAngle();
 						var t = G(this._rotationLayer, this._rotationLayer.pm._rotateOrgLatLng);
 						this._fireRotationStart(this._rotationLayer, t), this._fireRotationStart(this._map, t);
 					},
 					_onRotate: function(e) {
-						var t = Nn(this._map, e.target.getLatLng()), n = this._rotationStartPoint, i = this._rotationOriginPoint, a = Math.atan2(t.y - i.y, t.x - i.x) - Math.atan2(n.y - i.y, n.x - i.x);
+						var t = Mn(this._map, e.target.getLatLng()), n = this._rotationStartPoint, i = this._rotationOriginPoint, a = Math.atan2(t.y - i.y, t.x - i.x) - Math.atan2(n.y - i.y, n.x - i.x);
 						this._layer.setLatLngs(this._rotateLayer(a, this._initialRotateLatLng, this._rotationOriginLatLng, L.PM.Matrix.init(), this._map));
 						var o = this;
 						(function e(t) {
@@ -31866,7 +31927,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 						this._rotationLayer.pm._rotateOrgLatLng = G(this._rotationLayer), this._fireRotationEnd(this._rotationLayer, e, t), this._fireRotationEnd(this._map, e, t), this._rotationLayer.pm._fireEdit(this._rotationLayer, "Rotation"), this._preventRenderingMarkers(!1);
 					},
 					_rotateLayer: function(e, t, n, i, a) {
-						var o = Nn(a, n);
+						var o = Mn(a, n);
 						return this._matrix = i.clone().rotate(e, o).flip(), function e(t, n, i) {
 							var a = i.getMaxZoom();
 							if (a === Infinity && (a = i.getZoom()), L.Util.isArray(t)) {
@@ -31979,28 +32040,28 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				return !e._cancelDragEventChain || (e._cancelDragEventChain = null, !1);
 			}
 		});
-		function Fn(e) {
+		function Pn(e) {
 			return function(e) {
-				if (Array.isArray(e)) return In(e);
+				if (Array.isArray(e)) return Fn(e);
 			}(e) || function(e) {
 				if (typeof Symbol < "u" && Symbol.iterator in Object(e)) return Array.from(e);
 			}(e) || function(e, t) {
 				if (e) {
-					if (typeof e == "string") return In(e, t);
+					if (typeof e == "string") return Fn(e, t);
 					var n = Object.prototype.toString.call(e).slice(8, -1);
 					if (n === "Object" && e.constructor && (n = e.constructor.name), n === "Map" || n === "Set") return Array.from(e);
-					if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return In(e, t);
+					if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return Fn(e, t);
 				}
 			}(e) || function() {
 				throw TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 			}();
 		}
-		function In(e, t) {
+		function Fn(e, t) {
 			(t == null || t > e.length) && (t = e.length);
 			for (var n = 0, i = Array(t); n < t; n++) i[n] = e[n];
 			return i;
 		}
-		Q.LayerGroup = L.Class.extend({
+		$.LayerGroup = L.Class.extend({
 			initialize: function(e) {
 				var t = this;
 				this._layerGroup = e, this._layers = this.getLayers(), this._getMap(), this._layers.forEach((function(e) {
@@ -32089,7 +32150,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 					n.pm && (n instanceof L.LayerGroup ? t.indexOf(n._leaflet_id) === -1 && (t.push(n._leaflet_id), n.pm.setOptions(e, t)) : n.pm.setOptions(e));
 				}));
 			}
-		}), Q.Marker = Q.extend({
+		}), $.Marker = $.extend({
 			_shape: "Marker",
 			initialize: function(e) {
 				this._layer = e, this._enabled = !1, this._layer.on("dragend", this._onDragEnd, this);
@@ -32126,7 +32187,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				e.off("pm:drag", this._handleSnapping, this), e.off("pm:dragend", this._cleanupSnapping, this), e.off("pm:dragstart", this._unsnap, this);
 			}
 		});
-		var Ln = {
+		var In = {
 			filterMarkerGroup: function() {
 				this.markerCache = [], this.createCache(), this._layer.on("pm:edit", this.createCache, this), this.applyLimitFilters({}), this._layer.on("pm:disable", this._removeMarkerLimitEvents, this), this.options.limitMarkersToCount > -1 && (this._layer.on("pm:vertexremoved", this._initMarkers, this), this._map.on("mousemove", this.applyLimitFilters, this));
 			},
@@ -32134,7 +32195,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				this._map.off("mousemove", this.applyLimitFilters, this), this._layer.off("pm:edit", this.createCache, this), this._layer.off("pm:disable", this._removeMarkerLimitEvents, this), this._layer.off("pm:vertexremoved", this._initMarkers, this);
 			},
 			createCache: function() {
-				var e = [].concat(Fn(this._markerGroup.getLayers()), Fn(this.markerCache));
+				var e = [].concat(Pn(this._markerGroup.getLayers()), Pn(this.markerCache));
 				this.markerCache = e.filter((function(e, t, n) {
 					return n.indexOf(e) === t;
 				}));
@@ -32151,12 +32212,12 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 					lng: 0
 				} : t;
 				if (!this._preventRenderMarkers) {
-					var i = Fn(this._filterClosestMarkers(n));
+					var i = Pn(this._filterClosestMarkers(n));
 					this.renderLimits(i);
 				}
 			},
 			_filterClosestMarkers: function(e) {
-				var t = Fn(this.markerCache), n = this.options.limitMarkersToCount;
+				var t = Pn(this.markerCache), n = this.options.limitMarkersToCount;
 				return t.sort((function(t, n) {
 					return t._latlng.distanceTo(e) - n._latlng.distanceTo(e);
 				})), t.filter((function(e, t) {
@@ -32168,7 +32229,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				this._preventRenderMarkers = !!e;
 			}
 		};
-		function Rn(e, t) {
+		function Ln(e, t) {
 			return function(e) {
 				if (Array.isArray(e)) return e;
 			}(e) || function(e, t) {
@@ -32189,22 +32250,22 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				}
 			}(e, t) || function(e, t) {
 				if (e) {
-					if (typeof e == "string") return zn(e, t);
+					if (typeof e == "string") return Rn(e, t);
 					var n = Object.prototype.toString.call(e).slice(8, -1);
 					if (n === "Object" && e.constructor && (n = e.constructor.name), n === "Map" || n === "Set") return Array.from(e);
-					if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return zn(e, t);
+					if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return Rn(e, t);
 				}
 			}(e, t) || function() {
 				throw TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 			}();
 		}
-		function zn(e, t) {
+		function Rn(e, t) {
 			(t == null || t > e.length) && (t = e.length);
 			for (var n = 0, i = Array(t); n < t; n++) i[n] = e[n];
 			return i;
 		}
-		Q.Line = Q.extend({
-			includes: [Ln],
+		$.Line = $.extend({
+			includes: [In],
 			_shape: "Line",
 			initialize: function(e) {
 				this._layer = e, this._enabled = !1;
@@ -32411,18 +32472,18 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 					this._fireVertexClick(e, n);
 				}
 			}
-		}), Q.Polygon = Q.Line.extend({
+		}), $.Polygon = $.Line.extend({
 			_shape: "Polygon",
 			_checkMarkerAllowedToDrag: function(e) {
 				var t = this._getNeighborMarkers(e), n = t.prevMarker, i = t.nextMarker, a = L.polyline([n.getLatLng(), e.getLatLng()]), o = L.polyline([e.getLatLng(), i.getLatLng()]), s = xe()(this._layer.toGeoJSON(15), a.toGeoJSON(15)).features.length, c = xe()(this._layer.toGeoJSON(15), o.toGeoJSON(15)).features.length;
 				return !(s <= 2 && c <= 2);
 			}
-		}), Q.Rectangle = Q.Polygon.extend({
+		}), $.Rectangle = $.Polygon.extend({
 			_shape: "Rectangle",
 			_initMarkers: function() {
 				var e = this, t = this._map, n = this._findCorners();
 				this._markerGroup && this._markerGroup.clearLayers(), this._markerGroup = new L.LayerGroup(), this._markerGroup._pmTempLayer = !0, t.addLayer(this._markerGroup), this._markers = [], this._markers[0] = n.map(this._createMarker, this);
-				var i = Rn(this._markers, 1);
+				var i = Ln(this._markers, 1);
 				this._cornerMarkers = i[0], this._layer.getLatLngs()[0].forEach((function(t, n) {
 					var i = e._cornerMarkers.find((function(e) {
 						return e._index === n;
@@ -32487,7 +32548,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				var e = this._layer.getLatLngs()[0];
 				return L.PM.Utils._getRotatedRectangle(e[0], e[2], this._angle || 0, this._map);
 			}
-		}), Q.Circle = Q.extend({
+		}), $.Circle = $.extend({
 			_shape: "Circle",
 			initialize: function(e) {
 				this._layer = e, this._enabled = !1, this._updateHiddenPolyCircle();
@@ -32602,7 +32663,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				}
 				this._outerMarker.setLatLng(this._getNewDestinationOfOuterMarker());
 			}
-		}), Q.CircleMarker = Q.extend({
+		}), $.CircleMarker = $.extend({
 			_shape: "CircleMarker",
 			initialize: function(e) {
 				this._layer = e, this._enabled = !1, this._updateHiddenPolyCircle();
@@ -32725,7 +32786,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				var t = this._centerMarker.getLatLng(), n = this._map.project(t), i = L.point(n.x + e, n.y);
 				return this._map.unproject(i).distanceTo(t);
 			}
-		}), Q.ImageOverlay = Q.extend({
+		}), $.ImageOverlay = $.extend({
 			_shape: "ImageOverlay",
 			initialize: function(e) {
 				this._layer = e, this._enabled = !1;
@@ -32757,7 +32818,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				];
 			}
 		}), n(153), n(154);
-		var Bn = function(e, t, n, i, a, o) {
+		var zn = function(e, t, n, i, a, o) {
 			this._matrix = [
 				e,
 				t,
@@ -32767,9 +32828,9 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				o
 			];
 		};
-		Bn.init = function() {
+		zn.init = function() {
 			return new L.PM.Matrix(1, 0, 0, 1, 0, 0);
-		}, Bn.prototype = {
+		}, zn.prototype = {
 			transform: function(e) {
 				return this._transform(e.clone());
 			},
@@ -32870,7 +32931,7 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				], this;
 			}
 		};
-		var Vn = Bn, Hn = {
+		var Bn = zn, Vn = {
 			calcMiddleLatLng: function(e, t, n) {
 				var i = e.project(t), a = e.project(n);
 				return e.unproject(i._add(a)._divideBy(2));
@@ -32957,15 +33018,15 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 				return null;
 			},
 			_getRotatedRectangle: function(e, t, n, i) {
-				var a = Nn(i, e), o = Nn(i, t), s = n * Math.PI / 180, c = Math.cos(s), l = Math.sin(s), u = (o.x - a.x) * c + (o.y - a.y) * l, d = (o.y - a.y) * c - (o.x - a.x) * l, f = u * c + a.x, p = u * l + a.y, h = -d * l + a.x, _ = d * c + a.y;
+				var a = Mn(i, e), o = Mn(i, t), s = n * Math.PI / 180, c = Math.cos(s), l = Math.sin(s), u = (o.x - a.x) * c + (o.y - a.y) * l, d = (o.y - a.y) * c - (o.x - a.x) * l, f = u * c + a.x, p = u * l + a.y, h = -d * l + a.x, _ = d * c + a.y;
 				return [
-					Pn(i, a),
-					Pn(i, {
+					Nn(i, a),
+					Nn(i, {
 						x: f,
 						y: p
 					}),
-					Pn(i, o),
-					Pn(i, {
+					Nn(i, o),
+					Nn(i, {
 						x: h,
 						y: _
 					})
@@ -32977,9 +33038,9 @@ smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
 			Map: N,
 			Toolbar: se,
 			Draw: q,
-			Edit: Q,
-			Utils: Hn,
-			Matrix: Vn,
+			Edit: $,
+			Utils: Vn,
+			Matrix: Bn,
 			activeLang: "en",
 			optIn: !1,
 			initialize: function(e) {
@@ -38636,9 +38697,10 @@ var require_Control_MiniMap_3_6_1_min = /* @__PURE__ */ __commonJSMin(((e, t) =>
 })), import_Control_MiniMap_3_6_1_min = require_Control_MiniMap_3_6_1_min();
 window.SMK.TYPE.MinimapTool.addInitializer(function(e) {
 	if (e.$viewer.type !== "leaflet" || e.$device === "mobile") return;
-	e.addToStatus($("<div class=\"smk-spacer\">").height(170).get(0));
-	let t = e.$viewer.createBasemapLayer(this.baseMap || "Topographic");
-	new L.Control.MiniMap(t[0], Object.assign({ toggleDisplay: !0 }, this.option)).addTo(e.$viewer.map);
+	let t = document.createElement("div");
+	t.className = "smk-spacer", t.style.height = "170px", e.addToStatus(t);
+	let n = e.$viewer.createBasemapLayer(this.baseMap || "Topographic");
+	new L.Control.MiniMap(n[0], Object.assign({ toggleDisplay: !0 }, this.option)).addTo(e.$viewer.map);
 });
 //#endregion
 //#region src/smk/viewer-esri3d/tool/pan/tool-pan-esri3d.ts
@@ -38740,7 +38802,8 @@ smkRef$2.TYPE.MeasureTool.addInitializer(function(e) {
 		t.active && t.showStatusMessage("Select measurement method");
 	});
 	function i() {
-		return $("<div>").appendTo(t.containerEl).get(0);
+		let e = document.createElement("div");
+		return t.containerEl.appendChild(e), e;
 	}
 	function a() {
 		t.measureWidget && t.measureWidget.destroy(), t.measureWidget = null;
@@ -39420,6 +39483,139 @@ SMK.TYPE.MarkupTool.addInitializer(function(e) {
 	});
 });
 //#endregion
+//#region src/smk/viewer-maplibre/tool/minimap/tool-minimap-maplibre.ts
+var SIZE_PX = 160, ZOOM_OFFSET = 4, FRAME_SOURCE = "smk-mm-frame", FRAME_FILL_ID = "smk-mm-frame-fill", FRAME_LINE_ID = "smk-mm-frame-line", FRAME_COLOR = "#ff5252";
+SMK.TYPE.MinimapTool.addInitializer(function(e) {
+	if (e.$viewer.type !== "maplibre" || e.$device === "mobile") return;
+	let t = this, n = document.createElement("div");
+	n.className = "smk-minimap-maplibre", Object.assign(n.style, {
+		position: "relative",
+		width: SIZE_PX + "px",
+		height: SIZE_PX + "px",
+		border: "1px solid rgba(0,0,0,0.4)",
+		borderRadius: "3px",
+		overflow: "hidden",
+		background: "#eee",
+		margin: "4px"
+	}), e.addToStatus(n);
+	let i = t.baseMap || e.viewer.baseMap || "Topographic", a = e.$viewer.getBasemapConfig(i), o = a ? basemapSpecForConfig(a) : [], s = {}, c = [];
+	o.forEach((e) => {
+		s[e.sourceId] = e.source, c.push(e.layer);
+	});
+	let l = e.$viewer.map, u = l.getCenter(), d;
+	try {
+		d = new maplibregl.Map({
+			container: n,
+			style: {
+				version: 8,
+				sources: s,
+				layers: c,
+				glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf"
+			},
+			attributionControl: !1,
+			interactive: !1,
+			dragRotate: !1,
+			pitchWithRotate: !1,
+			touchPitch: !1,
+			projection: "mercator",
+			center: [u.lng, u.lat],
+			zoom: Math.max(0, l.getZoom() - ZOOM_OFFSET),
+			minZoom: 0,
+			maxZoom: 22
+		});
+	} catch (e) {
+		console.warn("maplibre minimap: failed to construct overview map", e);
+		return;
+	}
+	n.addEventListener("click", function(e) {
+		let t = n.getBoundingClientRect(), i = e.clientX - t.left, a = e.clientY - t.top;
+		try {
+			let e = d.unproject([i, a]);
+			l.easeTo({
+				center: [e.lng, e.lat],
+				duration: 300
+			});
+		} catch {}
+	});
+	function f() {
+		return {
+			type: "FeatureCollection",
+			features: []
+		};
+	}
+	function p() {
+		d.getSource(FRAME_SOURCE) || (d.addSource(FRAME_SOURCE, {
+			type: "geojson",
+			data: f()
+		}), d.addLayer({
+			id: FRAME_FILL_ID,
+			type: "fill",
+			source: FRAME_SOURCE,
+			paint: {
+				"fill-color": FRAME_COLOR,
+				"fill-opacity": .1
+			}
+		}), d.addLayer({
+			id: FRAME_LINE_ID,
+			type: "line",
+			source: FRAME_SOURCE,
+			paint: {
+				"line-color": FRAME_COLOR,
+				"line-width": 2
+			}
+		}));
+	}
+	function h() {
+		try {
+			let e = l.getBounds(), t = e.getWest(), n = e.getEast(), i = e.getSouth(), a = e.getNorth(), o = {
+				type: "FeatureCollection",
+				features: [{
+					type: "Feature",
+					properties: {},
+					geometry: {
+						type: "Polygon",
+						coordinates: [[
+							[t, i],
+							[n, i],
+							[n, a],
+							[t, a],
+							[t, i]
+						]]
+					}
+				}]
+			}, s = d.getSource(FRAME_SOURCE);
+			s && s.setData(o);
+			let c = l.getCenter();
+			d.jumpTo({
+				center: [c.lng, c.lat],
+				zoom: Math.max(0, l.getZoom() - ZOOM_OFFSET)
+			});
+		} catch {}
+	}
+	d.on("load", function() {
+		p(), h();
+	}), d.on("error", function(e) {
+		let t = e?.error, n = t?.message || String(t || "");
+		/could not be decoded/i.test(n) || /Failed to fetch|NetworkError|AbortError/i.test(n) || t?.name === "InvalidStateError" || console.warn("maplibre minimap:", t || e);
+	}), l.on("move", h), l.on("zoom", h), typeof e.$viewer.changedBaseMap == "function" && e.$viewer.changedBaseMap(function(t) {
+		let n = e.$viewer.getBasemapConfig(t.baseMap);
+		if (!n) return;
+		let i = basemapSpecForConfig(n);
+		try {
+			let e = d.getStyle();
+			(e.layers || []).forEach((e) => {
+				e.id.indexOf("smk-bm-") === 0 && d.getLayer(e.id) && d.removeLayer(e.id);
+			}), Object.keys(e.sources || {}).forEach((e) => {
+				e.indexOf("smk-bm-") === 0 && d.getSource(e) && d.removeSource(e);
+			});
+		} catch {}
+		let a = d.getLayer(FRAME_FILL_ID) ? FRAME_FILL_ID : void 0;
+		i.forEach((e) => {
+			d.getSource(e.sourceId) || d.addSource(e.sourceId, e.source), d.getLayer(e.layer.id) || d.addLayer(e.layer, a);
+		});
+	});
+});
+//#endregion
 //#region src/smk/viewer-maplibre/layer/layer-wms-maplibre.ts
 var WmsMapLibreLayer = class extends WmsLayer {};
 Layer.wms.maplibre = WmsMapLibreLayer, WmsMapLibreLayer.create = function(e, t) {
@@ -39713,10 +39909,9 @@ VectorMapLibreLayer.create = function(e, t) {
 		} catch (e) {
 			return console.warn("vector maplibre layer \"" + i.id + "\" inline parse failed:", e), C();
 		}
-		return makePromise(function(e, t) {
-			$.get(a, null, null, "json").then(e, function(e, n, i) {
-				t("Failed requesting " + a + ": " + e.status + "," + i);
-			});
+		return fetch(a).then((e) => {
+			if (!e.ok) throw Error("Failed requesting " + a + ": " + e.status);
+			return e.json();
 		}).then((e) => S(t(e))).catch((e) => (console.warn("vector maplibre layer \"" + i.id + "\" load failed:", e), C()));
 	});
 };

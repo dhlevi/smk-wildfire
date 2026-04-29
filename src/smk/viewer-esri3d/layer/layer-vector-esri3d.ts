@@ -6,7 +6,6 @@
 import { VectorLayer } from '../../layer/layer-types'
 
 declare const turf: any
-declare const $: any
 
 const smkRef = ( window as any ).SMK
 
@@ -122,11 +121,11 @@ VectorEsri3dLayer.prototype.canAddToMap = function () {
 
             const url = self.resolveAttachmentUrl( layers[ 0 ].config.dataUrl, layers[ 0 ].config.id, 'json' )
 
-            return smkRef.UTIL.makePromise( function ( res: any, rej: any ) {
-                $.get( url, null, null, 'json' ).then( res, function ( xhr: any, _status: any, err: any ) {
-                    rej( 'Failed requesting ' + url + ': ' + xhr.status + ',' + err )
+            return fetch( url )
+                .then( function ( r: Response ) {
+                    if ( !r.ok ) throw new Error( 'Failed requesting ' + url + ': ' + r.status )
+                    return r.json()
                 } )
-            } )
             .then( function ( data: any ) {
                 layers[ 0 ].loadLayer( data )
                 return layer

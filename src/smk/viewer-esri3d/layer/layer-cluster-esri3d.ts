@@ -3,11 +3,7 @@
  * Converted from viewer-esri3d/layer/layer-cluster-esri3d.js.
  */
 
-declare const $: any
-
 import { ClusterLayer } from '../../layer/layer-types'
-
-declare const $: any
 
 const smkRef = ( window as any ).SMK
 

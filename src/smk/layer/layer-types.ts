@@ -94,7 +94,11 @@ function esriResultToFeature( r: any ): any {
     if ( r.displayFieldName )
         f.title = r.attributes[ r.displayFieldName ]
 
-    f.geometry = Terraformer.ArcGIS.parse( r.geometry )
+    // Terraformer returns class instances (e.g. Terraformer.Point); strip
+    // prototypes so the geometry is plain GeoJSON safe for structured-clone
+    // (used by MapLibre when transferring data to its worker).
+    const geom = Terraformer.ArcGIS.parse( r.geometry )
+    f.geometry = { type: geom.type, coordinates: geom.coordinates }
 
     if ( f.geometry.type === 'MultiPoint' && f.geometry.coordinates.length === 1 ) {
         f.geometry.type        = 'Point'

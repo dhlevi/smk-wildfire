@@ -9,7 +9,6 @@ import panelSearchHtml from './panel-search.html?raw'
 
 declare const Vue: any
 declare const turf: any
-declare const $: any
 
 const smkRef = ( window as any ).SMK
 
@@ -36,33 +35,40 @@ function doAddressSearch( text: string ) {
 
     return smkRef.UTIL.resolved()
         .then( function () {
-            return ( request = $.ajax( {
-                timeout:  10 * 1000,
-                dataType: 'json',
-                url:      'https://geocoder.api.gov.bc.ca/addresses.geojson',
-                data:     query,
-            } ) )
+            const ctrl = new AbortController()
+            const timer = setTimeout( function () { ctrl.abort() }, 10 * 1000 )
+            request = { abort: function () { ctrl.abort() } }
+
+            const qs = new URLSearchParams( query as any ).toString()
+            return fetch( 'https://geocoder.api.gov.bc.ca/addresses.geojson?' + qs, { signal: ctrl.signal } )
+                .then( function ( r ) {
+                    if ( !r.ok ) throw new Error( 'geocoder failed: ' + r.status )
+                    return r.json()
+                } )
+                .finally( function () { clearTimeout( timer ) } )
         } )
         .then( function ( data: any ) {
-            return $.map( data.features, function ( feature: any ) {
-                if ( !feature.geometry.coordinates ) return
-                if ( feature.properties.fullAddress === 'BC' ) return
+            return ( data.features as any[] )
+                .map( function ( feature: any ) {
+                    if ( !feature.geometry.coordinates ) return null
+                    if ( feature.properties.fullAddress === 'BC' ) return null
 
-                if ( feature.properties.intersectionName ) {
-                    feature.title = feature.properties.intersectionName
-                } else if ( feature.properties.streetName ) {
-                    feature.title = [
-                        feature.properties.civicNumber,
-                        feature.properties.streetName,
-                        feature.properties.streetQualifier,
-                        feature.properties.streetType,
-                    ].filter( Boolean ).join( ' ' )
-                } else if ( feature.properties.localityName ) {
-                    feature.title = feature.properties.localityName
-                }
+                    if ( feature.properties.intersectionName ) {
+                        feature.title = feature.properties.intersectionName
+                    } else if ( feature.properties.streetName ) {
+                        feature.title = [
+                            feature.properties.civicNumber,
+                            feature.properties.streetName,
+                            feature.properties.streetQualifier,
+                            feature.properties.streetType,
+                        ].filter( Boolean ).join( ' ' )
+                    } else if ( feature.properties.localityName ) {
+                        feature.title = feature.properties.localityName
+                    }
 
-                return feature
-            } )
+                    return feature
+                } )
+                .filter( Boolean )
         } )
 }
 

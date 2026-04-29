@@ -7,8 +7,7 @@ import '../../../tool/minimap/tool-minimap'
 import './lib/Control.MiniMap-3.6.1.min.css'
 import './lib/Control.MiniMap-3.6.1.min.js'
 
-declare const L:    any
-declare const $:    any
+declare const L: any
 
 const smkRef = ( window as any ).SMK
 
@@ -17,7 +16,10 @@ smkRef.TYPE.MinimapTool.addInitializer( function ( this: any, smk: any ) {
 
     if ( smk.$device === 'mobile' ) return
 
-    smk.addToStatus( $( '<div class="smk-spacer">' ).height( 170 ).get( 0 ) )
+    const spacer = document.createElement( 'div' )
+    spacer.className   = 'smk-spacer'
+    spacer.style.height = '170px'
+    smk.addToStatus( spacer )
 
     const ly = smk.$viewer.createBasemapLayer( this.baseMap || 'Topographic' )
 

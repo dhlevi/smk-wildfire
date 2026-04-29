@@ -3,8 +3,6 @@
  * Converted from viewer-esri3d/tool/measure/tool-measure-esri3d.js.
  */
 
-declare const $: any
-
 import '../../../tool/measure/tool-measure'
 
 const smkRef = ( window as any ).SMK
@@ -20,7 +18,9 @@ smkRef.TYPE.MeasureTool.addInitializer( function ( this: any, smk: any ) {
     } )
 
     function newContainer() {
-        return $( '<div>' ).appendTo( self.containerEl ).get( 0 )
+        const div = document.createElement( 'div' )
+        self.containerEl.appendChild( div )
+        return div
     }
 
     function destroyWidget() {

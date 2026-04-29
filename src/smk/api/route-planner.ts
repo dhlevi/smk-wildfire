@@ -3,7 +3,6 @@
  * Converted from api/route-planner.js.
  */
 
-declare const $: any
 declare const turf: any
 
 const smkRef = ( window as any ).SMK
@@ -64,9 +63,19 @@ RoutePlanner.prototype.fetchDirections = function ( points: any[], option?: any 
         headers:  { apikey: this.apiKey }
     }
 
-    return smkRef.UTIL.makePromise( function ( res: any, rej: any ) {
-        ( self.request = $.ajax( ajaxOpt ) ).then( res, rej )
-    } )
+    const ctrl = new AbortController()
+    const timer = setTimeout( function () { ctrl.abort() }, ajaxOpt.timeout )
+    self.request = { abort: function () { ctrl.abort() } }
+
+    const qs = new URLSearchParams( query as Record<string, string> ).toString()
+    const reqUrl = ajaxOpt.url + ( qs ? '?' + qs : '' )
+
+    return fetch( reqUrl, { headers: ajaxOpt.headers, signal: ctrl.signal } )
+        .then( function ( r ) {
+            if ( !r.ok ) throw new Error( 'Route request failed: ' + r.status )
+            return r.json()
+        } )
+        .finally( function () { clearTimeout( timer ) } )
     .then( function ( data: any ) {
         if ( !data.routeFound ) throw new Error( 'failed to find route' )
 

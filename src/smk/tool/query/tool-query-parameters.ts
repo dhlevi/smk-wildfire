@@ -7,7 +7,6 @@ import Tool from '../../tool'
 import panelQueryHtml from './panel-query.html?raw'
 
 declare const Vue: any
-declare const $: any
 
 const smkRef = ( window as any ).SMK
 
@@ -115,7 +114,7 @@ const factory = ( Tool as any ).define( 'QueryParametersTool',
 
                 const param: Record<string, any> = {}
                 self.parameters.forEach( function ( p: any ) {
-                    param[ p.prop.id ] = $.extend( {}, p.prop )
+                    param[ p.prop.id ] = Object.assign( {}, p.prop )
                 } )
 
                 return smkRef.UTIL.resolved()

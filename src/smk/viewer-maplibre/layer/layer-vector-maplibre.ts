@@ -15,8 +15,6 @@
  * `strokeOpacity`).
  */
 
-declare const $: any
-
 import { VectorLayer } from '../../layer/layer-types'
 import { Layer }       from '../../layer/layer'
 import { getProjection, reprojectGeoJSON, makePromise } from '../../util'
@@ -163,11 +161,11 @@ const EMPTY = { type: 'FeatureCollection' as const, features: [] }
             }
         }
 
-        return makePromise( function ( res: Function, rej: Function ) {
-            $.get( url, null, null, 'json' ).then( res, function ( xhr: any, _status: any, err: any ) {
-                rej( 'Failed requesting ' + url + ': ' + xhr.status + ',' + err )
+        return fetch( url )
+            .then( ( r: Response ) => {
+                if ( !r.ok ) throw new Error( 'Failed requesting ' + url + ': ' + r.status )
+                return r.json()
             } )
-        } )
         .then( ( data: any ) => setInitial( project( data ) ) )
         .catch( ( e: any ) => {
             console.warn( 'vector maplibre layer "' + cfg.id + '" load failed:', e )

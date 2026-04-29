@@ -5,7 +5,6 @@
 
 declare const L:    any
 declare const turf: any
-declare const $:    any
 
 import { VectorLayer }                          from '../../layer/layer-types'
 import { Layer }                                from '../../layer/layer'
@@ -198,11 +197,11 @@ VectorLeafletLayer.prototype.getConfig = function ( leafLayer: any ) {
 
             const url = self.resolveAttachmentUrl( layers[ 0 ].config.dataUrl, layers[ 0 ].config.id, 'json' )
 
-            return makePromise( function ( res: Function, rej: Function ) {
-                $.get( url, null, null, 'json' ).then( res, function ( xhr: any, _status: any, err: any ) {
-                    rej( 'Failed requesting ' + url + ': ' + xhr.status + ',' + err )
+            return fetch( url )
+                .then( function ( r: Response ) {
+                    if ( !r.ok ) throw new Error( 'Failed requesting ' + url + ': ' + r.status )
+                    return r.json()
                 } )
-            } )
             .then( function ( data: any ) {
                 console.log( 'loaded', url )
 
@@ -298,11 +297,14 @@ function clusterOptions( layerConfig: any, viewer: any ) {
 
     if ( layerConfig.clusterStyle ) {
         opt.iconCreateFunction = function ( cluster: any ) {
-            const html = $( '<div>' )
-                .append( $( '<img>' ).attr( 'src',
-                    viewer.resolveAttachmentUrl( layerConfig.clusterStyle.markerUrl, null, 'png' ) ) )
-                .append( $( '<span>' ).text( cluster.getChildCount() ) )
-                .get( 0 ).innerHTML
+            const wrap = document.createElement( 'div' )
+            const img  = document.createElement( 'img' )
+            img.src    = viewer.resolveAttachmentUrl( layerConfig.clusterStyle.markerUrl, null, 'png' )
+            wrap.appendChild( img )
+            const span = document.createElement( 'span' )
+            span.textContent = String( cluster.getChildCount() )
+            wrap.appendChild( span )
+            const html = wrap.innerHTML
 
             return L.divIcon( {
                 className: 'smk-cluster-icon',

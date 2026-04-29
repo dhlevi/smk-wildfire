@@ -14,7 +14,6 @@ import { Viewer } from '../viewer'
 
 declare const maplibregl: any
 declare const turf:       any
-declare const $:          any
 declare const L:          any   // optional — used only to read esri-leaflet basemap URL templates
 
 // ---------------------------------------------------------------------------
@@ -236,6 +235,10 @@ ViewerMapLibre.prototype.initializeBasemaps = function (
 // ---------------------------------------------------------------------------
 // MapLibre style spec builders used by setBasemap()
 // ---------------------------------------------------------------------------
+
+export function basemapSpecForConfig( cfg: any ): MapLibreBasemapSpec[] {
+    return specForConfig( cfg )
+}
 
 function specForConfig( cfg: any ): MapLibreBasemapSpec[] {
     switch ( cfg.type ) {

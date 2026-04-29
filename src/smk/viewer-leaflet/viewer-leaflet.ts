@@ -8,7 +8,6 @@ import { defineBaseMaps } from '../base-maps'
 
 declare const L:    any
 declare const turf: any
-declare const $:    any
 
 // ---------------------------------------------------------------------------
 // ViewerLeaflet constructor

@@ -2,16 +2,60 @@
  * SmkMap — main map controller.
  * Converted from smk-map.js (include.module -> ES module).
  *
- * jQuery ($) is expected to be provided by the host page (as with Vue, L,
- * turf, proj4 etc).  The viewer types and tool factories are pre-registered
- * on window.SMK.TYPE.* by the ES-module side-effects of their own files.
+ * Vue is expected to be provided by the host page (as with L, turf, proj4
+ * etc).  The viewer types and tool factories are pre-registered on
+ * window.SMK.TYPE.* by the ES-module side-effects of their own files.
  */
 
 import spinnerGifUrl from './spinner.gif'
 import { waitAll, resolved } from './util'
 
 declare const Vue: any
-declare const $:   any
+
+// ---------------------------------------------------------------------------
+// Small DOM helpers (replace jQuery)
+// ---------------------------------------------------------------------------
+
+/** Parse an HTML fragment string and return its first element. */
+function htmlToElement( html: string ): HTMLElement {
+    const tpl = document.createElement( 'template' )
+    tpl.innerHTML = html.trim()
+    const el = tpl.content.firstElementChild
+    if ( !el ) throw new Error( 'htmlToElement: invalid HTML "' + html + '"' )
+    return el as HTMLElement
+}
+
+/** Apply a map of HTML attributes to an element. */
+function setAttrs( el: HTMLElement, attrs?: Record<string, any> ): void {
+    if ( !attrs ) return
+    Object.keys( attrs ).forEach( ( k: string ) => el.setAttribute( k, String( attrs[ k ] ) ) )
+}
+
+/** Animate opacity from 0 to 1 over `duration` ms; returns a promise. */
+function fadeIn( el: HTMLElement, duration: number ): Promise<void> {
+    return new Promise<void>( ( resolve ) => {
+        el.style.opacity    = '0'
+        el.style.display    = ''
+        el.style.transition = 'opacity ' + duration + 'ms'
+        // Force reflow so the transition takes effect.
+        void el.offsetWidth
+        el.style.opacity = '1'
+        const done = () => { el.style.transition = ''; el.removeEventListener( 'transitionend', done ); resolve() }
+        el.addEventListener( 'transitionend', done )
+        setTimeout( done, duration + 50 )
+    } )
+}
+
+/** Animate opacity from current to 0 over `duration` ms; returns a promise. */
+function fadeOut( el: HTMLElement, duration: number ): Promise<void> {
+    return new Promise<void>( ( resolve ) => {
+        el.style.transition = 'opacity ' + duration + 'ms'
+        el.style.opacity    = '0'
+        const done = () => { el.style.transition = ''; el.removeEventListener( 'transitionend', done ); resolve() }
+        el.addEventListener( 'transitionend', done )
+        setTimeout( done, duration + 50 )
+    } )
+}
 
 // ---------------------------------------------------------------------------
 // SmkMap constructor
@@ -32,29 +76,31 @@ SmkMap.prototype.resolveAssetUrl = function ( url: string ) {
 SmkMap.prototype.initialize = function () {
     const self = this
 
-    const container = $( this.$option.containerSel )
-    if ( container.length !== 1 )
+    const matches = document.querySelectorAll( this.$option.containerSel )
+    if ( matches.length !== 1 )
         throw new Error( 'smk-container-sel "' + this.$option.containerSel + '" doesn\'t match a unique element' )
 
-    container.empty()
-    container.addClass( 'smk-map-frame smk-hidden' )
+    const container = matches[ 0 ] as HTMLElement
+    container.innerHTML = ''
+    container.classList.add( 'smk-map-frame', 'smk-hidden' )
 
-    const p       = container.position()
-    const spinner = $( '<img>' )
-        .attr( 'src', spinnerGifUrl )
-        .insertAfter( container )
-        .css( {
-            zIndex:     99999,
-            visibility: 'visible',
-            position:   'absolute',
-            width:      64,
-            height:     64,
-            left:       p.left + container.outerWidth()  / 2 - 32,
-            top:        p.top  + container.outerHeight() / 2 - 32,
-        } )
+    const spinner = document.createElement( 'img' )
+    spinner.src = spinnerGifUrl
+    if ( container.parentNode ) {
+        container.parentNode.insertBefore( spinner, container.nextSibling )
+    }
+    Object.assign( spinner.style, {
+        zIndex:     '99999',
+        visibility: 'visible',
+        position:   'absolute',
+        width:      '64px',
+        height:     '64px',
+        left:       ( container.offsetLeft + container.offsetWidth  / 2 - 32 ) + 'px',
+        top:        ( container.offsetTop  + container.offsetHeight / 2 - 32 ) + 'px',
+    } )
 
-    container.empty()
-    this.$container = container.get( 0 )
+    container.innerHTML = ''
+    this.$container = container
 
     const dojoConfig: any = ( window as any ).dojoConfig
     if ( dojoConfig && dojoConfig.packages && dojoConfig.packages[ 0 ] ) {
@@ -73,15 +119,13 @@ SmkMap.prototype.initialize = function () {
         .then( initDisplayContext )
         .then( showMap )
         .finally( function () {
-            return ( new Promise<void>( function ( res ) {
-                container
-                    .hide()
-                    .removeClass( 'smk-hidden' )
-                    .fadeIn( 1000, res )
+            container.style.display = 'none'
+            container.classList.remove( 'smk-hidden' )
 
-                spinner.fadeOut( 1000 )
-            } ) )
-            .then( function () {
+            const fadeInP  = fadeIn( container, 1000 )
+            const fadeOutP = fadeOut( spinner,   1000 )
+
+            return Promise.all( [ fadeInP, fadeOutP ] ).then( function () {
                 spinner.remove()
             } )
         } )
@@ -125,13 +169,11 @@ SmkMap.prototype.initialize = function () {
     }
 
     function initMapFrame() {
-        $( self.$container )
-            .addClass( 'smk-viewer-' + self.viewer.type )
+        self.$container.classList.add( 'smk-viewer-' + self.viewer.type )
 
         const themes: string[] = [ 'base' ].concat( self.viewer.themes || [] ).map( ( th: string ) => 'theme-' + th )
 
-        $( self.$container )
-            .addClass( themes.map( ( th: string ) => 'smk-' + th ).join( ' ' ) )
+        themes.forEach( ( th: string ) => self.$container.classList.add( 'smk-' + th ) )
 
         self.detectDevice()
 
@@ -263,22 +305,30 @@ SmkMap.prototype.destroy = function () {
     if ( smkMaps ) delete smkMaps[ this.$option.id ]
 }
 
-SmkMap.prototype.addToContainer = function ( html: string, attr?: Record<string, any>, prepend?: boolean ) {
-    return $( html )[ prepend ? 'prependTo' : 'appendTo' ]( this.$container ).attr( attr || {} ).get( 0 )
+SmkMap.prototype.addToContainer = function ( html: string | HTMLElement, attr?: Record<string, any>, prepend?: boolean ) {
+    const el = typeof html === 'string' ? htmlToElement( html ) : html
+    setAttrs( el, attr )
+    if ( prepend ) this.$container.insertBefore( el, this.$container.firstChild )
+    else           this.$container.appendChild( el )
+    return el
 }
 
-SmkMap.prototype.addToOverlay = function ( html: string ) {
+SmkMap.prototype.addToOverlay = function ( html: string | HTMLElement ) {
     if ( !this.$overlay )
-        this.$overlay = this.addToContainer( '<div class="smk-overlay">' )
+        this.$overlay = this.addToContainer( '<div class="smk-overlay"></div>' )
 
-    return $( html ).appendTo( this.$overlay ).get( 0 )
+    const el = typeof html === 'string' ? htmlToElement( html ) : html
+    this.$overlay.appendChild( el )
+    return el
 }
 
-SmkMap.prototype.addToStatus = function ( html: string ) {
+SmkMap.prototype.addToStatus = function ( html: string | HTMLElement ) {
     if ( !this.$status )
-        this.$status = this.addToOverlay( '<div class="smk-status smk-elastic-container">' )
+        this.$status = this.addToOverlay( '<div class="smk-status smk-elastic-container"></div>' )
 
-    return $( html ).appendTo( this.$status ).get( 0 )
+    const el = typeof html === 'string' ? htmlToElement( html ) : html
+    this.$status.appendChild( el )
+    return el
 }
 
 SmkMap.prototype.getSidepanel = function () {
@@ -345,11 +395,12 @@ SmkMap.prototype.debugMessage = function ( opt: Record<string, any> ) {
 }
 
 SmkMap.prototype.getVar = function ( cssVar: string ) {
-    return $( this.$container ).css( '--' + cssVar )
+    return getComputedStyle( this.$container ).getPropertyValue( '--' + cssVar )
 }
 
 SmkMap.prototype.setVar = function ( cssVar: string, value: string ) {
-    return $( this.$container ).css( '--' + cssVar, value )
+    this.$container.style.setProperty( '--' + cssVar, value )
+    return this
 }
 
 SmkMap.prototype.emit = function ( toolId: string, event: string, arg: any, comp: any ) {
@@ -369,17 +420,17 @@ SmkMap.prototype.detectDevice = function () {
     let dev = this.viewer.device
 
     if ( dev === 'auto' ) {
-        const w = $( window ).width()
+        const w = window.innerWidth
         dev = w >= this.viewer.deviceAutoBreakpoint ? 'desktop' : 'mobile'
     }
 
     if ( dev === this.$device ) return
 
     if ( this.$device )
-        $( this.$container ).removeClass( 'smk-device-' + this.$device )
+        this.$container.classList.remove( 'smk-device-' + this.$device )
 
     this.$device = dev
-    $( this.$container ).addClass( 'smk-device-' + this.$device )
+    this.$container.classList.add( 'smk-device-' + this.$device )
 
     return this.$device
 }
