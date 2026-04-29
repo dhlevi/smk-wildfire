@@ -23308,21 +23308,31 @@ var panel_bespoke_default = "<tool-panel class=\"smk-bespoke-panel\" \n    v-bin
 Vue.component("bespoke-widget", { extends: smkRef$36.COMPONENT.ToolWidgetBase }), Vue.component("bespoke-panel", {
 	extends: smkRef$36.COMPONENT.ToolPanelBase,
 	template: panel_bespoke_default,
-	props: ["bespoke"]
+	props: ["content", "component"]
 });
 var factory$25 = Tool.define("BespokeTool", function() {
-	smkRef$36.TYPE.ToolWidget.call(this, "bespoke-widget"), smkRef$36.TYPE.ToolPanel.call(this, "bespoke-panel"), this.defineProp("bespoke"), this.bespoke = {};
+	smkRef$36.TYPE.ToolWidget.call(this, "bespoke-widget"), smkRef$36.TYPE.ToolPanel.call(this, "bespoke-panel"), this.defineProp("content"), this.defineProp("component");
 }, function(e) {
 	let t = this;
-	this.changedActive(function() {
-		t.active ? smkRef$36.HANDLER.get(t.id, "activated")(e, t) : smkRef$36.HANDLER.get(t.id, "deactivated")(e, t);
-	}), smkRef$36.HANDLER.get(t.id, "initialized")(e, t), e.on(this.id, { trigger(n) {
-		smkRef$36.HANDLER.get(t.id, "triggered")(e, t);
-	} }), this.bespoke.create = function(n) {
+	e.on(this.id, {
+		activate: function() {
+			t.enabled && smkRef$36.HANDLER.has(t.id, "triggered") && (t.active = !1, smkRef$36.HANDLER.get(t.id, "triggered")(e, t));
+		},
+		"swipe-up": function() {
+			e.$sidepanel.setExpand(2);
+		},
+		"swipe-down": function() {
+			e.$sidepanel.incrExpand(-1);
+		}
+	}), this.component || (this.content = { createContent: function(n) {
 		smkRef$36.HANDLER.get(t.id, "activated")(e, t, n);
-	};
-});
-factory$25.configure = function() {}, smkRef$36.TYPE["tool-bespoke"] = factory$25;
+	} }), this.changedActive(function() {
+		t.active ? t.component && smkRef$36.HANDLER.get(t.id, "activated")(e, t) : smkRef$36.HANDLER.get(t.id, "deactivated")(e, t);
+	}), smkRef$36.HANDLER.get(t.id, "initialized")(e, t);
+}, { configure(e, t) {
+	return Object.assign(this, t), this.instance ? this.id = e + "--" + this.instance : this.id = e, this;
+} });
+smkRef$36.TYPE["tool-bespoke"] = factory$25;
 //#endregion
 //#region src/smk/tool/bookmarks/panel-bookmarks.html?raw
 var panel_bookmarks_default = "<tool-panel class=\"smk-bookmarks-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <div class=\"smk-bookmarks\">\n        <div class=\"smk-bookmark\"\n            v-for=\"bookmark in bookmarks\"\n            v-on:click=\"$$emit( 'show-bookmark', bookmark )\"\n        >\n            {{ bookmark.title }}\n        </div>\n    </div>\n</tool-panel>", smkRef$35 = window.SMK;
@@ -24203,7 +24213,10 @@ function asyncIterator(e, t, n) {
 	});
 }
 var factory$8 = Tool.define("QueryParametersTool", function() {
-	smkRef$19.TYPE.ToolWidget.call(this, "query-widget"), smkRef$19.TYPE.ToolPanel.call(this, "query-panel"), this.defineProp("description"), this.defineProp("parameters"), this.defineProp("within"), this.defineProp("command");
+	smkRef$19.TYPE.ToolWidget.call(this, "query-widget"), smkRef$19.TYPE.ToolPanel.call(this, "query-panel"), this.defineProp("description"), this.defineProp("parameters"), this.defineProp("within"), this.defineProp("command"), this.command = {
+		within: !0,
+		select: !0
+	};
 }, function(e) {
 	let t = this;
 	if (!this.instance) throw Error("query tool needs an instance");
@@ -24428,7 +24441,7 @@ var factory$4 = Tool.define("DirectionsWaypointsTool", function() {
 	this.routePanel = e.getToolById("DirectionsRouteTool"), this.routeOptions = e.getToolById("DirectionsOptionsTool"), this.routePlanner = new smkRef$14.TYPE.RoutePlanner(this.routePlannerService), this.geocoder = new smkRef$14.TYPE.Geocoder(this.geocoderService), this.changedActive(function() {
 		t.active && (t.optimal = t.routeOptions.optimal);
 	}), this.getCurrentLocation = function() {
-		t.showStatusMessage("Finding current location...", "progress", null), t.busy = !0, e.$viewer.getCurrentLocation().finally(function() {
+		return t.showStatusMessage("Finding current location...", "progress", null), t.busy = !0, e.$viewer.getCurrentLocation().finally(function() {
 			t.busy = !1, t.showStatusMessage();
 		});
 	}, e.$viewer.handlePick(2, function(e) {
@@ -39652,6 +39665,127 @@ SMK.TYPE.MinimapTool.addInitializer(function(e) {
 		i.forEach((e) => {
 			d.getSource(e.sourceId) || d.addSource(e.sourceId, e.source), d.getLayer(e.layer.id) || d.addLayer(e.layer, a);
 		});
+	});
+});
+//#endregion
+//#region src/smk/viewer-maplibre/tool/directions/tool-directions-maplibre.ts
+var HIGHLIGHT_SOURCE = "_smk-directions-highlight", PICK_SOURCE = "_smk-directions-pick", HIGHLIGHT_LAYER = "_smk-directions-highlight-layer", PICK_LAYER = "_smk-directions-pick-layer";
+window.SMK.TYPE.DirectionsWaypointsTool.addInitializer(function(e) {
+	if (e.$viewer.type !== "maplibre") return;
+	let t = this, n = e.$viewer.map;
+	function i() {
+		return {
+			type: "FeatureCollection",
+			features: []
+		};
+	}
+	function a() {
+		n.getSource(HIGHLIGHT_SOURCE) || (n.addSource(HIGHLIGHT_SOURCE, {
+			type: "geojson",
+			data: i()
+		}), n.addLayer({
+			id: HIGHLIGHT_LAYER,
+			type: "circle",
+			source: HIGHLIGHT_SOURCE,
+			paint: {
+				"circle-radius": 7,
+				"circle-color": "#3388ff",
+				"circle-stroke-color": "#ffffff",
+				"circle-stroke-width": 2,
+				"circle-opacity": .9
+			}
+		})), n.getSource(PICK_SOURCE) || (n.addSource(PICK_SOURCE, {
+			type: "geojson",
+			data: i()
+		}), n.addLayer({
+			id: PICK_LAYER,
+			type: "circle",
+			source: PICK_SOURCE,
+			paint: {
+				"circle-radius": 15,
+				"circle-color": "#3388ff",
+				"circle-opacity": .25,
+				"circle-stroke-color": "#3388ff",
+				"circle-stroke-width": 2
+			}
+		}));
+	}
+	function o(e, t) {
+		n.getLayer(e) && n.setLayoutProperty(e, "visibility", t ? "visible" : "none");
+	}
+	function s(e, t) {
+		let i = n.getSource(e);
+		i && i.setData(t);
+	}
+	function c(e) {
+		return {
+			type: "FeatureCollection",
+			features: [{
+				type: "Feature",
+				geometry: {
+					type: "Point",
+					coordinates: [e[0], e[1]]
+				},
+				properties: {}
+			}]
+		};
+	}
+	function l(e) {
+		n.isStyleLoaded() ? e() : n.once("styledata", e);
+	}
+	l(() => {
+		a(), o(HIGHLIGHT_LAYER, !!t.visible), o(PICK_LAYER, !!t.visible);
+	}), this.changedGroup(function() {
+		t.visible = t.group;
+	}), this.changedVisible(function() {
+		l(() => {
+			a(), o(HIGHLIGHT_LAYER, !!t.visible), o(PICK_LAYER, !!t.visible), t.visible || (s(HIGHLIGHT_SOURCE, i()), s(PICK_SOURCE, i()));
+		});
+	});
+	function u() {
+		s(HIGHLIGHT_SOURCE, i()), s(PICK_SOURCE, i());
+	}
+	function d(t, i) {
+		let a = e.$viewer.getPanelPadding(!0);
+		n.fitBounds([[t[0], t[1]], [t[0], t[1]]], {
+			padding: {
+				top: a.topLeft.y,
+				left: a.topLeft.x,
+				bottom: a.bottomRight.y,
+				right: a.bottomRight.x
+			},
+			maxZoom: i || 15,
+			animate: !0
+		});
+	}
+	e.on("directions-route", {
+		"hover-direction": function(e) {
+			l(() => {
+				if (a(), e.highlight == null) {
+					s(HIGHLIGHT_SOURCE, i());
+					return;
+				}
+				let n = t.directions[e.highlight].point;
+				s(HIGHLIGHT_SOURCE, c(n));
+			});
+		},
+		"pick-direction": function(e) {
+			l(() => {
+				if (a(), e.pick == null) {
+					s(PICK_SOURCE, i());
+					return;
+				}
+				let n = t.directions[e.pick].point;
+				s(PICK_SOURCE, c(n)), d(n);
+			});
+		}
+	}), e.on(this.id, {
+		clear: function() {
+			u();
+		},
+		"zoom-waypoint": function(e) {
+			d([e.waypoint.longitude, e.waypoint.latitude]);
+		}
 	});
 });
 //#endregion

@@ -44,6 +44,9 @@ const factory = ( Tool as any ).define( 'QueryParametersTool',
         this.defineProp( 'parameters' )
         this.defineProp( 'within' )
         this.defineProp( 'command' )
+        // default command is to execute the query with the current parameters, within the current map extent
+        // skipped in js conversion, so check other spots where I made similar mistakes!
+        this.command = { within: true, select: true }
     },
     function ( this: any, smk: any ) {
         const self = this
