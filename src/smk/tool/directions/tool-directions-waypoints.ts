@@ -5,11 +5,12 @@
 
 import Tool from '../../tool'
 import panelDirectionsHtml from './panel-directions.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 declare const turf: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 function close( w1: any, w2: any ) {
     if ( Math.abs( w1.latitude  - w2.latitude  ) > 1e-5 ) return false

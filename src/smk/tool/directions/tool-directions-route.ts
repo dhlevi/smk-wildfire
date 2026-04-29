@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import panelDirectionsRouteHtml from './panel-directions-route.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 const instructionType: Record<string, [ string, boolean | null, string ]> = {
     START:             [ 'trip_origin',     null,  'Go on' ],

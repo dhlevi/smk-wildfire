@@ -9,6 +9,7 @@
  */
 
 import '../../../tool/directions/tool-directions-waypoints'
+import { SMK } from '../../../smk-ref'
 
 declare const maplibregl: any
 
@@ -17,7 +18,7 @@ const PICK_SOURCE      = '_smk-directions-pick'
 const HIGHLIGHT_LAYER  = '_smk-directions-highlight-layer'
 const PICK_LAYER       = '_smk-directions-pick-layer'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 smkRef.TYPE.DirectionsWaypointsTool.addInitializer( function ( this: any, smk: any ) {
     if ( smk.$viewer.type !== 'maplibre' ) return

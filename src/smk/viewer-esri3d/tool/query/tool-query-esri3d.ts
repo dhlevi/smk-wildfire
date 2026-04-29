@@ -4,8 +4,9 @@
  */
 
 import '../../../tool/query/tool-query-results'
+import { SMK } from '../../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 // Patches QueryResultsTool (not QueryTool — that name never existed; Leaflet
 // equivalent uses QueryResultsTool.addInitializer)

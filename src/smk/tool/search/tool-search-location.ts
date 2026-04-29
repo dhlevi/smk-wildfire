@@ -7,10 +7,11 @@ import Tool from '../../tool'
 import panelSearchLocationHtml from './panel-search-location.html?raw'
 import locationTitleHtml from './location-title.html?raw'
 import locationAddressHtml from './location-address.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'search-location-panel', {
     extends: smkRef.COMPONENT.ToolPanelBase,

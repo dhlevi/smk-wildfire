@@ -6,10 +6,11 @@
 import Tool from '../../tool'
 import panelLayersHtml from './panel-layers.html?raw'
 import layerDisplayHtml from './layer-display.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'layer-display', {
     mixins: [ smkRef.COMPONENT.ToolEmit ],

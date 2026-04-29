@@ -5,8 +5,9 @@
 import { toolFeatureListClusteringLeaflet } from '../tool-feature-list-clustering-leaflet'
 
 import '../../../tool/query/tool-query-results'
+import { SMK } from '../../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 smkRef.TYPE.QueryResultsTool.addInitializer( function ( this: any ) {
     this.styleFeature = function () {

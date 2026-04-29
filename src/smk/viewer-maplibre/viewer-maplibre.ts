@@ -11,6 +11,7 @@
  */
 
 import { Viewer } from '../viewer'
+import { SMK } from '../smk-ref'
 
 declare const maplibregl: any
 declare const turf:       any
@@ -25,7 +26,7 @@ export class ViewerMapLibre extends Viewer {
 }
 
 // Register on SMK.TYPE.Viewer.maplibre
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 if ( smkRef ) {
     if ( !smkRef.TYPE )         smkRef.TYPE = {}
     if ( !smkRef.TYPE.Viewer )  smkRef.TYPE.Viewer = {}
@@ -131,7 +132,7 @@ ViewerMapLibre.prototype.initialize = function ( smk: any ) {
                 self.setBasemap( smk.viewer.baseMap )
             }
 
-            self.changedViewDebounced = ( window as any ).SMK.UTIL.makeDelayedCall( function () {
+            self.changedViewDebounced = SMK.UTIL.makeDelayedCall( function () {
                 self.changedView()
             }, { delay: 500 } )
 

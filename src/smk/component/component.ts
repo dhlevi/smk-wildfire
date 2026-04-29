@@ -6,6 +6,7 @@
 import formatLinkHtml from './format-link.html?raw'
 import toolWidgetHtml from './tool-widget.html?raw'
 import { templateReplace } from '../util'
+import { SMK } from '../smk-ref'
 
 declare const Vue: any
 
@@ -16,7 +17,7 @@ declare const Vue: any
 export const FeatureBase: any = {
     props: [ 'feature', 'layer', 'showHeader', 'attributes' ],
     created( this: any ) {
-        const smk = ( window as any ).SMK
+        const smk = SMK
         if ( smk && smk.HANDLER && smk.HANDLER.has( 'IdentifyFeatureTool', 'attribute-replacer-context' ) ) {
             const rep = smk.HANDLER.get( 'IdentifyFeatureTool', 'attribute-replacer-context' )
             this.replacerContext = rep.call( this, this.layer.id )
@@ -186,7 +187,7 @@ export const ToolWidgetBase: any = {
 // ---------------------------------------------------------------------------
 
 export function setupComponents(): void {
-    const smkRef = ( window as any ).SMK
+    const smkRef = SMK
     if ( !smkRef ) return
     if ( !smkRef.COMPONENT ) smkRef.COMPONENT = {}
 

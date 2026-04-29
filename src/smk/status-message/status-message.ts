@@ -6,6 +6,7 @@
 import { SMKEvent } from '../event'
 import statusMessageHtml from './status-message.html?raw'
 import { resolved, makePromise, makeDelayedCall } from '../util'
+import { SMK } from '../smk-ref'
 
 declare const Vue: any
 
@@ -78,7 +79,7 @@ StatusMessage.prototype.show = function (
 
 // Assign to SMK.TYPE for backward compat
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk && smk.TYPE ) smk.TYPE.StatusMessage = StatusMessage
 }
 

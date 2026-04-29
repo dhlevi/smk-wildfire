@@ -28,6 +28,7 @@ import {
     makeMutex,
 } from './util'
 import type { Layer }    from './layer/layer'
+import { SMK } from './smk-ref'
 
 // ---------------------------------------------------------------------------
 // ViewerEvent — typed event subclass for all viewer instances
@@ -154,7 +155,7 @@ export class Viewer {
         this.resolveUrl = ( url: string ) => smk.resolveAssetUrl( url )
         this.clusterOption = smk.viewer.clusterOption
 
-        const FeatureSet = ( window as any ).SMK?.TYPE?.FeatureSet  // set by feature-set.ts
+        const FeatureSet = SMK?.TYPE?.FeatureSet  // set by feature-set.ts
         this.identified = FeatureSet ? new FeatureSet() : {}
         this.selected   = FeatureSet ? new FeatureSet() : {}
         this.searched   = FeatureSet ? new FeatureSet() : {}
@@ -203,7 +204,7 @@ export class Viewer {
                 const ld = self.addLayer( layerConfig )
 
                 // TODO: replace SMK.TYPE.Query.* with an import once query.ts is converted
-                const QueryTypes = ( window as any ).SMK?.TYPE?.Query  // set by query/query.ts
+                const QueryTypes = SMK?.TYPE?.Query  // set by query/query.ts
                 if ( layerConfig.queries && QueryTypes ) {
                     layerConfig.queries.forEach( ( q: any ) => {
                         const query = new QueryTypes[ layerConfig.type ]( ld.id, q )
@@ -241,7 +242,7 @@ export class Viewer {
         // place query tool integration
         if ( smk.$tool?.[ 'query-place' ] && FeatureSet ) {
             self.queried.place = new FeatureSet()
-            const QueryTypes = ( window as any ).SMK?.TYPE?.Query
+            const QueryTypes = SMK?.TYPE?.Query
             if ( QueryTypes ) {
                 self.query.place = new QueryTypes.place( 'place' )
             }
@@ -300,7 +301,7 @@ export class Viewer {
 
     initializeBasemaps( defineBaseMap: Function, defineBaseMapType: Function ): void {
         // TODO: replace inc['base-maps'] with a direct import once base-maps.ts is converted
-        const baseMapsSetup = ( window as any ).SMK?._baseMaps
+        const baseMapsSetup = SMK?._baseMaps
         if ( baseMapsSetup ) baseMapsSetup( defineBaseMap, defineBaseMapType )
 
         if ( window.SMK?.HANDLER?.has( 'viewer', 'defineBaseMap' ) )
@@ -432,7 +433,7 @@ export class Viewer {
             return
         }
 
-        const LayerDisplayContext = ( window as any ).SMK?.TYPE?.LayerDisplayContext  // set by layer-display.ts
+        const LayerDisplayContext = SMK?.TYPE?.LayerDisplayContext  // set by layer-display.ts
         const dc = this.displayContext[ context ] = LayerDisplayContext
             ? new LayerDisplayContext( items || [], this.layerId )
             : { changedVisibility: () => {}, setView: () => {}, root: null }

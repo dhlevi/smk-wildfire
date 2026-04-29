@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import panelBespokeHtml from './panel-bespoke.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'bespoke-widget', {
     extends: smkRef.COMPONENT.ToolWidgetBase,

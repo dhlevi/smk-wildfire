@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import panelDirectionsOptionsHtml from './panel-directions-options.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'directions-options-panel', {
     extends: smkRef.COMPONENT.ToolPanelBase,

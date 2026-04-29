@@ -1,3 +1,4 @@
+import { SMK } from '../../smk-ref'
 /**
  * tool-feature-list-clustering-leaflet — clustering display for feature-list tools.
  * Converted from tool-feature-list-clustering-leaflet.js.
@@ -6,7 +7,7 @@
 declare const L:    any
 declare const turf: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 /** Called with tool instance as `this` context; smk is first arg */
 export function toolFeatureListClusteringLeaflet( this: any, smk: any ) {

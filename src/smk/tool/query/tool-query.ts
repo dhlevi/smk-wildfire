@@ -7,8 +7,9 @@ import Tool from '../../tool'
 import QueryParametersFactory from './tool-query-parameters'
 import QueryResultsFactory from './tool-query-results'
 import QueryFeatureFactory from './tool-query-feature'
+import { SMK } from '../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 const factory = ( Tool as any ).defineComposite( [
     QueryParametersFactory,

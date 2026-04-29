@@ -1,3 +1,4 @@
+import { SMK } from '../../smk-ref'
 /**
  * tool-internal-layers mixin — manages internal map layers for a Tool.
  * Converted from mixin/tool-internal-layers/tool-internal-layers.js.
@@ -42,7 +43,7 @@ export function ToolInternalLayers( this: any ): void {
 
 // Assign to SMK.TYPE for backward compat
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk && smk.TYPE ) smk.TYPE.ToolInternalLayers = ToolInternalLayers
 }
 

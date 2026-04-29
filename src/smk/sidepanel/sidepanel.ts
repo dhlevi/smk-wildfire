@@ -5,6 +5,7 @@
 
 import { SMKEvent } from '../event'
 import sidepanelHtml from './sidepanel.html?raw'
+import { SMK } from '../smk-ref'
 
 declare const Vue: any
 
@@ -117,7 +118,7 @@ Sidepanel.prototype.addTool = function ( tool: any, smk: any ) {
 
 // Assign to SMK.TYPE for backward compat
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk && smk.TYPE ) smk.TYPE.Sidepanel = Sidepanel
 }
 

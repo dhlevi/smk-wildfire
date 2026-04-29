@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import panelBookmarksHtml from './panel-bookmarks.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'bookmarks-widget', {
     extends: smkRef.COMPONENT.ToolWidgetBase,

@@ -6,6 +6,7 @@
 import { SMKEvent } from './event'
 import { ToolBase } from './mixin/tool-base/tool-base'
 import { type as smkType } from './util'
+import { SMK } from './smk-ref'
 
 declare const Vue: any
 
@@ -154,7 +155,7 @@ Tool.prototype.modifyComponentProp = function ( propName: string, modify: Functi
         events = SMKEvent.define( option.events )
     }
 
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( !smk || !smk.TYPE ) throw new Error( 'SMK.TYPE not available' )
 
     smk.TYPE[ name ] = function ( this: any ) {
@@ -203,7 +204,7 @@ Tool.prototype.modifyComponentProp = function ( propName: string, modify: Functi
 
 // Assign to SMK.TYPE for backward compat
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk && smk.TYPE ) smk.TYPE.Tool = Tool
 }
 

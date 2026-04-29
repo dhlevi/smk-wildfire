@@ -1,3 +1,4 @@
+import { SMK } from '../smk-ref'
 /**
  * util-esri3d — GeoJSON ↔ ESRI geometry conversion and symbol helpers.
  * Converted from util-esri3d.js.
@@ -7,7 +8,7 @@
 
 declare const Terraformer: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 // ---------------------------------------------------------------------------
 // GeoJSON to ESRI geometry conversion

@@ -8,8 +8,9 @@ declare const L:    any
 declare const turf: any
 
 import '../../../tool/select/tool-select-list'
+import { SMK } from '../../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 smkRef.TYPE.SelectListTool.addInitializer( function ( this: any ) {
     this.styleFeature = function () {

@@ -1,9 +1,10 @@
+import { SMK } from '../smk-ref'
 /**
  * feature-list-esri3d — Feature highlight graphics for ESRI 3D viewer.
  * Converted from viewer-esri3d/feature-list-esri3d.js.
  */
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 export function toolFeatureListEsri3d( this: any, smk: any ) {
     const self = this

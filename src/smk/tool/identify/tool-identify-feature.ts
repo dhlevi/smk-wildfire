@@ -4,10 +4,11 @@
  */
 
 import Tool from '../../tool'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 const factory = ( Tool as any ).define( 'IdentifyFeatureTool',
     function ( this: any ) {

@@ -30,12 +30,21 @@ declare global {
 }
 
 export interface SMKNamespace {
-    TYPE:       SMKTypeRegistry
-    UTIL:       typeof UTILType
-    HANDLER:    SMKHandlerRegistry
-    ON_FAILURE: ( err: Error, el?: Element ) => void
-    INIT?:      ( option: Record<string, unknown> ) => void
-    FAILURE?:   Error
+    TYPE:        SMKTypeRegistry
+    UTIL:        typeof UTILType
+    HANDLER:     SMKHandlerRegistry
+    ON_FAILURE:  ( err: Error, el?: Element ) => void
+    INIT?:       ( option: Record<string, unknown> ) => void
+    FAILURE?:    Error
+    // Runtime sub-namespaces that modules self-register into.  Typed as `any`
+    // for now (a future pass can refine each).
+    COMPONENT?:  Record<string, any>
+    CONFIG?:     Record<string, any>
+    PROJECTIONS?: any[]
+    MAP?:        Record<string, any>
+    BUILD?:      Record<string, any>
+    // Catch-all for ad-hoc registrations (e.g. _baseMaps cache).
+    [key: string]: any
 }
 
 export interface SMKTypeRegistry {

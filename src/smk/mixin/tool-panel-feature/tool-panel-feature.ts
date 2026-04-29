@@ -1,3 +1,4 @@
+import { SMK } from '../../smk-ref'
 /**
  * tool-panel-feature mixin — manages a feature detail panel for a Tool.
  * Converted from mixin/tool-panel-feature/tool-panel-feature.js.
@@ -58,7 +59,7 @@ export function ToolPanelFeature( this: any, featureSetCallback: ( this: any, sm
                     try {
                         Vue.component( this.attributeComponent, {
                             template,
-                            extends: ( window as any ).SMK?.COMPONENT?.FeatureBase,
+                            extends: SMK?.COMPONENT?.FeatureBase,
                         } )
                     } catch ( e ) {
                         console.warn( 'failed compiling template:', this.attributeComponent, e )
@@ -89,7 +90,7 @@ export function ToolPanelFeature( this: any, featureSetCallback: ( this: any, sm
 
 // Assign to SMK.TYPE for backward compat
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk && smk.TYPE ) smk.TYPE.ToolPanelFeature = ToolPanelFeature
 }
 

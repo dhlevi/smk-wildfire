@@ -2,6 +2,7 @@
  * component-address-search — Vue component for geocoder address search.
  */
 import template from './component-address-search.html?raw'
+import { SMK } from '../../smk-ref'
 declare const Vue: any
 
 Vue.component( 'address-search', {
@@ -16,7 +17,7 @@ Vue.component( 'address-search', {
             list:          null as any[] | null,
             selectedIndex: null as number | null,
             expanded:      false,
-            geocoder:      new ( window as any ).SMK.TYPE.Geocoder( this.geocoderService ),
+            geocoder:      new SMK.TYPE.Geocoder( this.geocoderService ),
         }
     },
     methods: {

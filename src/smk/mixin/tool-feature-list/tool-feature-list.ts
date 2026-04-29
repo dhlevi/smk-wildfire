@@ -1,3 +1,4 @@
+import { SMK } from '../../smk-ref'
 /**
  * tool-feature-list mixin — manages a feature result list for a Tool.
  * Converted from mixin/tool-feature-list/tool-feature-list.js.
@@ -122,7 +123,7 @@ export function ToolFeatureList( this: any, featureSetCallback: ( this: any, smk
 
 // Assign to SMK.TYPE for backward compat
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk && smk.TYPE ) smk.TYPE.ToolFeatureList = ToolFeatureList
 }
 

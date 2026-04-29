@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import shortcutMenuHtml from './shortcut-menu.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 const factory = ( Tool as any ).define( 'ShortcutMenuTool',
     function ( this: any ) {

@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import widgetPanHtml from './widget-pan.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'pan-widget', {
     extends: smkRef.COMPONENT.ToolWidgetBase,

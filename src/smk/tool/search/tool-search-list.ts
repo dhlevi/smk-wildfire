@@ -6,11 +6,12 @@
 import Tool from '../../tool'
 import widgetSearchHtml from './widget-search.html?raw'
 import panelSearchHtml from './panel-search.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 declare const turf: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 const precisionZoom: Record<string, number> = {
     INTERSECTION:  15,

@@ -5,6 +5,7 @@
 
 import topoStyleJson  from './assets/vector-basemap-topo.json'
 import nightStyleJson from './assets/vector-basemap-night.json'
+import { SMK } from './smk-ref'
 
 // Pre-parse JSON styles (the AMD build parsed them via JSON.parse on the template string)
 const topoStyle  = topoStyleJson  as any
@@ -155,6 +156,6 @@ export default defineBaseMaps
 
 // Register on SMK._baseMaps so viewer.ts.initializeBasemaps() can call it.
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk ) smk._baseMaps = defineBaseMaps
 }

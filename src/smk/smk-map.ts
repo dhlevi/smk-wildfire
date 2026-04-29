@@ -9,6 +9,7 @@
 
 import spinnerGifUrl from './spinner.gif'
 import { waitAll, resolved } from './util'
+import { SMK } from './smk-ref'
 
 declare const Vue: any
 
@@ -158,7 +159,7 @@ SmkMap.prototype.initialize = function () {
     }
 
     function mergeConfigs( configs: any[] ) {
-        const smk = ( window as any ).SMK
+        const smk = SMK
         if ( smk && smk.TYPE && smk.TYPE.mergeConfigs ) {
             Object.assign( self, smk.TYPE.mergeConfigs( configs ) )
         } else {
@@ -197,7 +198,7 @@ SmkMap.prototype.initialize = function () {
     }
 
     function loadViewer() {
-        const smk = ( window as any ).SMK
+        const smk = SMK
         if ( !smk || !smk.TYPE || !smk.TYPE.Viewer ) {
             throw new Error( 'SMK.TYPE.Viewer is not available' )
         }
@@ -216,7 +217,7 @@ SmkMap.prototype.initialize = function () {
         const enabledTools = self.tools.filter( ( t: any ) => t.enabled !== false && t.instance !== true )
         if ( enabledTools.length === 0 ) return
 
-        const smk = ( window as any ).SMK
+        const smk = SMK
 
         return waitAll( enabledTools.map( function ( t: any ) {
             const tag     = 'tool-' + t.type
@@ -250,7 +251,7 @@ SmkMap.prototype.initialize = function () {
     }
 
     function initViewer() {
-        const smkType = ( ( window as any ).SMK || {} ).TYPE || {}
+        const smkType = ( SMK || {} ).TYPE || {}
 
         if ( !smkType.Viewer || !( self.viewer.type in smkType.Viewer ) )
             throw new Error( 'viewer type "' + self.viewer.type + '" not defined' )
@@ -301,7 +302,7 @@ SmkMap.prototype.initialize = function () {
 
 SmkMap.prototype.destroy = function () {
     if ( this.$viewer ) this.$viewer.destroy()
-    const smkMaps = ( window as any ).SMK && ( window as any ).SMK.MAP
+    const smkMaps = SMK && SMK.MAP
     if ( smkMaps ) delete smkMaps[ this.$option.id ]
 }
 
@@ -336,7 +337,7 @@ SmkMap.prototype.getSidepanel = function () {
 
     if ( this.$sidepanel ) return this.$sidepanel
 
-    const smkType = ( ( window as any ).SMK || {} ).TYPE || {}
+    const smkType = ( SMK || {} ).TYPE || {}
 
     this.$sidepanel = new smkType.Sidepanel( this )
 
@@ -481,7 +482,7 @@ SmkMap.prototype.updateMapSize = function () {
 
 SmkMap.prototype.getStatusMessage = function () {
     if ( this.$statusMessage ) return this.$statusMessage
-    const smkType = ( ( window as any ).SMK || {} ).TYPE || {}
+    const smkType = ( SMK || {} ).TYPE || {}
     this.$statusMessage = new smkType.StatusMessage( this )
     return this.$statusMessage
 }
@@ -564,7 +565,7 @@ function findProperty(
 
 // Assign to SMK.TYPE for backward compat
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk && smk.TYPE ) smk.TYPE.SmkMap = SmkMap
 }
 

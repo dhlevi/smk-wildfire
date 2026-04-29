@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import panelMeasureHtml from './panel-measure.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'measure-widget', {
     extends: smkRef.COMPONENT.ToolWidgetBase,

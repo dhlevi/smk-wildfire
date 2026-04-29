@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import panelQueryHtml from './panel-query.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'query-widget', {
     extends: smkRef.COMPONENT.ToolWidgetBase,

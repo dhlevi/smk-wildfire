@@ -6,10 +6,11 @@
 import Tool from '../../tool'
 import legendHtml from './legend.html?raw'
 import legendDisplayHtml from './legend-display.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'legend-display', {
     template: legendDisplayHtml,

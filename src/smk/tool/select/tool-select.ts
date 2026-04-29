@@ -6,8 +6,9 @@
 import Tool from '../../tool'
 import SelectListFactory from './tool-select-list'
 import SelectFeatureFactory from './tool-select-feature'
+import { SMK } from '../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 const factory = ( Tool as any ).defineComposite( [
     SelectListFactory,

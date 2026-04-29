@@ -5,11 +5,12 @@
 
 import Tool from '../../tool'
 import panelBaseMapsHtml from './panel-base-maps.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 declare const L: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'base-maps-widget', {
     extends: smkRef.COMPONENT.ToolWidgetBase,

@@ -4,8 +4,9 @@
  */
 
 import { WmsLayer } from '../../layer/layer-types'
+import { SMK } from '../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 class WmsEsri3dLayer extends WmsLayer {}
 

@@ -810,9 +810,13 @@ var LayerDisplayContextEvent = SMKEvent.define(["changedVisibility"]), LayerDisp
 		return this.root.items.map((e) => e.getConfig());
 	}
 };
+Object.setPrototypeOf(LayerDisplayContext.prototype, LayerDisplayContextEvent.prototype), LayerDisplayContext.prototype.constructor = LayerDisplayContext, typeof window < "u" && window.SMK && (window.SMK.TYPE.LayerDisplay = LayerDisplay, window.SMK.TYPE.LayerDisplayContext = LayerDisplayContext);
+//#endregion
+//#region src/smk/smk-ref.ts
+var SMK$1 = typeof window < "u" ? window.SMK : {};
 //#endregion
 //#region src/smk/query/query.ts
-Object.setPrototypeOf(LayerDisplayContext.prototype, LayerDisplayContextEvent.prototype), LayerDisplayContext.prototype.constructor = LayerDisplayContext, typeof window < "u" && window.SMK && (window.SMK.TYPE.LayerDisplay = LayerDisplay, window.SMK.TYPE.LayerDisplayContext = LayerDisplayContext), init_util();
+init_util();
 var QueryParameter = class {
 	constructor(e, t) {
 		this.id = e.id + "--" + t.id, this.layerId = e.layerId, this.component = "parameter-" + t.type, this.prop = Object.assign({
@@ -1272,7 +1276,7 @@ function fetchWmsUniqueValues(e, t, n, i) {
 }
 //#endregion
 //#region src/smk/layer/layer-types.ts
-typeof window < "u" && window.SMK && (window.SMK.TYPE.Query = Query, window.SMK.TYPE.QueryParameter = QueryParameter), init_util();
+typeof window < "u" && SMK$1 && (SMK$1.TYPE.Query = Query, SMK$1.TYPE.QueryParameter = QueryParameter), init_util();
 function fetchPost(e, t) {
 	let n = new URLSearchParams(Object.entries(t).map(([e, t]) => [e, String(t)]));
 	return fetch(e, {
@@ -1556,7 +1560,7 @@ var ViewerEvent = SMKEvent.define([
 	initialize(e) {
 		let t = this;
 		this.lmfId = e.lmfId, this.type = e.viewer.type, this.serviceUrl = e.$option["service-url"], this.resolveUrl = (t) => e.resolveAssetUrl(t), this.clusterOption = e.viewer.clusterOption;
-		let n = window.SMK?.TYPE?.FeatureSet;
+		let n = SMK$1?.TYPE?.FeatureSet;
 		this.identified = n ? new n() : {}, this.selected = n ? new n() : {}, this.searched = n ? new n() : {};
 		function i(n, i) {
 			let a = n.toLowerCase();
@@ -1581,7 +1585,7 @@ var ViewerEvent = SMKEvent.define([
 			};
 		}), this.pickHandlers = [], this.query = {}, this.screenpixelsToMeters = this.pixelsToMillimeters(100) / 1e3, Array.isArray(e.layers)) {
 			let i = e.layers.map((e) => {
-				let i = t.addLayer(e), a = window.SMK?.TYPE?.Query;
+				let i = t.addLayer(e), a = SMK$1?.TYPE?.Query;
 				return e.queries && a && e.queries.forEach((o) => {
 					let s = new a[e.type](i.id, o);
 					t.query[s.id] = s, t.queried[s.id] = n ? new n() : {};
@@ -1599,7 +1603,7 @@ var ViewerEvent = SMKEvent.define([
 			n && t.changedDevice(n);
 		}, { delay: 500 })), e.$tool?.["query-place"] && n) {
 			t.queried.place = new n();
-			let e = window.SMK?.TYPE?.Query;
+			let e = SMK$1?.TYPE?.Query;
 			e && (t.query.place = new e.place("place")), t.layerIds.push("place"), t.layerId.place = {
 				id: "place",
 				config: {
@@ -1629,7 +1633,7 @@ var ViewerEvent = SMKEvent.define([
 		for (let t = 2; t < 20; t += 1) if (e > this.zoomScale[t]) return [t - 1, t];
 	}
 	initializeBasemaps(e, t) {
-		let n = window.SMK?._baseMaps;
+		let n = SMK$1?._baseMaps;
 		n && n(e, t), window.SMK?.HANDLER?.has("viewer", "defineBaseMap") && window.SMK.HANDLER.get("viewer", "defineBaseMap")(e), window.SMK?.HANDLER?.has("viewer", "defineBaseMapType") && window.SMK.HANDLER.get("viewer", "defineBaseMapType")(t);
 	}
 	getBasemapIds() {
@@ -1704,7 +1708,7 @@ var ViewerEvent = SMKEvent.define([
 			console.warn(`displayContext ${e} is already defined`);
 			return;
 		}
-		let i = window.SMK?.TYPE?.LayerDisplayContext, a = this.displayContext[e] = i ? new i(t || [], this.layerId) : {
+		let i = SMK$1?.TYPE?.LayerDisplayContext, a = this.displayContext[e] = i ? new i(t || [], this.layerId) : {
 			changedVisibility: () => {},
 			setView: () => {},
 			root: null
@@ -2103,7 +2107,7 @@ function toolMerge(e, t, n) {
 	}), e[0][e[1]] = o;
 }
 function mergeConfigs(e) {
-	let t = JSON.parse(JSON.stringify(window.SMK?.CONFIG || {})), n = 0;
+	let t = JSON.parse(JSON.stringify(SMK$1?.CONFIG || {})), n = 0;
 	for (; e.length > 0;) {
 		let i = e.shift(), a = "config " + JSON.stringify(i.$source || "inline #" + ++n);
 		delete i.$source, console.groupCollapsed(a), console.debug("merging:", JSON.parse(JSON.stringify({
@@ -2114,7 +2118,7 @@ function mergeConfigs(e) {
 	return console.log("merged config", JSON.parse(JSON.stringify(t))), t;
 }
 if (mergeConfigs.merge = merge, mergeConfigs.arrayOfObjectMerge = arrayOfObjectMerge, mergeConfigs.assignMerge = assignMerge, mergeConfigs.ignoreMerge = ignoreMerge, mergeConfigs.objectMerge = objectMerge, mergeConfigs.toolMerge = toolMerge, mergeConfigs.valueMerge = valueMerge, typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && e.TYPE && (e.TYPE.mergeConfigs = mergeConfigs);
 }
 //#endregion
@@ -2217,7 +2221,7 @@ var FeatureBase = {
 		"attributes"
 	],
 	created() {
-		const smk = window.SMK;
+		const smk = SMK$1;
 		if (smk && smk.HANDLER && smk.HANDLER.has("IdentifyFeatureTool", "attribute-replacer-context")) {
 			let e = smk.HANDLER.get("IdentifyFeatureTool", "attribute-replacer-context");
 			this.replacerContext = e.call(this, this.layer.id);
@@ -2339,7 +2343,7 @@ var formatter = {
 	} }
 };
 function setupComponents() {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && (e.COMPONENT ||= {}, e.COMPONENT.FeatureBase = FeatureBase, e.COMPONENT.ToolEmit = ToolEmit, e.COMPONENT.ToolBase = ToolBase$1, e.COMPONENT.ToolPanelBase = ToolPanelBase, e.COMPONENT.ToolWidgetBase = ToolWidgetBase);
 }
 typeof window < "u" && setupComponents();
@@ -2349,7 +2353,7 @@ var component_activate_tool_default = "<div class=\"smk-activate-tool\"\n    v-b
 //#endregion
 //#region src/smk/component/activate-tool/component-activate-tool.ts
 Vue.component("activate-tool", {
-	extends: window.SMK?.COMPONENT?.ToolEmit,
+	extends: SMK$1?.COMPONENT?.ToolEmit,
 	template: component_activate_tool_default,
 	props: {
 		id: { type: String },
@@ -2376,7 +2380,7 @@ Vue.component("address-search", {
 			list: null,
 			selectedIndex: null,
 			expanded: !1,
-			geocoder: new window.SMK.TYPE.Geocoder(this.geocoderService)
+			geocoder: new SMK$1.TYPE.Geocoder(this.geocoderService)
 		};
 	},
 	methods: {
@@ -2520,7 +2524,7 @@ var component_feature_attributes_default = "<div>\n    <div class=\"smk-header\"
 //#endregion
 //#region src/smk/component/feature-attributes/component-feature-attributes.ts
 Vue.component("feature-attributes", {
-	extends: window.SMK?.COMPONENT?.FeatureBase,
+	extends: SMK$1?.COMPONENT?.FeatureBase,
 	template: component_feature_attributes_default
 });
 //#endregion
@@ -2529,7 +2533,7 @@ var component_feature_description_default = "<div class=\"smk-description\"\n   
 //#endregion
 //#region src/smk/component/feature-description/component-feature-description.ts
 Vue.component("feature-description", {
-	extends: window.SMK?.COMPONENT?.FeatureBase,
+	extends: SMK$1?.COMPONENT?.FeatureBase,
 	template: component_feature_description_default
 });
 //#endregion
@@ -2553,7 +2557,7 @@ var component_feature_properties_default = "<div>\n    <div class=\"smk-header\"
 //#endregion
 //#region src/smk/component/feature-properties/component-feature-properties.ts
 Vue.component("feature-properties", {
-	extends: window.SMK?.COMPONENT?.FeatureBase,
+	extends: SMK$1?.COMPONENT?.FeatureBase,
 	template: component_feature_properties_default,
 	computed: { sortedProperties() {
 		return !this.feature || !this.feature.properties ? [] : Object.keys(this.feature.properties).sort();
@@ -2740,7 +2744,7 @@ var component_tool_panel_feature_default = "<tool-panel class=\"smk-feature-pane
 //#endregion
 //#region src/smk/component/tool-panel-feature/component-tool-panel-feature.ts
 Vue.component("tool-panel-feature", {
-	extends: window.SMK?.COMPONENT?.ToolPanelBase,
+	extends: SMK$1?.COMPONENT?.ToolPanelBase,
 	template: component_tool_panel_feature_default,
 	props: [
 		"feature",
@@ -2765,7 +2769,7 @@ Vue.component("tool-panel-feature", {
 			})) : [];
 		},
 		customLabel() {
-			return this.command?.custom ? window.SMK?.HANDLER?.get(this.id, "show-custom")(this) : !1;
+			return this.command?.custom ? SMK$1?.HANDLER?.get(this.id, "show-custom")(this) : !1;
 		}
 	}
 });
@@ -2775,7 +2779,7 @@ var component_tool_panel_default = "<div v-bind:class=\"{ 'smk-busy': busy }\">\
 //#endregion
 //#region src/smk/component/tool-panel/component-tool-panel.ts
 Vue.component("tool-panel", {
-	extends: window.SMK?.COMPONENT?.ToolPanelBase,
+	extends: SMK$1?.COMPONENT?.ToolPanelBase,
 	template: component_tool_panel_default,
 	data() {
 		return {
@@ -2872,7 +2876,7 @@ if (Object.assign(Sidepanel.prototype, SidepanelEvent.prototype), Sidepanel.prot
 		n.model.visible = n.model.panels.some((e) => e.prop.active), t === n.model.visible && e.active && n.changedSize();
 	}), !0;
 }, typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && e.TYPE && (e.TYPE.Sidepanel = Sidepanel);
 }
 //#endregion
@@ -2910,7 +2914,7 @@ if (Object.assign(StatusMessage.prototype, StatusMessageEvent.prototype), Status
 		});
 	})) : this.clear();
 }, typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && e.TYPE && (e.TYPE.StatusMessage = StatusMessage);
 }
 //#endregion
@@ -2981,7 +2985,7 @@ function ToolFeatureList(e) {
 	});
 }
 if (typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && e.TYPE && (e.TYPE.ToolFeatureList = ToolFeatureList);
 }
 //#endregion
@@ -3005,7 +3009,7 @@ function ToolInternalLayers() {
 	});
 }
 if (typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && e.TYPE && (e.TYPE.ToolInternalLayers = ToolInternalLayers);
 }
 //#endregion
@@ -3020,7 +3024,7 @@ function ToolPanel(e) {
 	};
 }
 if (typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && e.TYPE && (e.TYPE.ToolPanel = ToolPanel);
 }
 //#endregion
@@ -3041,7 +3045,7 @@ function ToolPanelFeature(e) {
 			if (e.config.popupTemplate.startsWith("@") ? this.attributeComponent = e.config.popupTemplate.substr(1) : (this.attributeComponent = "feature-template-" + e.config.id, t = e.config.popupTemplate), !Vue.component(this.attributeComponent)) if (t) try {
 				Vue.component(this.attributeComponent, {
 					template: t,
-					extends: window.SMK?.COMPONENT?.FeatureBase
+					extends: SMK$1?.COMPONENT?.FeatureBase
 				});
 			} catch (t) {
 				console.warn("failed compiling template:", this.attributeComponent, t), e.config.popupTemplate = null;
@@ -3061,7 +3065,7 @@ function ToolPanelFeature(e) {
 	};
 }
 if (typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && e.TYPE && (e.TYPE.ToolPanelFeature = ToolPanelFeature);
 }
 //#endregion
@@ -3081,12 +3085,12 @@ function ToolWidget(e) {
 	});
 }
 if (typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && e.TYPE && (e.TYPE.ToolWidget = ToolWidget);
 }
 //#endregion
 //#region src/smk/api/geocoder.ts
-var smkRef$63 = window.SMK;
+var smkRef$62 = SMK$1;
 function Geocoder(e) {
 	Object.assign(this, {
 		timeout: 10 * 1e3,
@@ -3162,10 +3166,10 @@ Geocoder.prototype.fetchAddresses = function(e, t) {
 	} catch (e) {
 		throw e.name === "AbortError" ? Error("Request timed out") : e;
 	}
-}, smkRef$63.TYPE.Geocoder = Geocoder;
+}, smkRef$62.TYPE.Geocoder = Geocoder;
 //#endregion
 //#region src/smk/api/route-planner.ts
-var smkRef$62 = window.SMK;
+var smkRef$61 = SMK$1;
 function RoutePlanner(e) {
 	Object.assign(this, {
 		url: "https://router.api.gov.bc.ca/",
@@ -3294,7 +3298,7 @@ function close$1(e, t, n) {
 }
 //#endregion
 //#region src/smk/smk-map.ts
-smkRef$62.TYPE.RoutePlanner = RoutePlanner, init_util();
+smkRef$61.TYPE.RoutePlanner = RoutePlanner, init_util();
 function htmlToElement(e) {
 	let t = document.createElement("template");
 	t.innerHTML = e.trim();
@@ -3364,7 +3368,7 @@ SmkMap.prototype.resolveAssetUrl = function(e) {
 		}));
 	}
 	function s(t) {
-		let n = window.SMK;
+		let n = SMK$1;
 		if (n && n.TYPE && n.TYPE.mergeConfigs) Object.assign(e, n.TYPE.mergeConfigs(t));
 		else {
 			let i = n && n.TYPE && n.TYPE["merge-config"];
@@ -3384,7 +3388,7 @@ SmkMap.prototype.resolveAssetUrl = function(e) {
 		});
 	}
 	function u() {
-		let t = window.SMK;
+		let t = SMK$1;
 		if (!t || !t.TYPE || !t.TYPE.Viewer) throw Error("SMK.TYPE.Viewer is not available");
 		if (!(e.viewer.type in t.TYPE.Viewer)) throw Error("viewer type \"" + e.viewer.type + "\" is not defined");
 		return resolved();
@@ -3393,7 +3397,7 @@ SmkMap.prototype.resolveAssetUrl = function(e) {
 		if (e.$tool = {}, e.$toolType = {}, !e.tools) return;
 		let t = e.tools.filter((e) => e.enabled !== !1 && e.instance !== !0);
 		if (t.length === 0) return;
-		let n = window.SMK;
+		let n = SMK$1;
 		return waitAll(t.map(function(t) {
 			let i = "tool-" + t.type, a = n && n.TYPE && n.TYPE[i];
 			if (!a) return console.warn("tool type \"" + t.type + "\" is not defined, skipping"), resolved();
@@ -3410,7 +3414,7 @@ SmkMap.prototype.resolveAssetUrl = function(e) {
 		}));
 	}
 	function f() {
-		let t = (window.SMK || {}).TYPE || {};
+		let t = (SMK$1 || {}).TYPE || {};
 		if (!t.Viewer || !(e.viewer.type in t.Viewer)) throw Error("viewer type \"" + e.viewer.type + "\" not defined");
 		return e.$viewer = new t.Viewer[e.viewer.type](), resolved().then(function() {
 			return e.$viewer.initialize(e);
@@ -3445,7 +3449,7 @@ SmkMap.prototype.resolveAssetUrl = function(e) {
 	}
 }, SmkMap.prototype.destroy = function() {
 	this.$viewer && this.$viewer.destroy();
-	let e = window.SMK && window.SMK.MAP;
+	let e = SMK$1 && SMK$1.MAP;
 	e && delete e[this.$option.id];
 }, SmkMap.prototype.addToContainer = function(e, t, n) {
 	let i = typeof e == "string" ? htmlToElement(e) : e;
@@ -3461,7 +3465,7 @@ SmkMap.prototype.resolveAssetUrl = function(e) {
 }, SmkMap.prototype.getSidepanel = function() {
 	let e = this;
 	if (this.$sidepanel) return this.$sidepanel;
-	let t = (window.SMK || {}).TYPE || {};
+	let t = (SMK$1 || {}).TYPE || {};
 	return this.$sidepanel = new t.Sidepanel(this), this.$sidepanel.changedVisible(function() {
 		e.$container.classList.toggle("smk-sidepanel-active", e.$sidepanel.isPanelVisible());
 	}), this.$sidepanel.changedSize(function() {}), this.$sidepanel;
@@ -3533,7 +3537,7 @@ SmkMap.prototype.resolveAssetUrl = function(e) {
 	this.$viewer.mapResized && this.$viewer.mapResized();
 }, SmkMap.prototype.getStatusMessage = function() {
 	if (this.$statusMessage) return this.$statusMessage;
-	let e = (window.SMK || {}).TYPE || {};
+	let e = (SMK$1 || {}).TYPE || {};
 	return this.$statusMessage = new e.StatusMessage(this), this.$statusMessage;
 }, SmkMap.prototype.getToolById = function(e) {
 	if (e) return this.$tool[e];
@@ -3577,7 +3581,7 @@ function findProperty(e, t, n, i) {
 	});
 }
 if (typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && e.TYPE && (e.TYPE.SmkMap = SmkMap);
 }
 //#endregion
@@ -20968,7 +20972,7 @@ function defineBaseMaps(e, t) {
 	});
 }
 if (typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && (e._baseMaps = defineBaseMaps);
 }
 //#endregion
@@ -20977,8 +20981,8 @@ var ViewerLeaflet = class extends Viewer {
 	constructor() {
 		super();
 	}
-}, smkRef$61 = window.SMK;
-smkRef$61 && (smkRef$61.TYPE ||= {}, smkRef$61.TYPE.Viewer || (smkRef$61.TYPE.Viewer = {}), smkRef$61.TYPE.Viewer.leaflet = ViewerLeaflet), ViewerLeaflet.prototype.initialize = function(e) {
+}, smkRef$60 = SMK$1;
+smkRef$60 && (smkRef$60.TYPE ||= {}, smkRef$60.TYPE.Viewer || (smkRef$60.TYPE.Viewer = {}), smkRef$60.TYPE.Viewer.leaflet = ViewerLeaflet), ViewerLeaflet.prototype.initialize = function(e) {
 	let t = this;
 	Viewer.prototype.initialize.apply(this, arguments), this.deadViewerLayer = {};
 	let n = e.addToContainer("<div class=\"smk-viewer\">");
@@ -20989,7 +20993,7 @@ smkRef$61 && (smkRef$61.TYPE ||= {}, smkRef$61.TYPE.Viewer || (smkRef$61.TYPE.Vi
 		doubleClickZoom: !1,
 		zoomSnap: e.viewer.zoomSnap,
 		minZoom: e.viewer.minZoom
-	}), t.map.scrollWheelZoom.disable(), this.setView(e.viewer.location), e.viewer.baseMap && t.setBasemap(e.viewer.baseMap), this.changedViewDebounced = window.SMK.UTIL.makeDelayedCall(function() {
+	}), t.map.scrollWheelZoom.disable(), this.setView(e.viewer.location), e.viewer.baseMap && t.setBasemap(e.viewer.baseMap), this.changedViewDebounced = SMK$1.UTIL.makeDelayedCall(function() {
 		t.changedView();
 	}, { delay: 1e3 }), t.map.on("zoomstart", this.changedViewDebounced), t.map.on("movestart", this.changedViewDebounced), t.map.on("zoomend", this.changedViewDebounced), t.map.on("moveend", this.changedViewDebounced), this.changedViewDebounced(), t.finishedLoading(function() {
 		t.map.eachLayer(function(e) {
@@ -21702,16 +21706,16 @@ Layer["esri-tiled"].leaflet = EsriTiledLeafletLayer, EsriTiledLeafletLayer.creat
 };
 //#endregion
 //#region src/smk/viewer-esri3d/types-esri3d.ts
-var smkRef$60 = window.SMK, objs = /* @__PURE__ */ "esri/config.esri/request.esri/Map.esri/views/SceneView.esri/views/ui/3d/DefaultUI3D.esri/views/ui/UI.esri/core/watchUtils.esri/Camera.esri/widgets/NavigationToggle.esri/widgets/NavigationToggle/NavigationToggleViewModel.esri/widgets/Compass.esri/widgets/Compass/CompassViewModel.esri/widgets/Zoom.esri/widgets/Zoom/ZoomViewModel.esri/widgets/DirectLineMeasurement3D.esri/widgets/AreaMeasurement3D.esri/layers/MapImageLayer.esri/layers/WMSLayer.esri/layers/BaseDynamicLayer.esri/layers/GraphicsLayer.esri/renderers/ClassBreaksRenderer.esri/Graphic.esri/Color.esri/symbols/SimpleMarkerSymbol.esri/symbols/SimpleLineSymbol.esri/symbols/SimpleFillSymbol.esri/symbols/TextSymbol.esri/geometry/Point.esri/geometry/Polyline.esri/geometry/Polygon.esri/geometry/Extent.esri/geometry/SpatialReference.esri/geometry/geometryEngine.esri/geometry/support/webMercatorUtils.fcl/FlareClusterLayer_v4".split("."), Esri3dReady = new Promise(function(e, t) {
-	if (smkRef$60.TYPE.Esri3d = {}, typeof __require != "function") return console.warn("SMK: types-esri3d: Dojo require not available — ESRI 3D viewer disabled"), e(smkRef$60.TYPE.Esri3d);
+var smkRef$59 = SMK$1, objs = /* @__PURE__ */ "esri/config.esri/request.esri/Map.esri/views/SceneView.esri/views/ui/3d/DefaultUI3D.esri/views/ui/UI.esri/core/watchUtils.esri/Camera.esri/widgets/NavigationToggle.esri/widgets/NavigationToggle/NavigationToggleViewModel.esri/widgets/Compass.esri/widgets/Compass/CompassViewModel.esri/widgets/Zoom.esri/widgets/Zoom/ZoomViewModel.esri/widgets/DirectLineMeasurement3D.esri/widgets/AreaMeasurement3D.esri/layers/MapImageLayer.esri/layers/WMSLayer.esri/layers/BaseDynamicLayer.esri/layers/GraphicsLayer.esri/renderers/ClassBreaksRenderer.esri/Graphic.esri/Color.esri/symbols/SimpleMarkerSymbol.esri/symbols/SimpleLineSymbol.esri/symbols/SimpleFillSymbol.esri/symbols/TextSymbol.esri/geometry/Point.esri/geometry/Polyline.esri/geometry/Polygon.esri/geometry/Extent.esri/geometry/SpatialReference.esri/geometry/geometryEngine.esri/geometry/support/webMercatorUtils.fcl/FlareClusterLayer_v4".split("."), Esri3dReady = new Promise(function(e, t) {
+	if (smkRef$59.TYPE.Esri3d = {}, typeof __require != "function") return console.warn("SMK: types-esri3d: Dojo require not available — ESRI 3D viewer disabled"), e(smkRef$59.TYPE.Esri3d);
 	__require(objs, function(...t) {
 		objs.forEach(function(e, n) {
-			let i = e.replace("esri/", "").split("/"), a = smkRef$60.TYPE.Esri3d;
+			let i = e.replace("esri/", "").split("/"), a = smkRef$59.TYPE.Esri3d;
 			for (let e = 0; e < i.length - 1; e++) i[e] in a || (a[i[e]] = {}), a = a[i[e]];
 			a[i[i.length - 1]] = t[n];
-		}), e(smkRef$60.TYPE.Esri3d);
+		}), e(smkRef$59.TYPE.Esri3d);
 	});
-}), smkRef$59 = window.SMK, featureId = 1e3, geojsonType = {
+}), smkRef$58 = SMK$1, featureId = 1e3, geojsonType = {
 	Point(e) {
 		return [Object.assign({ type: "point" }, Terraformer.ArcGIS.convert(e))];
 	},
@@ -21754,12 +21758,12 @@ var smkRef$60 = window.SMK, objs = /* @__PURE__ */ "esri/config.esri/request.esr
 function convertGeojson(e) {
 	return geojsonType[e.type || "Feature"](e);
 }
-Object.assign(smkRef$59.UTIL, {
+Object.assign(smkRef$58.UTIL, {
 	geoJsonToEsriGraphics(e) {
 		return convertGeojson(e);
 	},
 	mapSymbolsToGraphics(e, t) {
-		let n = smkRef$59.UTIL;
+		let n = smkRef$58.UTIL;
 		return e.reduce(function(e, i) {
 			return e.concat(n.symbolsForGraphic(i, t).map(function(e, t) {
 				let n;
@@ -21770,7 +21774,7 @@ Object.assign(smkRef$59.UTIL, {
 	symbolsForGraphic(e, t) {
 		return t = [].concat(t || []), t.length === 0 && t.push({}), t.map(function(t) {
 			let n = t[e.geometry.type];
-			return smkRef$59.UTIL.type(n) === "function" ? n(e.attributes) : n;
+			return smkRef$58.UTIL.type(n) === "function" ? n(e.attributes) : n;
 		});
 	},
 	smkStyleToEsriSymbol(e, t) {
@@ -21838,19 +21842,19 @@ Object.assign(smkRef$59.UTIL, {
 			};
 		} }), o;
 		function s(e, t) {
-			let n = new smkRef$59.TYPE.Esri3d.Color(e);
+			let n = new smkRef$58.TYPE.Esri3d.Color(e);
 			return n.a = t, n;
 		}
 	}
 });
 //#endregion
 //#region src/smk/viewer-esri3d/viewer-esri3d.ts
-var smkRef$58 = window.SMK, ViewerEsri3d = class extends Viewer {
+var smkRef$57 = SMK$1, ViewerEsri3d = class extends Viewer {
 	constructor() {
 		super();
 	}
 };
-Object.assign(ViewerEsri3d.prototype, Viewer.prototype), smkRef$58.TYPE.Viewer || (smkRef$58.TYPE.Viewer = {}), smkRef$58.TYPE.Viewer.esri3d = ViewerEsri3d, ViewerEsri3d.prototype.initialize = function(e) {
+Object.assign(ViewerEsri3d.prototype, Viewer.prototype), smkRef$57.TYPE.Viewer || (smkRef$57.TYPE.Viewer = {}), smkRef$57.TYPE.Viewer.esri3d = ViewerEsri3d, ViewerEsri3d.prototype.initialize = function(e) {
 	let t = this;
 	return Viewer.prototype.initialize.apply(this, arguments), Esri3dReady.then(function(n) {
 		let i = e.addToContainer("<div class=\"smk-viewer\">");
@@ -21926,7 +21930,7 @@ Object.assign(ViewerEsri3d.prototype, Viewer.prototype), smkRef$58.TYPE.Viewer |
 	if (i) return turf.distance(n, i) * 1e3;
 }, ViewerEsri3d.prototype.getView = function(e) {
 	if (!this.view.center) return;
-	let t = smkRef$58.TYPE.Esri3d.geometry.support.webMercatorUtils.webMercatorToGeographic(this.view.extent), n = this.view.width, i = this.view.height, a, o;
+	let t = smkRef$57.TYPE.Esri3d.geometry.support.webMercatorUtils.webMercatorToGeographic(this.view.extent), n = this.view.width, i = this.view.height, a, o;
 	if (e) {
 		let t = e.screen, n = this.screenToGroundDistance([t.x - 50, t.y], [t.x + 50, t.y]);
 		a = n / this.screenpixelsToMeters, o = n / 100;
@@ -22021,7 +22025,7 @@ ViewerEsri3d.prototype.initializeBasemaps = function(e, t) {
 }, ViewerEsri3d.prototype.isPopupVisible = function() {
 	return this.view.popup.visible;
 }, ViewerEsri3d.prototype.panToFeature = function(e, t) {
-	let n = smkRef$58.TYPE.Esri3d, i;
+	let n = smkRef$57.TYPE.Esri3d, i;
 	switch (turf.getType(e)) {
 		case "Point":
 			i = new n.geometry.Point({
@@ -22046,7 +22050,7 @@ ViewerEsri3d.prototype.initializeBasemaps = function(e, t) {
 		zoom: a
 	});
 }, ViewerEsri3d.prototype.setView = function(e) {
-	let t = smkRef$58.TYPE.Esri3d;
+	let t = smkRef$57.TYPE.Esri3d;
 	if (e.extent) {
 		let n = e.extent;
 		this.view.extent = new t.geometry.Extent({
@@ -22062,8 +22066,8 @@ ViewerEsri3d.prototype.initializeBasemaps = function(e, t) {
 	})), e.camera && (this.view.camera = new t.Camera(e.camera));
 };
 //#endregion
-//#region src/smk/viewer-esri3d/feature-list-esri3d.ts
-var smkRef$57 = window.SMK, smkRef$56 = window.SMK, ClusterEsri3dLayer = class extends ClusterLayer {};
+//#region src/smk/viewer-esri3d/layer/layer-cluster-esri3d.ts
+var smkRef$56 = SMK$1, ClusterEsri3dLayer = class extends ClusterLayer {};
 smkRef$56.TYPE.Layer.cluster.esri3d = ClusterEsri3dLayer, ClusterEsri3dLayer.prototype.getFeaturesInArea = function(e, t, n) {}, ClusterEsri3dLayer.create = function(e, t) {
 	let n = this, i = smkRef$56.TYPE.Esri3d;
 	if (e.length !== 1) throw Error("only 1 config allowed");
@@ -22121,7 +22125,7 @@ smkRef$56.TYPE.Layer.cluster.esri3d = ClusterEsri3dLayer, ClusterEsri3dLayer.pro
 };
 //#endregion
 //#region src/smk/viewer-esri3d/layer/layer-esri-dynamic-esri3d.ts
-var smkRef$55 = window.SMK, EsriDynamicEsri3dLayer = class extends EsriDynamicLayer {};
+var smkRef$55 = SMK$1, EsriDynamicEsri3dLayer = class extends EsriDynamicLayer {};
 smkRef$55.TYPE.Layer["esri-dynamic"].esri3d = EsriDynamicEsri3dLayer, EsriDynamicEsri3dLayer.create = function(e, t) {
 	let n = smkRef$55.TYPE.Esri3d;
 	if (e.length !== 1) throw Error("only 1 config allowed");
@@ -22166,7 +22170,7 @@ smkRef$55.TYPE.Layer["esri-dynamic"].esri3d = EsriDynamicEsri3dLayer, EsriDynami
 };
 //#endregion
 //#region src/smk/viewer-esri3d/layer/layer-vector-esri3d.ts
-var smkRef$54 = window.SMK, VectorEsri3dLayer = class extends VectorLayer {};
+var smkRef$54 = SMK$1, VectorEsri3dLayer = class extends VectorLayer {};
 smkRef$54.TYPE.Layer.vector.esri3d = VectorEsri3dLayer, VectorEsri3dLayer.prototype.getFeaturesInArea = function(e, t, n) {
 	if (!n.layer) return [];
 	let i = [];
@@ -22235,7 +22239,7 @@ smkRef$54.TYPE.Layer.vector.esri3d = VectorEsri3dLayer, VectorEsri3dLayer.protot
 };
 //#endregion
 //#region src/smk/viewer-esri3d/layer/layer-wms-esri3d.ts
-var smkRef$53 = window.SMK, WmsEsri3dLayer = class extends WmsLayer {};
+var smkRef$53 = SMK$1, WmsEsri3dLayer = class extends WmsLayer {};
 smkRef$53.TYPE.Layer.wms.esri3d = WmsEsri3dLayer, WmsEsri3dLayer.create = function(e, t) {
 	let n = smkRef$53.TYPE.Esri3d, i = e[0].config.serviceUrl, a = e[0].config.opacity, o = e.map((e) => e.config.where || "include").join(";"), s = new (n.layers.BaseDynamicLayer.createSubclass({
 		properties: {
@@ -22286,7 +22290,7 @@ var ViewerMapLibre = class extends Viewer {
 	constructor() {
 		super();
 	}
-}, smkRef$52 = window.SMK;
+}, smkRef$52 = SMK$1;
 smkRef$52 && (smkRef$52.TYPE ||= {}, smkRef$52.TYPE.Viewer || (smkRef$52.TYPE.Viewer = {}), smkRef$52.TYPE.Viewer.maplibre = ViewerMapLibre);
 var EMPTY_STYLE = {
 	version: 8,
@@ -22326,7 +22330,7 @@ ViewerMapLibre.prototype.initialize = function(e) {
 					return;
 				}
 				console.warn("maplibre:", t || e);
-			}), t.setView(e.viewer.location), e.viewer.baseMap && t.setBasemap(e.viewer.baseMap), t.changedViewDebounced = window.SMK.UTIL.makeDelayedCall(function() {
+			}), t.setView(e.viewer.location), e.viewer.baseMap && t.setBasemap(e.viewer.baseMap), t.changedViewDebounced = SMK$1.UTIL.makeDelayedCall(function() {
 				t.changedView();
 			}, { delay: 500 }), t.map.on("movestart", t.changedViewDebounced), t.map.on("moveend", t.changedViewDebounced), t.map.on("zoomstart", t.changedViewDebounced), t.map.on("zoomend", t.changedViewDebounced), t.changedViewDebounced(), t.finishedLoading(function() {
 				Object.keys(t.deadViewerLayer).forEach(function(e) {
@@ -22779,7 +22783,7 @@ function ToolBase() {
 	};
 }
 if (typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && e.TYPE && (e.TYPE.ToolBase = ToolBase);
 }
 //#endregion
@@ -22852,7 +22856,7 @@ if (Object.assign(Tool.prototype, ToolEvent.prototype), Tool.prototype.configure
 	type(t) === "object" && Object.assign(a, t);
 	let o = [], s;
 	a.events && (s = SMKEvent.define(a.events));
-	let c = window.SMK;
+	let c = SMK$1;
 	if (!c || !c.TYPE) throw Error("SMK.TYPE not available");
 	return c.TYPE[e] = function() {
 		Tool.prototype.constructor.call(this), s && s.prototype.constructor.call(this), ToolBase.call(this), a.construct && a.construct.call(this), a.initialize && this.$initializers.push(a.initialize), this.$moreInitializers = o, Object.assign(this, a.methods);
@@ -22868,12 +22872,12 @@ if (Object.assign(Tool.prototype, ToolEvent.prototype), Tool.prototype.configure
 		});
 	};
 }, typeof window < "u") {
-	let e = window.SMK;
+	let e = SMK$1;
 	e && e.TYPE && (e.TYPE.Tool = Tool);
 }
 //#endregion
 //#region src/smk/tool/about/panel-about.html?raw
-var panel_about_default = "<tool-panel class=\"smk-about-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <div class=\"smk-about-description\" v-html=\"content\"></div>\n</tool-panel>\n", smkRef$51 = window.SMK;
+var panel_about_default = "<tool-panel class=\"smk-about-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <div class=\"smk-about-description\" v-html=\"content\"></div>\n</tool-panel>\n", smkRef$51 = SMK$1;
 Vue.component("about-widget", { extends: smkRef$51.COMPONENT.ToolWidgetBase }), Vue.component("about-panel", {
 	extends: smkRef$51.COMPONENT.ToolPanelBase,
 	template: panel_about_default,
@@ -22885,7 +22889,7 @@ var factory$40 = Tool.define("AboutTool", function() {
 smkRef$51.TYPE["tool-about"] = factory$40;
 //#endregion
 //#region src/smk/tool/pan/widget-pan.html?raw
-var widget_pan_default = "<div v-if=\"control\">\n    <div class=\"smk-tool\"\n        v-bind:class=\"classes\"\n        v-on:click=\"$$emit( 'trigger-compass' )\"\n        v-bind:title=\"title.compass\"\n    >\n        <i class=\"material-icons\" v-bind:style=\"compassStyle\">{{ icon.compass }}</i>\n        <span v-if=\"showTitle && title.compass\">{{ title.compass }}</span>\n    </div>\n\n    <div class=\"smk-tool\"\n        v-bind:class=\"navModePanClasses\"\n        v-on:click=\"$$emit( 'trigger-nav-mode-pan' )\"\n        v-bind:title=\"title.navModePan\"\n    >\n        <i class=\"material-icons\">{{ icon.navModePan }}</i>\n        <span v-if=\"showTitle && title.navModePan\">{{ title.navModePan }}</span>\n    </div>\n\n    <div class=\"smk-tool\"\n        v-bind:class=\"navModeRotateClasses\"\n        v-on:click=\"$$emit( 'trigger-nav-mode-rotate' )\"\n        v-bind:title=\"title.navModeRotate\"\n    >\n        <i class=\"material-icons\">{{ icon.navModeRotate }}</i>\n        <span v-if=\"showTitle && title.navModeRotate\">{{ title.navModeRotate }}</span>\n    </div>\n</div>", smkRef$50 = window.SMK;
+var widget_pan_default = "<div v-if=\"control\">\n    <div class=\"smk-tool\"\n        v-bind:class=\"classes\"\n        v-on:click=\"$$emit( 'trigger-compass' )\"\n        v-bind:title=\"title.compass\"\n    >\n        <i class=\"material-icons\" v-bind:style=\"compassStyle\">{{ icon.compass }}</i>\n        <span v-if=\"showTitle && title.compass\">{{ title.compass }}</span>\n    </div>\n\n    <div class=\"smk-tool\"\n        v-bind:class=\"navModePanClasses\"\n        v-on:click=\"$$emit( 'trigger-nav-mode-pan' )\"\n        v-bind:title=\"title.navModePan\"\n    >\n        <i class=\"material-icons\">{{ icon.navModePan }}</i>\n        <span v-if=\"showTitle && title.navModePan\">{{ title.navModePan }}</span>\n    </div>\n\n    <div class=\"smk-tool\"\n        v-bind:class=\"navModeRotateClasses\"\n        v-on:click=\"$$emit( 'trigger-nav-mode-rotate' )\"\n        v-bind:title=\"title.navModeRotate\"\n    >\n        <i class=\"material-icons\">{{ icon.navModeRotate }}</i>\n        <span v-if=\"showTitle && title.navModeRotate\">{{ title.navModeRotate }}</span>\n    </div>\n</div>", smkRef$50 = SMK$1;
 Vue.component("pan-widget", {
 	extends: smkRef$50.COMPONENT.ToolWidgetBase,
 	template: widget_pan_default,
@@ -22914,7 +22918,7 @@ var factory$39 = Tool.define("PanTool", {
 smkRef$50.TYPE["tool-pan"] = factory$39;
 //#endregion
 //#region src/smk/tool/zoom/widget-zoom.html?raw
-var widget_zoom_default = "<div v-if=\"control\">\n    <div class=\"smk-tool\"\n        v-bind:class=\"classes\"\n        v-on:click=\"$$emit( 'trigger-zoom-in' )\"\n        v-bind:title=\"title.zoomIn\"\n    >\n        <i class=\"material-icons\">{{ icon.zoomIn }}</i>\n        <span v-if=\"showTitle && title.zoomIn\">{{ title.zoomIn }}</span>\n    </div>\n\n    <div class=\"smk-tool\"\n        v-bind:class=\"classes\"\n        v-on:click=\"$$emit( 'trigger-zoom-out' )\"\n        v-bind:title=\"title.zoomOut\"\n    >\n        <i class=\"material-icons\">{{ icon.zoomOut }}</i>\n        <span v-if=\"showTitle && title.zoomOut\">{{ title.zoomOut }}</span>\n    </div>\n</div>", smkRef$49 = window.SMK;
+var widget_zoom_default = "<div v-if=\"control\">\n    <div class=\"smk-tool\"\n        v-bind:class=\"classes\"\n        v-on:click=\"$$emit( 'trigger-zoom-in' )\"\n        v-bind:title=\"title.zoomIn\"\n    >\n        <i class=\"material-icons\">{{ icon.zoomIn }}</i>\n        <span v-if=\"showTitle && title.zoomIn\">{{ title.zoomIn }}</span>\n    </div>\n\n    <div class=\"smk-tool\"\n        v-bind:class=\"classes\"\n        v-on:click=\"$$emit( 'trigger-zoom-out' )\"\n        v-bind:title=\"title.zoomOut\"\n    >\n        <i class=\"material-icons\">{{ icon.zoomOut }}</i>\n        <span v-if=\"showTitle && title.zoomOut\">{{ title.zoomOut }}</span>\n    </div>\n</div>", smkRef$49 = SMK$1;
 Vue.component("zoom-widget", {
 	extends: smkRef$49.COMPONENT.ToolWidgetBase,
 	template: widget_zoom_default,
@@ -22929,7 +22933,7 @@ var factory$38 = Tool.define("ZoomTool", {
 smkRef$49.TYPE["tool-zoom"] = factory$38;
 //#endregion
 //#region src/smk/tool/coordinate/coordinate.html?raw
-var coordinate_default = "<div class=\"smk-coordinate\"\n    v-if=\"latitude && longitude\"\n>\n    <span class=\"smk-ordinate\">\n        <label>latitude<div>{{ formatValue( latitude )  }}</div></label>\n    </span>\n    <span class=\"smk-ordinate\">\n        <label>longitude<div>{{ formatValue( longitude ) }}</div></label>\n    </span>\n\n</div>", smkRef$48 = window.SMK, factory$37 = Tool.define("CoordinateTool", null, function(e) {
+var coordinate_default = "<div class=\"smk-coordinate\"\n    v-if=\"latitude && longitude\"\n>\n    <span class=\"smk-ordinate\">\n        <label>latitude<div>{{ formatValue( latitude )  }}</div></label>\n    </span>\n    <span class=\"smk-ordinate\">\n        <label>longitude<div>{{ formatValue( longitude ) }}</div></label>\n    </span>\n\n</div>", smkRef$48 = SMK$1, factory$37 = Tool.define("CoordinateTool", null, function(e) {
 	let t = this;
 	if (e.$device === "mobile") return;
 	this.model = {
@@ -22960,7 +22964,7 @@ var coordinate_default = "<div class=\"smk-coordinate\"\n    v-if=\"latitude && 
 smkRef$48.TYPE["tool-coordinate"] = factory$37;
 //#endregion
 //#region src/smk/tool/version/panel-version.html?raw
-var panel_version_default = "<tool-panel class=\"smk-version-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <dl>\n        <dt>SMK Version</dt>\n        <dd>{{ build.version }}</dd>\n\n        <dt>Last commit on</dt>\n        <dd>{{ build.lastCommit | formatDate }}</dd>\n\n        <dt>Commit</dt>\n        <dd>{{ build.commit }}</dd>\n\n        <dt>Branch</dt>\n        <dd>{{ build.branch }}</dd>\n\n        <dt>Origin</dt>\n        <dd>{{ build.origin }}</dd>\n\n        <!-- <template v-if=\"config.lmfId\">\n            <dt>Map Identifier</dt>\n            <dd>{{ config.lmfId }}</dd>\n        </template> -->\n\n        <!-- <template v-if=\"config.lmfRevision\">\n            <dt>Map Version</dt>\n            <dd>{{ config.lmfRevision }}.{{ config._rev.substr( 0, config._rev.indexOf( '-')) - 1 }}{{ config.published ? ' (Published)' : '' }}</dd>\n        </template> -->\n\n        <template v-if=\"config.createdBy\">\n            <dt>Map Created By</dt>\n            <dd>{{ config.createdBy }}</dd>\n        </template>\n\n        <template v-if=\"config.enabledTools\">\n            <dt>Enabled Tools</dt>\n            <dd>{{ config.enabledTools.join( ', ' ) }}</dd>\n        </template>\n\n        <dt>SMK Built by</dt>\n        <dd>\n            <div><a href=\"http://www.vividsolutions.com/\">Vivid Solutions</a> for <a href=\"https://data.gov.bc.ca/\">Data BC</a></div>\n            <div><a href=\"mailto:bjubb@vividsolutions.com\">Ben Jubb</a></div>\n            <div><a href=\"mailto:dhemsworth@vividsolutions.com\">Dylan Hemsworth</a></div>\n        </dd>\n    </dl>\n</tool-panel>\n", smkRef$47 = window.SMK;
+var panel_version_default = "<tool-panel class=\"smk-version-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <dl>\n        <dt>SMK Version</dt>\n        <dd>{{ build.version }}</dd>\n\n        <dt>Last commit on</dt>\n        <dd>{{ build.lastCommit | formatDate }}</dd>\n\n        <dt>Commit</dt>\n        <dd>{{ build.commit }}</dd>\n\n        <dt>Branch</dt>\n        <dd>{{ build.branch }}</dd>\n\n        <dt>Origin</dt>\n        <dd>{{ build.origin }}</dd>\n\n        <!-- <template v-if=\"config.lmfId\">\n            <dt>Map Identifier</dt>\n            <dd>{{ config.lmfId }}</dd>\n        </template> -->\n\n        <!-- <template v-if=\"config.lmfRevision\">\n            <dt>Map Version</dt>\n            <dd>{{ config.lmfRevision }}.{{ config._rev.substr( 0, config._rev.indexOf( '-')) - 1 }}{{ config.published ? ' (Published)' : '' }}</dd>\n        </template> -->\n\n        <template v-if=\"config.createdBy\">\n            <dt>Map Created By</dt>\n            <dd>{{ config.createdBy }}</dd>\n        </template>\n\n        <template v-if=\"config.enabledTools\">\n            <dt>Enabled Tools</dt>\n            <dd>{{ config.enabledTools.join( ', ' ) }}</dd>\n        </template>\n\n        <dt>SMK Built by</dt>\n        <dd>\n            <div><a href=\"http://www.vividsolutions.com/\">Vivid Solutions</a> for <a href=\"https://data.gov.bc.ca/\">Data BC</a></div>\n            <div><a href=\"mailto:bjubb@vividsolutions.com\">Ben Jubb</a></div>\n            <div><a href=\"mailto:dhemsworth@vividsolutions.com\">Dylan Hemsworth</a></div>\n        </dd>\n    </dl>\n</tool-panel>\n", smkRef$47 = SMK$1;
 Vue.component("version-widget", { extends: smkRef$47.COMPONENT.ToolWidgetBase }), Vue.component("version-panel", {
 	extends: smkRef$47.COMPONENT.ToolPanelBase,
 	template: panel_version_default,
@@ -22974,7 +22978,7 @@ var factory$36 = Tool.define("VersionTool", function() {
 smkRef$47.TYPE["tool-version"] = factory$36;
 //#endregion
 //#region src/smk/tool/scale/scale.html?raw
-var scale_default = "<div class=\"smk-scale\">\n\n    <div class=\"smk-denom\"\n        v-if=\"scaleDenom\"\n    >1 : {{ scaleDenom | formatNumber( 3 ) }}<span v-if=\"zoomLevel\"> ({{ zoomLevel.toFixed( 1 ) }})</span></div>\n\n    <div class=\"smk-ruler\">\n        <div\n            class=\"smk-sections\"\n            v-if=\"rulerSectionWidth\"\n        ><span\n            class=\"smk-upper\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-lower\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-upper\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-lower\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span></div>\n\n        <div class=\"smk-labels\"\n            v-if=\"rulerLength\"\n        >\n            <span class=\"smk-first\">0</span>\n            <span class=\"smk-middle\">{{ ( rulerLength / 2 ) | formatNumber( 2 ) }}</span>\n            <span class=\"smk-last\">{{ rulerLength | formatNumber( 2 ) }}{{ rulerUnit }}</span>\n        </div>\n    </div>\n\n</div>", smkRef$46 = window.SMK, factory$35 = Tool.define("ScaleTool", function() {
+var scale_default = "<div class=\"smk-scale\">\n\n    <div class=\"smk-denom\"\n        v-if=\"scaleDenom\"\n    >1 : {{ scaleDenom | formatNumber( 3 ) }}<span v-if=\"zoomLevel\"> ({{ zoomLevel.toFixed( 1 ) }})</span></div>\n\n    <div class=\"smk-ruler\">\n        <div\n            class=\"smk-sections\"\n            v-if=\"rulerSectionWidth\"\n        ><span\n            class=\"smk-upper\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-lower\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-upper\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-lower\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span></div>\n\n        <div class=\"smk-labels\"\n            v-if=\"rulerLength\"\n        >\n            <span class=\"smk-first\">0</span>\n            <span class=\"smk-middle\">{{ ( rulerLength / 2 ) | formatNumber( 2 ) }}</span>\n            <span class=\"smk-last\">{{ rulerLength | formatNumber( 2 ) }}{{ rulerUnit }}</span>\n        </div>\n    </div>\n\n</div>", smkRef$46 = SMK$1, factory$35 = Tool.define("ScaleTool", function() {
 	this.defineProp("showFactor"), this.defineProp("showBar"), this.defineProp("showZoom");
 }, function(e) {
 	let t = this;
@@ -23028,7 +23032,7 @@ var scale_default = "<div class=\"smk-scale\">\n\n    <div class=\"smk-denom\"\n
 smkRef$46.TYPE["tool-scale"] = factory$35;
 //#endregion
 //#region src/smk/tool/reset-view/widget-reset-view.html?raw
-var widget_reset_view_default = "<div class=\"smk-tool\"\n    v-bind:class=\"classes\"\n    v-on:click=\"$$emit( 'trigger' )\"\n    v-bind:title=\"title\"\n>\n    <i class=\"material-icons\">{{ icon }}</i>\n    <span v-if=\"showTitle && title\">{{ title }}</span>\n</div>\n", smkRef$45 = window.SMK;
+var widget_reset_view_default = "<div class=\"smk-tool\"\n    v-bind:class=\"classes\"\n    v-on:click=\"$$emit( 'trigger' )\"\n    v-bind:title=\"title\"\n>\n    <i class=\"material-icons\">{{ icon }}</i>\n    <span v-if=\"showTitle && title\">{{ title }}</span>\n</div>\n", smkRef$45 = SMK$1;
 Vue.component("reset-view-widget", {
 	extends: smkRef$45.COMPONENT.ToolWidgetBase,
 	template: widget_reset_view_default
@@ -23043,11 +23047,11 @@ var factory$34 = Tool.define("ResetViewTool", function() {
 smkRef$45.TYPE["tool-reset-view"] = factory$34;
 //#endregion
 //#region src/smk/tool/minimap/tool-minimap.ts
-var smkRef$44 = window.SMK, factory$33 = Tool.define("MinimapTool");
+var smkRef$44 = SMK$1, factory$33 = Tool.define("MinimapTool");
 smkRef$44.TYPE["tool-minimap"] = factory$33;
 //#endregion
 //#region src/smk/tool/menu/panel-menu.html?raw
-var panel_menu_default = "<tool-panel class=\"smk-menu-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <div class=\"smk-menu-title\">\n            <slot></slot>\n        </div>\n\n        <div class=\"smk-menu-widgets\">\n            <component class=\"smk-tool\"\n                v-for=\"w in subWidgets\"\n                v-bind:key=\"'w' + w.prop.id\"\n                v-bind:is=\"w.component\"\n                v-bind=\"w.prop\"\n                v-bind:active=\"isActivePanel( w.prop.id )\"\n            ></component>\n        </div>\n    </template>\n\n    <component class=\"smk-panel\"\n        v-for=\"p in subPanels\"\n        v-if=\"p.prop.active\"\n        v-bind:key=\"'p' + p.prop.id\"\n        v-bind:is=\"p.component\"\n        v-bind=\"p.prop\"\n    ></component>\n\n</tool-panel>", smkRef$43 = window.SMK;
+var panel_menu_default = "<tool-panel class=\"smk-menu-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <div class=\"smk-menu-title\">\n            <slot></slot>\n        </div>\n\n        <div class=\"smk-menu-widgets\">\n            <component class=\"smk-tool\"\n                v-for=\"w in subWidgets\"\n                v-bind:key=\"'w' + w.prop.id\"\n                v-bind:is=\"w.component\"\n                v-bind=\"w.prop\"\n                v-bind:active=\"isActivePanel( w.prop.id )\"\n            ></component>\n        </div>\n    </template>\n\n    <component class=\"smk-panel\"\n        v-for=\"p in subPanels\"\n        v-if=\"p.prop.active\"\n        v-bind:key=\"'p' + p.prop.id\"\n        v-bind:is=\"p.component\"\n        v-bind=\"p.prop\"\n    ></component>\n\n</tool-panel>", smkRef$43 = SMK$1;
 Vue.component("menu-widget", { extends: smkRef$43.COMPONENT.ToolWidgetBase }), Vue.component("menu-panel", {
 	extends: smkRef$43.COMPONENT.ToolPanelBase,
 	template: panel_menu_default,
@@ -23098,7 +23102,7 @@ var factory$32 = Tool.define("MenuTool", function() {
 smkRef$43.TYPE["tool-menu"] = factory$32;
 //#endregion
 //#region src/smk/tool/toolbar/toolbar.html?raw
-var toolbar_default = "<div class=\"smk-toolbar\"\n    v-bind:class=\"{ 'smk-hidden': widgets.length == 0 }\"\n>\n    <component\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n        v-bind:active=\"w.prop.group\"\n    ></component>\n</div>\n", smkRef$42 = window.SMK, factory$31 = Tool.define("ToolBarTool", function() {
+var toolbar_default = "<div class=\"smk-toolbar\"\n    v-bind:class=\"{ 'smk-hidden': widgets.length == 0 }\"\n>\n    <component\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n        v-bind:active=\"w.prop.group\"\n    ></component>\n</div>\n", smkRef$42 = SMK$1, factory$31 = Tool.define("ToolBarTool", function() {
 	this.model = { widgets: [] };
 }, function(e) {
 	let t = e.addToOverlay(toolbar_default);
@@ -23115,7 +23119,7 @@ var toolbar_default = "<div class=\"smk-toolbar\"\n    v-bind:class=\"{ 'smk-hid
 smkRef$42.TYPE["tool-toolbar"] = factory$31;
 //#endregion
 //#region src/smk/tool/actionbar/actionbar.html?raw
-var actionbar_default = "<div class=\"smk-actionbar\"\n    v-bind:class=\"{ 'smk-hidden': widgets.length == 0 }\"\n>\n    <component\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n        v-bind:active=\"w.prop.group\"\n    ></component>\n</div>\n", smkRef$41 = window.SMK, factory$30 = Tool.define("ActionBarTool", function() {
+var actionbar_default = "<div class=\"smk-actionbar\"\n    v-bind:class=\"{ 'smk-hidden': widgets.length == 0 }\"\n>\n    <component\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n        v-bind:active=\"w.prop.group\"\n    ></component>\n</div>\n", smkRef$41 = SMK$1, factory$30 = Tool.define("ActionBarTool", function() {
 	this.model = { widgets: [] };
 }, function(e) {
 	this.vm = new Vue({
@@ -23131,7 +23135,7 @@ var actionbar_default = "<div class=\"smk-actionbar\"\n    v-bind:class=\"{ 'smk
 smkRef$41.TYPE["tool-actionbar"] = factory$30;
 //#endregion
 //#region src/smk/tool/dropdown/panel-dropdown.html?raw
-var panel_dropdown_default = "<side-panel class=\"smk-dropdown-panel\">\n    <h1 slot=\"header\">{{ title }}\n        <select class=\"smk-command smk-dropdown\"\n            v-on:change=\"$$emit( 'select-tool', { id: $event.target.value } )\"\n        >\n            <option\n                v-for=\"tool in subWidgets\"\n                v-bind:value=\"tool.id\"\n            >{{ tool.widget.title }}</option>\n        </select>\n    </h1>\n\n    <component class=\"smk-panel\"\n        v-if=\"activeToolId && subPanels[ activeToolId ]\"\n        v-bind:is=\"subPanels[ activeToolId ].panelComponent\"\n        v-bind:key=\"activeToolId\"\n        v-bind=\"removeTitle( subPanels[ activeToolId ].panel )\"\n    ></component>\n\n</side-panel>", smkRef$40 = window.SMK;
+var panel_dropdown_default = "<side-panel class=\"smk-dropdown-panel\">\n    <h1 slot=\"header\">{{ title }}\n        <select class=\"smk-command smk-dropdown\"\n            v-on:change=\"$$emit( 'select-tool', { id: $event.target.value } )\"\n        >\n            <option\n                v-for=\"tool in subWidgets\"\n                v-bind:value=\"tool.id\"\n            >{{ tool.widget.title }}</option>\n        </select>\n    </h1>\n\n    <component class=\"smk-panel\"\n        v-if=\"activeToolId && subPanels[ activeToolId ]\"\n        v-bind:is=\"subPanels[ activeToolId ].panelComponent\"\n        v-bind:key=\"activeToolId\"\n        v-bind=\"removeTitle( subPanels[ activeToolId ].panel )\"\n    ></component>\n\n</side-panel>", smkRef$40 = SMK$1;
 Vue.component("dropdown-widget", { extends: smkRef$40.COMPONENT.ToolWidgetBase }), Vue.component("dropdown-panel", {
 	extends: smkRef$40.COMPONENT.ToolPanelBase,
 	template: panel_dropdown_default,
@@ -23184,7 +23188,7 @@ var factory$29 = Tool.define("DropdownTool", function() {
 smkRef$40.TYPE["tool-dropdown"] = factory$29;
 //#endregion
 //#region src/smk/tool/baseMaps/panel-base-maps.html?raw
-var panel_base_maps_default = "<tool-panel class=\"smk-base-maps-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <div class=\"smk-base-map\"  \n        v-for=\"basemap in basemaps\" \n        v-on:click=\"$$emit( 'set-base-map', basemap.id )\" \n        v-bind:class=\"{ 'smk-active': basemap.id == current }\"\n    >\n        <div class=\"smk-base-map-sample\" \n            v-if=\"basemap.createContent\"\n            v-bind:title=\"basemap.title\"\n            v-bind:style=\"mapStyle\"\n            v-content=\"basemap\"\n        ></div>\n\n        <div class=\"smk-base-map-option-image\" \n            v-if=\"basemap.optionImageUrl\"\n            v-bind:title=\"basemap.title\"\n            v-bind:style=\"mapStyle\"            \n        >\n            <img v-bind:src=\"basemap.optionImageUrl\"></img>\n        </div>\n    </div>\n</tool-panel>\n", smkRef$39 = window.SMK;
+var panel_base_maps_default = "<tool-panel class=\"smk-base-maps-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <div class=\"smk-base-map\"  \n        v-for=\"basemap in basemaps\" \n        v-on:click=\"$$emit( 'set-base-map', basemap.id )\" \n        v-bind:class=\"{ 'smk-active': basemap.id == current }\"\n    >\n        <div class=\"smk-base-map-sample\" \n            v-if=\"basemap.createContent\"\n            v-bind:title=\"basemap.title\"\n            v-bind:style=\"mapStyle\"\n            v-content=\"basemap\"\n        ></div>\n\n        <div class=\"smk-base-map-option-image\" \n            v-if=\"basemap.optionImageUrl\"\n            v-bind:title=\"basemap.title\"\n            v-bind:style=\"mapStyle\"            \n        >\n            <img v-bind:src=\"basemap.optionImageUrl\"></img>\n        </div>\n    </div>\n</tool-panel>\n", smkRef$39 = SMK$1;
 Vue.component("base-maps-widget", { extends: smkRef$39.COMPONENT.ToolWidgetBase }), Vue.component("base-maps-panel", {
 	extends: smkRef$39.COMPONENT.ToolPanelBase,
 	template: panel_base_maps_default,
@@ -23265,7 +23269,7 @@ var factory$28 = Tool.define("BaseMapsTool", function() {
 smkRef$39.TYPE["tool-baseMaps"] = factory$28;
 //#endregion
 //#region src/smk/tool/list-menu/panel-list-menu.html?raw
-var panel_list_menu_default = "<tool-panel class=\"smk-tool-list-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <component class=\"smk-tool\"\n        v-for=\"w in subWidgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n    ></component>\n\n</tool-panel>", smkRef$38 = window.SMK;
+var panel_list_menu_default = "<tool-panel class=\"smk-tool-list-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <component class=\"smk-tool\"\n        v-for=\"w in subWidgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n    ></component>\n\n</tool-panel>", smkRef$38 = SMK$1;
 Vue.component("list-menu-widget", { extends: smkRef$38.COMPONENT.ToolWidgetBase }), Vue.component("list-menu-panel", {
 	extends: smkRef$38.COMPONENT.ToolPanelBase,
 	template: panel_list_menu_default,
@@ -23288,7 +23292,7 @@ var factory$27 = Tool.define("ListMenuTool", function() {
 smkRef$38.TYPE["tool-list-menu"] = factory$27;
 //#endregion
 //#region src/smk/tool/shortcut-menu/shortcut-menu.html?raw
-var shortcut_menu_default = "<div class=\"smk-shortcut-menu\">\n    <component class=\"smk-tool\"\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n    ></component>\n</div>", smkRef$37 = window.SMK, factory$26 = Tool.define("ShortcutMenuTool", function() {
+var shortcut_menu_default = "<div class=\"smk-shortcut-menu\">\n    <component class=\"smk-tool\"\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n    ></component>\n</div>", smkRef$37 = SMK$1, factory$26 = Tool.define("ShortcutMenuTool", function() {
 	this.model = { widgets: [] };
 }, function(e) {
 	this.vm = new Vue({
@@ -23304,7 +23308,7 @@ var shortcut_menu_default = "<div class=\"smk-shortcut-menu\">\n    <component c
 smkRef$37.TYPE["tool-shortcut-menu"] = factory$26;
 //#endregion
 //#region src/smk/tool/bespoke/panel-bespoke.html?raw
-var panel_bespoke_default = "<tool-panel class=\"smk-bespoke-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <div class=\"smk-bespoke-content\" \n        v-if=\"content\"\n        v-content=\"content\"\n    ></div>\n\n    <div class=\"smk-bespoke-content\" \n        v-if=\"component\"\n        v-bind:is=\"component\"\n    ></div>\n</tool-panel>\n", smkRef$36 = window.SMK;
+var panel_bespoke_default = "<tool-panel class=\"smk-bespoke-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <div class=\"smk-bespoke-content\" \n        v-if=\"content\"\n        v-content=\"content\"\n    ></div>\n\n    <div class=\"smk-bespoke-content\" \n        v-if=\"component\"\n        v-bind:is=\"component\"\n    ></div>\n</tool-panel>\n", smkRef$36 = SMK$1;
 Vue.component("bespoke-widget", { extends: smkRef$36.COMPONENT.ToolWidgetBase }), Vue.component("bespoke-panel", {
 	extends: smkRef$36.COMPONENT.ToolPanelBase,
 	template: panel_bespoke_default,
@@ -23335,7 +23339,7 @@ var factory$25 = Tool.define("BespokeTool", function() {
 smkRef$36.TYPE["tool-bespoke"] = factory$25;
 //#endregion
 //#region src/smk/tool/bookmarks/panel-bookmarks.html?raw
-var panel_bookmarks_default = "<tool-panel class=\"smk-bookmarks-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <div class=\"smk-bookmarks\">\n        <div class=\"smk-bookmark\"\n            v-for=\"bookmark in bookmarks\"\n            v-on:click=\"$$emit( 'show-bookmark', bookmark )\"\n        >\n            {{ bookmark.title }}\n        </div>\n    </div>\n</tool-panel>", smkRef$35 = window.SMK;
+var panel_bookmarks_default = "<tool-panel class=\"smk-bookmarks-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <div class=\"smk-bookmarks\">\n        <div class=\"smk-bookmark\"\n            v-for=\"bookmark in bookmarks\"\n            v-on:click=\"$$emit( 'show-bookmark', bookmark )\"\n        >\n            {{ bookmark.title }}\n        </div>\n    </div>\n</tool-panel>", smkRef$35 = SMK$1;
 Vue.component("bookmarks-widget", { extends: smkRef$35.COMPONENT.ToolWidgetBase }), Vue.component("bookmarks-panel", {
 	extends: smkRef$35.COMPONENT.ToolPanelBase,
 	template: panel_bookmarks_default,
@@ -23357,7 +23361,7 @@ var factory$24 = Tool.define("BookmarksTool", function() {
 smkRef$35.TYPE["tool-bookmarks"] = factory$24;
 //#endregion
 //#region src/smk/tool/current-location/widget-current-location.html?raw
-var widget_current_location_default = "<div class=\"smk-tool\"\n    v-bind:class=\"classes\"\n    v-on:click=\"$$emit( 'trigger' )\"\n    v-bind:title=\"title\"\n>\n    <i class=\"material-icons\">{{ icon }}</i>\n    <span v-if=\"showTitle && title\">{{ title }}</span>\n</div>\n", smkRef$34 = window.SMK;
+var widget_current_location_default = "<div class=\"smk-tool\"\n    v-bind:class=\"classes\"\n    v-on:click=\"$$emit( 'trigger' )\"\n    v-bind:title=\"title\"\n>\n    <i class=\"material-icons\">{{ icon }}</i>\n    <span v-if=\"showTitle && title\">{{ title }}</span>\n</div>\n", smkRef$34 = SMK$1;
 Vue.component("current-location-widget", {
 	extends: smkRef$34.COMPONENT.ToolWidgetBase,
 	template: widget_current_location_default
@@ -23388,7 +23392,7 @@ var factory$23 = Tool.define("CurrentLocationTool", function() {
 smkRef$34.TYPE["tool-current-location"] = factory$23;
 //#endregion
 //#region src/smk/tool/location/panel-location.html?raw
-var panel_location_default = "<tool-panel class=\"smk-location-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <span class=\"smk-command\" v-if=\"tool.identify\" v-on:click=\"$$emit( 'identify' )\">Identify features</span>\n        <span class=\"smk-command\" v-if=\"tool.measure\" v-on:click=\"$$emit( 'measure' )\">Start measurement</span>\n        <span class=\"smk-command\" v-if=\"tool.directions\" v-on:click=\"$$emit( 'directions' )\">Directions to here</span>\n    </template>    \n\n    <div class=\"smk-address\">\n        <div class=\"smk-street\">\n            <span class=\"smk-civic-number\">{{ site.civicNumber }}</span>\n            <span class=\"smk-street-name\">{{ site.streetName || 'No address for this location.' }}</span>\n            <span class=\"smk-street-type\">{{ site.streetType }}</span>\n        </div>\n        <div class=\"smk-locality\">\n            <span class=\"smk-locality-name\">{{ site.localityName || '&nbsp;' }}</span>\n            <span class=\"smk-locality-type\" v-if=\"site.localityType && site.localityType != 'Unknown'\">({{ site.localityType }})</span>\n        </div>\n    </div>\n\n    <div class=\"smk-coordinate\">\n        <span class=\"smk-ordinate\">\n            <label>latitude<div>{{ site.latitude | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n        <span class=\"smk-ordinate\">\n            <label>longitude<div>{{ site.longitude | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n    </div>\n\n</tool-panel>\n", smkRef$33 = window.SMK;
+var panel_location_default = "<tool-panel class=\"smk-location-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <span class=\"smk-command\" v-if=\"tool.identify\" v-on:click=\"$$emit( 'identify' )\">Identify features</span>\n        <span class=\"smk-command\" v-if=\"tool.measure\" v-on:click=\"$$emit( 'measure' )\">Start measurement</span>\n        <span class=\"smk-command\" v-if=\"tool.directions\" v-on:click=\"$$emit( 'directions' )\">Directions to here</span>\n    </template>    \n\n    <div class=\"smk-address\">\n        <div class=\"smk-street\">\n            <span class=\"smk-civic-number\">{{ site.civicNumber }}</span>\n            <span class=\"smk-street-name\">{{ site.streetName || 'No address for this location.' }}</span>\n            <span class=\"smk-street-type\">{{ site.streetType }}</span>\n        </div>\n        <div class=\"smk-locality\">\n            <span class=\"smk-locality-name\">{{ site.localityName || '&nbsp;' }}</span>\n            <span class=\"smk-locality-type\" v-if=\"site.localityType && site.localityType != 'Unknown'\">({{ site.localityType }})</span>\n        </div>\n    </div>\n\n    <div class=\"smk-coordinate\">\n        <span class=\"smk-ordinate\">\n            <label>latitude<div>{{ site.latitude | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n        <span class=\"smk-ordinate\">\n            <label>longitude<div>{{ site.longitude | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n    </div>\n\n</tool-panel>\n", smkRef$33 = SMK$1;
 Vue.component("location-widget", { extends: smkRef$33.COMPONENT.ToolWidgetBase }), Vue.component("location-panel", {
 	extends: smkRef$33.COMPONENT.ToolPanelBase,
 	template: panel_location_default,
@@ -23425,7 +23429,7 @@ var factory$22 = Tool.define("LocationTool", function() {
 smkRef$33.TYPE["tool-location"] = factory$22;
 //#endregion
 //#region src/smk/tool/legend/legend.html?raw
-var legend_default = "<div class=\"smk-elastic-frame smk-legend-status\">\n    <div class=\"smk-elastic-content\">\n        <div class=\"smk-elastic-body\">\n            <legend-display \n                v-for=\"c, i in contexts\"\n                v-bind:key=\"'ctx-' + i\"\n                v-bind:display=\"c\"\n            ></legend-display>\n        </div>\n    </div>\n</div>", legend_display_default = "<div v-bind:class=\"[ \n    'smk-display', \n    'smk-display-' + display.type, \n    display.class, \n    { \n        'smk-visible':   display.isVisible,\n        'smk-expanded':  display.isExpanded, \n        'smk-disabled': !display.isEnabled,\n        'smk-obscured': !display.isActuallyVisible,\n    } \n]\">\n    <div class=\"smk-item\"\n        v-if=\"display.id != 'root'\"\n    >\n        <span class=\"smk-legend-title\"\n            v-if=\"!inGroup && display.class && display.legends && display.isActuallyVisible\"\n        >{{ display.title }}</span>\n\n        <div class=\"smk-legend\" \n            v-if=\"display.legends && display.isActuallyVisible\"\n        >\n            <div class=\"smk-legend-item\" \n                v-for=\"legend in display.legends\"\n            >\n                <img v-bind:src=\"legend.url\" v-bind:style=\"{ width: legend.width + 'px', height: legend.height + 'px' }\">\n                <span class=\"smk-legend-title\">{{ legend.title }}</span>\n            </div>\n        </div>\n    </div>\n    \n    <legend-display\n        v-for=\"item in display.items\"\n        v-bind:key=\"item.id\"\n        v-bind:display=\"item\"\n        v-bind:inGroup=\"inGroup || display.type == 'group'\"\n    ></legend-display>\n</div>\n", smkRef$32 = window.SMK;
+var legend_default = "<div class=\"smk-elastic-frame smk-legend-status\">\n    <div class=\"smk-elastic-content\">\n        <div class=\"smk-elastic-body\">\n            <legend-display \n                v-for=\"c, i in contexts\"\n                v-bind:key=\"'ctx-' + i\"\n                v-bind:display=\"c\"\n            ></legend-display>\n        </div>\n    </div>\n</div>", legend_display_default = "<div v-bind:class=\"[ \n    'smk-display', \n    'smk-display-' + display.type, \n    display.class, \n    { \n        'smk-visible':   display.isVisible,\n        'smk-expanded':  display.isExpanded, \n        'smk-disabled': !display.isEnabled,\n        'smk-obscured': !display.isActuallyVisible,\n    } \n]\">\n    <div class=\"smk-item\"\n        v-if=\"display.id != 'root'\"\n    >\n        <span class=\"smk-legend-title\"\n            v-if=\"!inGroup && display.class && display.legends && display.isActuallyVisible\"\n        >{{ display.title }}</span>\n\n        <div class=\"smk-legend\" \n            v-if=\"display.legends && display.isActuallyVisible\"\n        >\n            <div class=\"smk-legend-item\" \n                v-for=\"legend in display.legends\"\n            >\n                <img v-bind:src=\"legend.url\" v-bind:style=\"{ width: legend.width + 'px', height: legend.height + 'px' }\">\n                <span class=\"smk-legend-title\">{{ legend.title }}</span>\n            </div>\n        </div>\n    </div>\n    \n    <legend-display\n        v-for=\"item in display.items\"\n        v-bind:key=\"item.id\"\n        v-bind:display=\"item\"\n        v-bind:inGroup=\"inGroup || display.type == 'group'\"\n    ></legend-display>\n</div>\n", smkRef$32 = SMK$1;
 Vue.component("legend-display", {
 	template: legend_display_default,
 	props: {
@@ -23448,7 +23452,7 @@ var factory$21 = Tool.define("LegendTool", null, function(e) {
 smkRef$32.TYPE["tool-legend"] = factory$21;
 //#endregion
 //#region src/smk/tool/layers/panel-layers.html?raw
-var panel_layers_default = "<tool-panel class=\"smk-layers-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n    xv-bind:message=\"busy ? 'Loading data' : ( !contexts[ 0 ].items || contexts[ 0 ].items.length == 0 ) ? 'No layers are configured' : ''\"\n    xv-bind:status=\"busy ? 'progress' : ( !contexts[ 0 ].items || contexts[ 0 ].items.length == 0 ) ? 'warning' : ''\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <i class=\"smk-all-visibility material-icons smk-command smk-icon\"\n            v-if=\"command.allVisibility\"\n            v-bind:title=\"'Toggle visibility of all layers.\\nSHIFT-click to toggle visibility on each layer.'\"\n            v-on:click=\"$$emit( 'set-all-layers-visible', { visible: !allVisible, deep: $event.shiftKey } )\"\n        >{{ allVisible ? glyph.visible : glyph.hidden }}</i>\n\n        <menu-button class=\"smk-theme\"\n            v-if=\"command.themes && command.themes.length > 0\"\n            title=\"Theme\"\n            v-on:click=\"$$emit( 'pick-theme', { theme: $event } )\"\n            v-bind:menuItems=\"command.themes\"\n        ></menu-button>\n\n        <enter-input class=\"smk-filter\"\n            placeholder=\"Filter layers\"\n            v-if=\"command.filter\"\n            v-bind:value=\"filter\"\n            v-on:change=\"$$emit( 'change', { filter: $event } )\"\n        ></enter-input>\n\n        <toggle-button class=\"smk-legend-toggle\"\n            v-if=\"command.legend\"\n            v-bind:value=\"legend\"\n            v-on:change=\"$$emit( 'change', { legend: $event } )\"\n        >Legend</toggle-button>\n    </template>\n\n    <layer-display\n        v-for=\"c, i in contexts\"\n        v-bind:key=\"'ctx-' + i\"\n        v-bind:id=\"id\"\n        v-bind:display=\"c\"\n        v-bind:glyph=\"glyph\"\n    ></layer-display>\n\n</tool-panel>", layer_display_default = "<div v-bind:class=\"[\n    'smk-display',\n    'smk-display-' + display.type,\n    display.class,\n    {\n        'smk-visible':   display.isVisible,\n        'smk-expanded':  display.isExpanded,\n        'smk-disabled': !display.isEnabled,\n        'smk-obscured': !display.isActuallyVisible,\n        'smk-metadata': !!display.metadataUrl\n    }\n]\">\n    <div class=\"smk-item\"\n        v-if=\"display.id != 'root' && display.showItem\"\n        v-bind:title=\"'id: ' + display.id\"\n        v-on:click=\"$$emit( display.type + '-click', display )\"\n    >\n        <i class=\"smk-folder-expand material-icons smk-command smk-icon\"\n            v-if=\"display.type == 'folder' && !inGroup\"\n            v-bind:title=\"'Expand ' + display.title\"\n        >{{ display.isExpanded ? 'arrow_drop_down' : 'arrow_right' }}</i>\n\n        <i class=\"smk-visibility material-icons smk-command smk-icon\"\n            v-if=\"!inGroup\"\n            v-bind:title=\"'Toggle visibility of \\'' + display.title + '\\'' + ( display.type == 'folder' ? '\\nSHIFT-click to toggle visibility on internal layers.' : '' ) \"\n            v-on:click.stop=\"!display.isInternal && $$emit( 'set-item-visible', { id: display.id, visible: !display.isVisible, deep: $event.shiftKey } )\"\n            v-bind:class=\"{ 'smk-disabled': display.isInternal }\"\n        >{{ display.isVisible && display.isEnabled ? glyph.visible : glyph.hidden }}</i>\n\n        <span class=\"smk-layer-title\"\n            v-if=\"!inGroup\"\n        >{{ display.title }}</span>\n\n        <div class=\"smk-legend\"\n            v-if=\"display.legends && ( display.showLegend && display.isActuallyVisible || display.alwaysShowLegend )\"\n        >\n            <div class=\"smk-legend-item\"\n                v-for=\"legend in display.legends\"\n            >\n                <span class=\"smk-legend-graphic\" v-bind:style=\"legend.style\"></span>\n                <span class=\"smk-legend-title\">{{ legend.title }}</span>\n            </div>\n        </div>\n\n        <i class=\"material-icons smk-metadata\"\n            v-if=\"display.metadataUrl && ( !inGroup || ( display.legends && ( display.showLegend && display.isActuallyVisible || display.alwaysShowLegend ) ) )\"\n            v-bind:title=\"'Link to metadata for \\'' + display.title + '\\' layer'\"\n        >open_in_new</i>\n    </div>\n\n    <layer-display\n        v-for=\"item in display.items\"\n        v-if=\"item.inFilter && display.isExpanded\"\n        v-bind:key=\"item.id\"\n        v-bind:id=\"id\"\n        v-bind:display=\"item\"\n        v-bind:glyph=\"glyph\"\n        v-bind:inGroup=\"inGroup || display.type == 'group'\"\n    ></layer-display>\n</div>\n", smkRef$31 = window.SMK;
+var panel_layers_default = "<tool-panel class=\"smk-layers-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n    xv-bind:message=\"busy ? 'Loading data' : ( !contexts[ 0 ].items || contexts[ 0 ].items.length == 0 ) ? 'No layers are configured' : ''\"\n    xv-bind:status=\"busy ? 'progress' : ( !contexts[ 0 ].items || contexts[ 0 ].items.length == 0 ) ? 'warning' : ''\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <i class=\"smk-all-visibility material-icons smk-command smk-icon\"\n            v-if=\"command.allVisibility\"\n            v-bind:title=\"'Toggle visibility of all layers.\\nSHIFT-click to toggle visibility on each layer.'\"\n            v-on:click=\"$$emit( 'set-all-layers-visible', { visible: !allVisible, deep: $event.shiftKey } )\"\n        >{{ allVisible ? glyph.visible : glyph.hidden }}</i>\n\n        <menu-button class=\"smk-theme\"\n            v-if=\"command.themes && command.themes.length > 0\"\n            title=\"Theme\"\n            v-on:click=\"$$emit( 'pick-theme', { theme: $event } )\"\n            v-bind:menuItems=\"command.themes\"\n        ></menu-button>\n\n        <enter-input class=\"smk-filter\"\n            placeholder=\"Filter layers\"\n            v-if=\"command.filter\"\n            v-bind:value=\"filter\"\n            v-on:change=\"$$emit( 'change', { filter: $event } )\"\n        ></enter-input>\n\n        <toggle-button class=\"smk-legend-toggle\"\n            v-if=\"command.legend\"\n            v-bind:value=\"legend\"\n            v-on:change=\"$$emit( 'change', { legend: $event } )\"\n        >Legend</toggle-button>\n    </template>\n\n    <layer-display\n        v-for=\"c, i in contexts\"\n        v-bind:key=\"'ctx-' + i\"\n        v-bind:id=\"id\"\n        v-bind:display=\"c\"\n        v-bind:glyph=\"glyph\"\n    ></layer-display>\n\n</tool-panel>", layer_display_default = "<div v-bind:class=\"[\n    'smk-display',\n    'smk-display-' + display.type,\n    display.class,\n    {\n        'smk-visible':   display.isVisible,\n        'smk-expanded':  display.isExpanded,\n        'smk-disabled': !display.isEnabled,\n        'smk-obscured': !display.isActuallyVisible,\n        'smk-metadata': !!display.metadataUrl\n    }\n]\">\n    <div class=\"smk-item\"\n        v-if=\"display.id != 'root' && display.showItem\"\n        v-bind:title=\"'id: ' + display.id\"\n        v-on:click=\"$$emit( display.type + '-click', display )\"\n    >\n        <i class=\"smk-folder-expand material-icons smk-command smk-icon\"\n            v-if=\"display.type == 'folder' && !inGroup\"\n            v-bind:title=\"'Expand ' + display.title\"\n        >{{ display.isExpanded ? 'arrow_drop_down' : 'arrow_right' }}</i>\n\n        <i class=\"smk-visibility material-icons smk-command smk-icon\"\n            v-if=\"!inGroup\"\n            v-bind:title=\"'Toggle visibility of \\'' + display.title + '\\'' + ( display.type == 'folder' ? '\\nSHIFT-click to toggle visibility on internal layers.' : '' ) \"\n            v-on:click.stop=\"!display.isInternal && $$emit( 'set-item-visible', { id: display.id, visible: !display.isVisible, deep: $event.shiftKey } )\"\n            v-bind:class=\"{ 'smk-disabled': display.isInternal }\"\n        >{{ display.isVisible && display.isEnabled ? glyph.visible : glyph.hidden }}</i>\n\n        <span class=\"smk-layer-title\"\n            v-if=\"!inGroup\"\n        >{{ display.title }}</span>\n\n        <div class=\"smk-legend\"\n            v-if=\"display.legends && ( display.showLegend && display.isActuallyVisible || display.alwaysShowLegend )\"\n        >\n            <div class=\"smk-legend-item\"\n                v-for=\"legend in display.legends\"\n            >\n                <span class=\"smk-legend-graphic\" v-bind:style=\"legend.style\"></span>\n                <span class=\"smk-legend-title\">{{ legend.title }}</span>\n            </div>\n        </div>\n\n        <i class=\"material-icons smk-metadata\"\n            v-if=\"display.metadataUrl && ( !inGroup || ( display.legends && ( display.showLegend && display.isActuallyVisible || display.alwaysShowLegend ) ) )\"\n            v-bind:title=\"'Link to metadata for \\'' + display.title + '\\' layer'\"\n        >open_in_new</i>\n    </div>\n\n    <layer-display\n        v-for=\"item in display.items\"\n        v-if=\"item.inFilter && display.isExpanded\"\n        v-bind:key=\"item.id\"\n        v-bind:id=\"id\"\n        v-bind:display=\"item\"\n        v-bind:glyph=\"glyph\"\n        v-bind:inGroup=\"inGroup || display.type == 'group'\"\n    ></layer-display>\n</div>\n", smkRef$31 = SMK$1;
 Vue.component("layer-display", {
 	mixins: [smkRef$31.COMPONENT.ToolEmit],
 	template: layer_display_default,
@@ -23538,7 +23542,7 @@ var factory$20 = Tool.define("LayersTool", function() {
 smkRef$31.TYPE["tool-layers"] = factory$20;
 //#endregion
 //#region src/smk/tool/markup/tool-markup.ts
-var smkRef$30 = window.SMK;
+var smkRef$30 = SMK$1;
 Vue.component("markup-widget", {
 	extends: smkRef$30.COMPONENT.ToolWidgetBase,
 	props: ["drawMode"]
@@ -23556,7 +23560,7 @@ var factory$19 = Tool.define("MarkupTool", function() {
 smkRef$30.TYPE["tool-markup"] = factory$19;
 //#endregion
 //#region src/smk/tool/measure/panel-measure.html?raw
-var panel_measure_default = "<tool-panel class=\"smk-measure-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-area\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'start-area' )\"\n        >Area</command-button>\n\n        <command-button class=\"smk-distance\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'start-distance' )\"\n        >Distance</command-button>\n\n        <command-button class=\"smk-cancel\"\n            v-if=\"viewer.leaflet || viewer.maplibre\"\n            v-bind:disabled=\"!busy\"\n            v-on:click=\"$$emit( 'cancel' )\"\n        >Cancel</command-button>\n\n        <select-dropdown class=\"smk-units\"\n            v-if=\"viewer.leaflet || viewer.maplibre\"\n            v-bind:disabled=\"busy\"\n            v-model=\"unitProp\"\n            v-bind:options=\"[\n                { value: 'metric',          label: 'Metric' },\n                { value: 'imperial',        label: 'Imperial' },\n                { value: 'inches',          label: 'Inches' },\n                { value: 'feet',            label: 'Feet' },\n                { value: 'yards',           label: 'Yards' },\n                { value: 'miles',           label: 'Miles' },\n                { value: 'nautical-miles',  label: 'Nautical Miles' },\n                { value: 'meters',          label: 'Meters' },\n                { value: 'kilometers',      label: 'Kilometers' },\n                { value: 'acres',           label: 'Acres' },\n                { value: 'hectares',        label: 'Hectares' },\n            ]\"\n        >\n        </select-dropdown>\n    </template>\n\n    <div class=\"smk-measure-container\"\n        v-if=\"content\"\n        v-content=\"content\"\n    ></div>\n\n    <div class=\"smk-results\"\n        v-if=\"results && results.length > 0\"\n    >\n        <div class=\"smk-result\"\n            v-for=\"result in results\"\n        >\n            <span class=\"smk-measure-title\" v-html=\"result.title\"></span>\n            <span class=\"smk-value\" v-html=\"dimensionalNumber( result.value, result.dim, unitProp, 5 )\"></span>\n        </div>\n    </div>\n\n</tool-panel>", smkRef$29 = window.SMK;
+var panel_measure_default = "<tool-panel class=\"smk-measure-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-area\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'start-area' )\"\n        >Area</command-button>\n\n        <command-button class=\"smk-distance\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'start-distance' )\"\n        >Distance</command-button>\n\n        <command-button class=\"smk-cancel\"\n            v-if=\"viewer.leaflet || viewer.maplibre\"\n            v-bind:disabled=\"!busy\"\n            v-on:click=\"$$emit( 'cancel' )\"\n        >Cancel</command-button>\n\n        <select-dropdown class=\"smk-units\"\n            v-if=\"viewer.leaflet || viewer.maplibre\"\n            v-bind:disabled=\"busy\"\n            v-model=\"unitProp\"\n            v-bind:options=\"[\n                { value: 'metric',          label: 'Metric' },\n                { value: 'imperial',        label: 'Imperial' },\n                { value: 'inches',          label: 'Inches' },\n                { value: 'feet',            label: 'Feet' },\n                { value: 'yards',           label: 'Yards' },\n                { value: 'miles',           label: 'Miles' },\n                { value: 'nautical-miles',  label: 'Nautical Miles' },\n                { value: 'meters',          label: 'Meters' },\n                { value: 'kilometers',      label: 'Kilometers' },\n                { value: 'acres',           label: 'Acres' },\n                { value: 'hectares',        label: 'Hectares' },\n            ]\"\n        >\n        </select-dropdown>\n    </template>\n\n    <div class=\"smk-measure-container\"\n        v-if=\"content\"\n        v-content=\"content\"\n    ></div>\n\n    <div class=\"smk-results\"\n        v-if=\"results && results.length > 0\"\n    >\n        <div class=\"smk-result\"\n            v-for=\"result in results\"\n        >\n            <span class=\"smk-measure-title\" v-html=\"result.title\"></span>\n            <span class=\"smk-value\" v-html=\"dimensionalNumber( result.value, result.dim, unitProp, 5 )\"></span>\n        </div>\n    </div>\n\n</tool-panel>", smkRef$29 = SMK$1;
 Vue.component("measure-widget", { extends: smkRef$29.COMPONENT.ToolWidgetBase }), Vue.component("measure-panel", {
 	extends: smkRef$29.COMPONENT.ToolPanelBase,
 	template: panel_measure_default,
@@ -23584,7 +23588,7 @@ var factory$18 = Tool.define("MeasureTool", function() {
 smkRef$29.TYPE["tool-measure"] = factory$18;
 //#endregion
 //#region src/smk/tool/identify/panel-identify.html?raw
-var panel_identify_default = "<tool-panel class=\"smk-identify-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-select\"\n            v-bind:disabled=\"busy\"\n            v-if=\"tool.select && layers.length > 1 && command.select\"\n            v-on:click=\"$$emit( 'add-all' )\"\n        >Add all to selection</command-button>\n\n        <enter-number class=\"smk-radius\"\n            v-bind:disabled=\"busy\"\n            v-if=\"command.radius\"\n            v-bind:value=\"formatNumber( radius, 3 )\"\n            v-on:change=\"!busy && $$emit( 'change', { radius: $event } )\"\n        >Maximum distance\n            <template slot=\"after-input\">\n                <select\n                    v-bind:value=\"radiusUnit\"\n                    v-on:change=\"$$emit( 'changeUnit', { radiusUnit: $event.target.value } )\"\n                    v-bind:disabled=\"busy || !command.radiusUnit\"\n                >\n                    <option value=\"px\">pixels</option>\n                    <option value=\"m\">meters</option>\n                    <option value=\"km\">kilometers</option>\n                </select>\n            </template>\n        </enter-number>\n\n        <command-button class=\"smk-current\"\n            title=\"Identify features near current location\"\n            v-bind:disabled=\"busy\"\n            v-if=\"command.nearBy\"\n            v-on:click=\"$$emit( 'current-location' )\"\n            icon=\"gps_fixed\"\n        ></command-button>\n    </template>\n\n    <feature-list\n        v-bind:layers=\"layers\"\n        v-bind:highlightId=\"highlightId\"\n        v-on:active=\"$$emit( 'active', $event )\"\n        v-on:hover=\"$$emit( 'hover', $event )\"\n    ></feature-list>\n\n    <div v-if=\"layers.length == 0\">\n        Click on the map to identify features under the clicked point.\n    </div>\n</tool-panel>", smkRef$28 = window.SMK;
+var panel_identify_default = "<tool-panel class=\"smk-identify-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-select\"\n            v-bind:disabled=\"busy\"\n            v-if=\"tool.select && layers.length > 1 && command.select\"\n            v-on:click=\"$$emit( 'add-all' )\"\n        >Add all to selection</command-button>\n\n        <enter-number class=\"smk-radius\"\n            v-bind:disabled=\"busy\"\n            v-if=\"command.radius\"\n            v-bind:value=\"formatNumber( radius, 3 )\"\n            v-on:change=\"!busy && $$emit( 'change', { radius: $event } )\"\n        >Maximum distance\n            <template slot=\"after-input\">\n                <select\n                    v-bind:value=\"radiusUnit\"\n                    v-on:change=\"$$emit( 'changeUnit', { radiusUnit: $event.target.value } )\"\n                    v-bind:disabled=\"busy || !command.radiusUnit\"\n                >\n                    <option value=\"px\">pixels</option>\n                    <option value=\"m\">meters</option>\n                    <option value=\"km\">kilometers</option>\n                </select>\n            </template>\n        </enter-number>\n\n        <command-button class=\"smk-current\"\n            title=\"Identify features near current location\"\n            v-bind:disabled=\"busy\"\n            v-if=\"command.nearBy\"\n            v-on:click=\"$$emit( 'current-location' )\"\n            icon=\"gps_fixed\"\n        ></command-button>\n    </template>\n\n    <feature-list\n        v-bind:layers=\"layers\"\n        v-bind:highlightId=\"highlightId\"\n        v-on:active=\"$$emit( 'active', $event )\"\n        v-on:hover=\"$$emit( 'hover', $event )\"\n    ></feature-list>\n\n    <div v-if=\"layers.length == 0\">\n        Click on the map to identify features under the clicked point.\n    </div>\n</tool-panel>", smkRef$28 = SMK$1;
 Vue.component("identify-widget", { extends: smkRef$28.COMPONENT.ToolWidgetBase }), Vue.component("identify-panel", {
 	extends: smkRef$28.COMPONENT.ToolPanelBase,
 	template: panel_identify_default,
@@ -23785,7 +23789,7 @@ var factory$17 = Tool.define("IdentifyListTool", function() {
 smkRef$28.TYPE["tool-identify-list"] = factory$17;
 //#endregion
 //#region src/smk/tool/identify/tool-identify-feature.ts
-var smkRef$27 = window.SMK, factory$16 = Tool.define("IdentifyFeatureTool", function() {
+var smkRef$27 = SMK$1, factory$16 = Tool.define("IdentifyFeatureTool", function() {
 	smkRef$27.TYPE.ToolPanel.call(this, "tool-panel-feature"), smkRef$27.TYPE.ToolPanelFeature.call(this, function(e) {
 		return e.$viewer.identified;
 	}), this.parentId = "IdentifyListTool";
@@ -23858,11 +23862,11 @@ var smkRef$27 = window.SMK, factory$16 = Tool.define("IdentifyFeatureTool", func
 smkRef$27.TYPE["tool-identify-feature"] = factory$16;
 //#endregion
 //#region src/smk/tool/identify/tool-identify.ts
-var smkRef$26 = window.SMK, factory$15 = Tool.defineComposite([factory$17, factory$16]);
+var smkRef$26 = SMK$1, factory$15 = Tool.defineComposite([factory$17, factory$16]);
 smkRef$26.TYPE["tool-identify"] = factory$15;
 //#endregion
 //#region src/smk/tool/search/widget-search.html?raw
-var widget_search_default = "<div class=\"smk-tool\" ref=\"widget\"\n    v-bind:class=\"classes\" \n>\n    <input type=\"text\" placeholder=\"Search for location\" ref=\"search-input\"\n        v-model.trim=\"search\"\n        v-on:keyup=\"$$emit( 'input-change', { text: search } )\"\n        v-on:click=\"$$emit( 'activate', {} )\"\n        v-on:focus=\"focus()\"\n    >\n\n    <div class=\"smk-clear-search\"\n        v-on:click=\"$$emit( 'clear' )\"\n        v-if=\"search || !isEmpty\"\n        title=\"Clear results\"\n    >\n        <i class=\"material-icons\">clear</i>\n    </div>\n\n    <div \n        v-on:click=\"$$emit( 'activate', { toggle: true } ); focus()\"\n        v-bind:title=\"title\"\n    >\n        <i class=\"material-icons\">{{ icon }}</i>\n    </div>\n\n    <div class=\"smk-search-dropdown\"\n        v-if=\"!showPanel && active\"\n        v-bind:style=\"{ width: widgetWidth() + 'px' }\"\n    >\n        <div class=\"smk-search-result smk-item\"\n            v-if=\"!isEmpty()\"\n            v-for=\"result in results\"\n            v-on:mouseenter=\"$$emit( 'hover', { result: result } )\"\n            v-on:mouseleave=\"$$emit( 'hover', { result: null } )\"\n            v-on:click=\"$$emit( 'pick', { result: result } )\"\n            v-bind:class=\"{ 'smk-highlighted': result.id == highlightId }\"\n        >\n            <div class=\"smk-address\" v-if=\"result.properties.fullAddress\">\n                <div v-bind:class=\"'smk-precision-' + result.properties.matchPrecision.toLowerCase()\">\n                    <div class=\"smk-intersection\" v-if=\"result.properties.intersectionName\">\n                        <span class=\"smk-intersection-name\">{{ result.properties.intersectionName }}</span>\n                    </div>\n                    <div class=\"smk-street\" v-if=\"result.properties.streetName\">\n                        <span class=\"smk-civic-number\">{{ result.properties.civicNumber }}</span>\n                        <span class=\"smk-street-name\">{{ result.properties.streetName }}</span>\n                        <span class=\"smk-street-qualifier\">{{ result.properties.streetQualifier }}</span>\n                        <span class=\"smk-street-type\">{{ result.properties.streetType }}</span>\n                    </div>\n                    <div class=\"smk-locality\" v-if=\"result.properties.localityName\">\n                        <span class=\"smk-locality-name\">{{ result.properties.localityName }}</span>\n                        <span class=\"smk-locality-type\" v-if=\"result.properties.localityType != 'Unknown'\">({{ result.properties.localityType }})</span>\n                    </div>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>", panel_search_default = "<tool-panel class=\"smk-search-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n    v-if=\"results && results.length > 0\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <!-- <span class=\"smk-command\"\n            v-bind:class=\"{ 'smk-disabled': isEmpty() }\"\n            v-on:click=\"$$emit( 'clear' )\"\n        >Clear results</span>\n\n        <span class=\"smk-command\"\n            v-bind:class=\"{ 'smk-disabled': isEmpty() }\"\n            v-on:click=\"$$emit( 'zoom' )\"\n        >Zoom to results</span> -->\n    </template>\n\n    <div class=\"smk-search-result smk-item\"\n        v-if=\"!isEmpty()\"\n        v-for=\"result in results\"\n        v-on:mouseenter=\"$$emit( 'hover', { result: result } )\"\n        v-on:mouseleave=\"$$emit( 'hover', { result: null } )\"\n        v-on:click=\"$$emit( 'pick', { result: result } )\"\n        v-bind:class=\"{ 'smk-highlighted': result.id == highlightId }\"\n    >\n        <div class=\"smk-address\" v-if=\"result.properties.fullAddress\">\n            <div v-bind:class=\"'smk-precision-' + result.properties.matchPrecision.toLowerCase()\">\n                <div class=\"smk-intersection\" v-if=\"result.properties.intersectionName\">\n                    <span class=\"smk-intersection-name\">{{ result.properties.intersectionName }}</span>\n                </div>\n                <div class=\"smk-street\" v-if=\"result.properties.streetName\">\n                    <span class=\"smk-civic-number\">{{ result.properties.civicNumber }}</span>\n                    <span class=\"smk-street-name\">{{ result.properties.streetName }}</span>\n                    <span class=\"smk-street-qualifier\">{{ result.properties.streetQualifier }}</span>\n                    <span class=\"smk-street-type\">{{ result.properties.streetType }}</span>\n                </div>\n                <div class=\"smk-locality\" v-if=\"result.properties.localityName\">\n                    <span class=\"smk-locality-name\">{{ result.properties.localityName }}</span>\n                    <span class=\"smk-locality-type\" v-if=\"result.properties.localityType != 'Unknown'\">({{ result.properties.localityType }})</span>\n                </div>\n            </div>\n        </div>\n\n        <i class=\"smk-highlight material-icons smk-command smk-icon\"\n        >speaker_notes</i>\n    </div>\n</tool-panel>", smkRef$25 = window.SMK, precisionZoom = {
+var widget_search_default = "<div class=\"smk-tool\" ref=\"widget\"\n    v-bind:class=\"classes\" \n>\n    <input type=\"text\" placeholder=\"Search for location\" ref=\"search-input\"\n        v-model.trim=\"search\"\n        v-on:keyup=\"$$emit( 'input-change', { text: search } )\"\n        v-on:click=\"$$emit( 'activate', {} )\"\n        v-on:focus=\"focus()\"\n    >\n\n    <div class=\"smk-clear-search\"\n        v-on:click=\"$$emit( 'clear' )\"\n        v-if=\"search || !isEmpty\"\n        title=\"Clear results\"\n    >\n        <i class=\"material-icons\">clear</i>\n    </div>\n\n    <div \n        v-on:click=\"$$emit( 'activate', { toggle: true } ); focus()\"\n        v-bind:title=\"title\"\n    >\n        <i class=\"material-icons\">{{ icon }}</i>\n    </div>\n\n    <div class=\"smk-search-dropdown\"\n        v-if=\"!showPanel && active\"\n        v-bind:style=\"{ width: widgetWidth() + 'px' }\"\n    >\n        <div class=\"smk-search-result smk-item\"\n            v-if=\"!isEmpty()\"\n            v-for=\"result in results\"\n            v-on:mouseenter=\"$$emit( 'hover', { result: result } )\"\n            v-on:mouseleave=\"$$emit( 'hover', { result: null } )\"\n            v-on:click=\"$$emit( 'pick', { result: result } )\"\n            v-bind:class=\"{ 'smk-highlighted': result.id == highlightId }\"\n        >\n            <div class=\"smk-address\" v-if=\"result.properties.fullAddress\">\n                <div v-bind:class=\"'smk-precision-' + result.properties.matchPrecision.toLowerCase()\">\n                    <div class=\"smk-intersection\" v-if=\"result.properties.intersectionName\">\n                        <span class=\"smk-intersection-name\">{{ result.properties.intersectionName }}</span>\n                    </div>\n                    <div class=\"smk-street\" v-if=\"result.properties.streetName\">\n                        <span class=\"smk-civic-number\">{{ result.properties.civicNumber }}</span>\n                        <span class=\"smk-street-name\">{{ result.properties.streetName }}</span>\n                        <span class=\"smk-street-qualifier\">{{ result.properties.streetQualifier }}</span>\n                        <span class=\"smk-street-type\">{{ result.properties.streetType }}</span>\n                    </div>\n                    <div class=\"smk-locality\" v-if=\"result.properties.localityName\">\n                        <span class=\"smk-locality-name\">{{ result.properties.localityName }}</span>\n                        <span class=\"smk-locality-type\" v-if=\"result.properties.localityType != 'Unknown'\">({{ result.properties.localityType }})</span>\n                    </div>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>", panel_search_default = "<tool-panel class=\"smk-search-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n    v-if=\"results && results.length > 0\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <!-- <span class=\"smk-command\"\n            v-bind:class=\"{ 'smk-disabled': isEmpty() }\"\n            v-on:click=\"$$emit( 'clear' )\"\n        >Clear results</span>\n\n        <span class=\"smk-command\"\n            v-bind:class=\"{ 'smk-disabled': isEmpty() }\"\n            v-on:click=\"$$emit( 'zoom' )\"\n        >Zoom to results</span> -->\n    </template>\n\n    <div class=\"smk-search-result smk-item\"\n        v-if=\"!isEmpty()\"\n        v-for=\"result in results\"\n        v-on:mouseenter=\"$$emit( 'hover', { result: result } )\"\n        v-on:mouseleave=\"$$emit( 'hover', { result: null } )\"\n        v-on:click=\"$$emit( 'pick', { result: result } )\"\n        v-bind:class=\"{ 'smk-highlighted': result.id == highlightId }\"\n    >\n        <div class=\"smk-address\" v-if=\"result.properties.fullAddress\">\n            <div v-bind:class=\"'smk-precision-' + result.properties.matchPrecision.toLowerCase()\">\n                <div class=\"smk-intersection\" v-if=\"result.properties.intersectionName\">\n                    <span class=\"smk-intersection-name\">{{ result.properties.intersectionName }}</span>\n                </div>\n                <div class=\"smk-street\" v-if=\"result.properties.streetName\">\n                    <span class=\"smk-civic-number\">{{ result.properties.civicNumber }}</span>\n                    <span class=\"smk-street-name\">{{ result.properties.streetName }}</span>\n                    <span class=\"smk-street-qualifier\">{{ result.properties.streetQualifier }}</span>\n                    <span class=\"smk-street-type\">{{ result.properties.streetType }}</span>\n                </div>\n                <div class=\"smk-locality\" v-if=\"result.properties.localityName\">\n                    <span class=\"smk-locality-name\">{{ result.properties.localityName }}</span>\n                    <span class=\"smk-locality-type\" v-if=\"result.properties.localityType != 'Unknown'\">({{ result.properties.localityType }})</span>\n                </div>\n            </div>\n        </div>\n\n        <i class=\"smk-highlight material-icons smk-command smk-icon\"\n        >speaker_notes</i>\n    </div>\n</tool-panel>", smkRef$25 = SMK$1, precisionZoom = {
 	INTERSECTION: 15,
 	STREET: 13,
 	BLOCK: 14,
@@ -24020,7 +24024,7 @@ var factory$14 = Tool.define("SearchListTool", function() {
 smkRef$25.TYPE["tool-search-list"] = factory$14;
 //#endregion
 //#region src/smk/tool/search/panel-search-location.html?raw
-var panel_search_location_default = "<tool-panel class=\"smk-search-location-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-identify\"\n            v-if=\"command.identify && tool.identify\"\n            v-on:click=\"$$emit( 'identify' )\"\n        >Identify features</command-button>\n\n        <command-button class=\"smk-measure\"\n            v-if=\"command.measure && tool.measure\"\n            v-on:click=\"$$emit( 'measure' )\"\n        >Start measurement</command-button>\n\n        <command-button class=\"smk-directions\"\n            v-if=\"command.directions && tool.directions\"\n            v-on:click=\"$$emit( 'directions' )\"\n        >Directions to here</command-button>\n    </template>\n\n    <component class=\"smk-address\"\n        v-bind:is=\"locationComponent\"\n    ></component>\n</tool-panel>\n", location_title_default = "<div class=\"smk-location-title\">\n    <div class=\"smk-intersection\" v-if=\"intersectionName\">\n        <span class=\"smk-intersection-name\">{{ intersectionName }}</span>\n    </div>\n    <div class=\"smk-street\" v-else-if=\"streetName\">\n        <span class=\"smk-civic-number\">{{ civicNumber }}</span>\n        <span class=\"smk-street-name\">{{ streetName }}</span>\n        <span class=\"smk-street-qualifier\">{{ streetQualifier }}</span>\n        <span class=\"smk-street-type\">{{ streetType }}</span>\n    </div>\n    <div class=\"smk-locality\" v-else-if=\"localityName\">\n        <span class=\"smk-locality-name\">{{ localityName }}</span>\n        <!-- <span class=\"smk-locality-type\" v-if=\"localityType != 'Unknown'\">({{ localityType }})</span> -->\n    </div>\n    <div v-else>\n        (unknown)\n    </div>\n</div>", location_address_default = "<div>\n    <div class=\"smk-address\" v-if=\"feature.properties\">\n        <div class=\"smk-intersection\" v-if=\"feature.properties.intersectionName\">\n            <!-- <div>Intersection:</div> -->\n            <span class=\"smk-intersection-name\">{{ feature.properties.intersectionName }}</span>\n        </div>\n        <div class=\"smk-street\" v-if=\"feature.properties.streetName\">\n            <!-- <div>Street:</div> -->\n            <span class=\"smk-civic-number\">{{ feature.properties.civicNumber }}</span>\n            <span class=\"smk-street-name\">{{ feature.properties.streetName }}</span>\n            <span class=\"smk-street-qualifier\">{{ feature.properties.streetQualifier }}</span>\n            <span class=\"smk-street-type\">{{ feature.properties.streetType }}</span>\n        </div>\n        <div class=\"smk-locality\" v-if=\"feature.properties.localityName\">\n            <span class=\"smk-locality-name\">{{ feature.properties.localityName }}</span>\n            <span class=\"smk-locality-type\" v-if=\"feature.properties.localityType != 'Unknown'\">({{ feature.properties.localityType }})</span>\n        </div>\n    </div>\n\n    <div class=\"smk-coordinate\" v-if=\"feature.geometry\">\n        <!-- <div >Location:</div> -->\n        <span class=\"smk-ordinate\">\n            <label>latitude<div>{{ feature.geometry.coordinates[ 1 ] | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n        <span class=\"smk-ordinate\">\n            <label>longitude<div>{{ feature.geometry.coordinates[ 0 ] | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n    </div>\n</div>", smkRef$24 = window.SMK;
+var panel_search_location_default = "<tool-panel class=\"smk-search-location-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-identify\"\n            v-if=\"command.identify && tool.identify\"\n            v-on:click=\"$$emit( 'identify' )\"\n        >Identify features</command-button>\n\n        <command-button class=\"smk-measure\"\n            v-if=\"command.measure && tool.measure\"\n            v-on:click=\"$$emit( 'measure' )\"\n        >Start measurement</command-button>\n\n        <command-button class=\"smk-directions\"\n            v-if=\"command.directions && tool.directions\"\n            v-on:click=\"$$emit( 'directions' )\"\n        >Directions to here</command-button>\n    </template>\n\n    <component class=\"smk-address\"\n        v-bind:is=\"locationComponent\"\n    ></component>\n</tool-panel>\n", location_title_default = "<div class=\"smk-location-title\">\n    <div class=\"smk-intersection\" v-if=\"intersectionName\">\n        <span class=\"smk-intersection-name\">{{ intersectionName }}</span>\n    </div>\n    <div class=\"smk-street\" v-else-if=\"streetName\">\n        <span class=\"smk-civic-number\">{{ civicNumber }}</span>\n        <span class=\"smk-street-name\">{{ streetName }}</span>\n        <span class=\"smk-street-qualifier\">{{ streetQualifier }}</span>\n        <span class=\"smk-street-type\">{{ streetType }}</span>\n    </div>\n    <div class=\"smk-locality\" v-else-if=\"localityName\">\n        <span class=\"smk-locality-name\">{{ localityName }}</span>\n        <!-- <span class=\"smk-locality-type\" v-if=\"localityType != 'Unknown'\">({{ localityType }})</span> -->\n    </div>\n    <div v-else>\n        (unknown)\n    </div>\n</div>", location_address_default = "<div>\n    <div class=\"smk-address\" v-if=\"feature.properties\">\n        <div class=\"smk-intersection\" v-if=\"feature.properties.intersectionName\">\n            <!-- <div>Intersection:</div> -->\n            <span class=\"smk-intersection-name\">{{ feature.properties.intersectionName }}</span>\n        </div>\n        <div class=\"smk-street\" v-if=\"feature.properties.streetName\">\n            <!-- <div>Street:</div> -->\n            <span class=\"smk-civic-number\">{{ feature.properties.civicNumber }}</span>\n            <span class=\"smk-street-name\">{{ feature.properties.streetName }}</span>\n            <span class=\"smk-street-qualifier\">{{ feature.properties.streetQualifier }}</span>\n            <span class=\"smk-street-type\">{{ feature.properties.streetType }}</span>\n        </div>\n        <div class=\"smk-locality\" v-if=\"feature.properties.localityName\">\n            <span class=\"smk-locality-name\">{{ feature.properties.localityName }}</span>\n            <span class=\"smk-locality-type\" v-if=\"feature.properties.localityType != 'Unknown'\">({{ feature.properties.localityType }})</span>\n        </div>\n    </div>\n\n    <div class=\"smk-coordinate\" v-if=\"feature.geometry\">\n        <!-- <div >Location:</div> -->\n        <span class=\"smk-ordinate\">\n            <label>latitude<div>{{ feature.geometry.coordinates[ 1 ] | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n        <span class=\"smk-ordinate\">\n            <label>longitude<div>{{ feature.geometry.coordinates[ 0 ] | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n    </div>\n</div>", smkRef$24 = SMK$1;
 Vue.component("search-location-panel", {
 	extends: smkRef$24.COMPONENT.ToolPanelBase,
 	template: panel_search_location_default,
@@ -24069,11 +24073,11 @@ var factory$13 = Tool.define("SearchLocationTool", function() {
 smkRef$24.TYPE["tool-search-location"] = factory$13;
 //#endregion
 //#region src/smk/tool/search/tool-search.ts
-var smkRef$23 = window.SMK, factory$12 = Tool.defineComposite([factory$14, factory$13]);
+var smkRef$23 = SMK$1, factory$12 = Tool.defineComposite([factory$14, factory$13]);
 smkRef$23.TYPE["tool-search"] = factory$12;
 //#endregion
 //#region src/smk/tool/select/panel-select.html?raw
-var panel_select_default = "<tool-panel class=\"smk-selected-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-clear\"\n            v-if=\"command.clear\"\n            v-bind:disabled=\"layers.length == 0\"\n            v-on:click=\"$$emit( 'clear' )\"\n        >Clear</command-button>\n    </template>\n\n    <feature-list\n        v-bind:layers=\"layers\"\n        v-bind:highlightId=\"highlightId\"\n        v-on:active=\"$$emit( 'active', $event )\"\n        v-on:hover=\"$$emit( 'hover', $event )\"\n    >\n        <template slot=\"item\" slot-scope=\"item\">\n            <command-button class=\"smk-remove\"\n                v-bind:key=\"item.feature.id\"\n                title=\"Remove item\"\n                icon=\"delete\"\n                v-if=\"command.remove\"\n                v-on:click=\"$$emit( 'remove', { layerId: item.layer.id, featureId: item.feature.id } )\"\n            ></command-button>\n        </template>\n    </feature-list>\n\n    <div v-if=\"layers.length == 0\">\n        Click on the map to select features under the clicked point.\n    </div>\n</tool-panel>", smkRef$22 = window.SMK;
+var panel_select_default = "<tool-panel class=\"smk-selected-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-clear\"\n            v-if=\"command.clear\"\n            v-bind:disabled=\"layers.length == 0\"\n            v-on:click=\"$$emit( 'clear' )\"\n        >Clear</command-button>\n    </template>\n\n    <feature-list\n        v-bind:layers=\"layers\"\n        v-bind:highlightId=\"highlightId\"\n        v-on:active=\"$$emit( 'active', $event )\"\n        v-on:hover=\"$$emit( 'hover', $event )\"\n    >\n        <template slot=\"item\" slot-scope=\"item\">\n            <command-button class=\"smk-remove\"\n                v-bind:key=\"item.feature.id\"\n                title=\"Remove item\"\n                icon=\"delete\"\n                v-if=\"command.remove\"\n                v-on:click=\"$$emit( 'remove', { layerId: item.layer.id, featureId: item.feature.id } )\"\n            ></command-button>\n        </template>\n    </feature-list>\n\n    <div v-if=\"layers.length == 0\">\n        Click on the map to select features under the clicked point.\n    </div>\n</tool-panel>", smkRef$22 = SMK$1;
 Vue.component("select-widget", { extends: smkRef$22.COMPONENT.ToolWidgetBase }), Vue.component("select-panel", {
 	extends: smkRef$22.COMPONENT.ToolPanelBase,
 	template: panel_select_default,
@@ -24132,7 +24136,7 @@ var factory$11 = Tool.define("SelectListTool", function() {
 smkRef$22.TYPE["tool-select-list"] = factory$11;
 //#endregion
 //#region src/smk/tool/select/tool-select-feature.ts
-var smkRef$21 = window.SMK, factory$10 = Tool.define("SelectFeatureTool", function() {
+var smkRef$21 = SMK$1, factory$10 = Tool.define("SelectFeatureTool", function() {
 	smkRef$21.TYPE.ToolPanel.call(this, "tool-panel-feature"), smkRef$21.TYPE.ToolPanelFeature.call(this, function(e) {
 		return e.$viewer.selected;
 	}), this.parentId = "SelectListTool";
@@ -24185,11 +24189,11 @@ var smkRef$21 = window.SMK, factory$10 = Tool.define("SelectFeatureTool", functi
 smkRef$21.TYPE["tool-select-feature"] = factory$10;
 //#endregion
 //#region src/smk/tool/select/tool-select.ts
-var smkRef$20 = window.SMK, factory$9 = Tool.defineComposite([factory$11, factory$10]);
+var smkRef$20 = SMK$1, factory$9 = Tool.defineComposite([factory$11, factory$10]);
 smkRef$20.TYPE["tool-select"] = factory$9;
 //#endregion
 //#region src/smk/tool/query/panel-query.html?raw
-var panel_query_default = "<tool-panel class=\"smk-query-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-search\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'execute' )\"\n        >Search</command-button>\n\n        <toggle-button class=\"smk-within-extent\"\n            v-if=\"command.within\"\n            v-bind:value=\"within\"\n            v-on:change=\"$$emit( 'change', { within: $event } )\"\n        >Within View</toggle-button>\n    </template>\n\n    <div class=\"smk-parameters\">\n        <component class=\"smk-parameter\"\n            v-for=\"( parameter, i ) in parameters\"\n            v-bind:key=\"parameter.id\"\n            v-bind:is=\"parameter.component\"\n            v-bind=\"parameter.prop\"\n            v-on:input=\"$$emit( 'parameter-input',      { index: i, value: $event.value } )\"\n            v-on:mounted=\"$$emit( 'parameter-mounted',  { index: i } )\"\n            v-on:reset=\"$$emit( 'parameter-reset',      { index: i } )\"\n            v-on:change=\"$$emit( 'parameter-change',    { index: i, active: $event.active } )\"\n            v-on:pickDown=\"$emit( 'pickDown' )\"\n            v-on:pickUp=\"$emit( 'pickUp' )\"\n            v-on:execute=\"$$emit( 'execute' )\"\n        ></component>\n    </div>\n\n</tool-panel>", smkRef$19 = window.SMK;
+var panel_query_default = "<tool-panel class=\"smk-query-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-search\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'execute' )\"\n        >Search</command-button>\n\n        <toggle-button class=\"smk-within-extent\"\n            v-if=\"command.within\"\n            v-bind:value=\"within\"\n            v-on:change=\"$$emit( 'change', { within: $event } )\"\n        >Within View</toggle-button>\n    </template>\n\n    <div class=\"smk-parameters\">\n        <component class=\"smk-parameter\"\n            v-for=\"( parameter, i ) in parameters\"\n            v-bind:key=\"parameter.id\"\n            v-bind:is=\"parameter.component\"\n            v-bind=\"parameter.prop\"\n            v-on:input=\"$$emit( 'parameter-input',      { index: i, value: $event.value } )\"\n            v-on:mounted=\"$$emit( 'parameter-mounted',  { index: i } )\"\n            v-on:reset=\"$$emit( 'parameter-reset',      { index: i } )\"\n            v-on:change=\"$$emit( 'parameter-change',    { index: i, active: $event.active } )\"\n            v-on:pickDown=\"$emit( 'pickDown' )\"\n            v-on:pickUp=\"$emit( 'pickUp' )\"\n            v-on:execute=\"$$emit( 'execute' )\"\n        ></component>\n    </div>\n\n</tool-panel>", smkRef$19 = SMK$1;
 Vue.component("query-widget", { extends: smkRef$19.COMPONENT.ToolWidgetBase }), Vue.component("query-panel", {
 	extends: smkRef$19.COMPONENT.ToolPanelBase,
 	template: panel_query_default,
@@ -24283,7 +24287,7 @@ var factory$8 = Tool.define("QueryParametersTool", function() {
 smkRef$19.TYPE["tool-query-parameters"] = factory$8;
 //#endregion
 //#region src/smk/tool/query/panel-query-results.html?raw
-var panel_query_results_default = "<tool-panel class=\"smk-query-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-select\"\n            v-bind:disabled=\"busy\"\n            v-if=\"tool.select && layers.length > 1 && command.select\"\n            v-on:click=\"$$emit( 'add-all' )\"\n        >Add all to selection</command-button>\n    </template>\n\n    <feature-list\n        v-bind:layers=\"layers\"\n        v-bind:highlightId=\"highlightId\"\n        v-on:active=\"$$emit( 'active', $event )\"\n        v-on:hover=\"$$emit( 'hover', $event )\"\n    ></feature-list>\n\n</tool-panel>", smkRef$18 = window.SMK;
+var panel_query_results_default = "<tool-panel class=\"smk-query-panel\"\n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-select\"\n            v-bind:disabled=\"busy\"\n            v-if=\"tool.select && layers.length > 1 && command.select\"\n            v-on:click=\"$$emit( 'add-all' )\"\n        >Add all to selection</command-button>\n    </template>\n\n    <feature-list\n        v-bind:layers=\"layers\"\n        v-bind:highlightId=\"highlightId\"\n        v-on:active=\"$$emit( 'active', $event )\"\n        v-on:hover=\"$$emit( 'hover', $event )\"\n    ></feature-list>\n\n</tool-panel>", smkRef$18 = SMK$1;
 Vue.component("query-results-panel", {
 	extends: smkRef$18.COMPONENT.ToolPanelBase,
 	template: panel_query_results_default,
@@ -24336,7 +24340,7 @@ var factory$7 = Tool.define("QueryResultsTool", function() {
 smkRef$18.TYPE["tool-query-results"] = factory$7;
 //#endregion
 //#region src/smk/tool/query/tool-query-feature.ts
-var smkRef$17 = window.SMK, factory$6 = Tool.define("QueryFeatureTool", function() {
+var smkRef$17 = SMK$1, factory$6 = Tool.define("QueryFeatureTool", function() {
 	smkRef$17.TYPE.ToolPanel.call(this, "tool-panel-feature"), smkRef$17.TYPE.ToolPanelFeature.call(this, function(e) {
 		return e.$viewer.queried[this.instance];
 	}), this.parentId = "QueryResultsTool";
@@ -24397,7 +24401,7 @@ var smkRef$17 = window.SMK, factory$6 = Tool.define("QueryFeatureTool", function
 smkRef$17.TYPE["tool-query-feature"] = factory$6;
 //#endregion
 //#region src/smk/tool/query/tool-query.ts
-var smkRef$16 = window.SMK, factory$5 = Tool.defineComposite([
+var smkRef$16 = SMK$1, factory$5 = Tool.defineComposite([
 	factory$8,
 	factory$7,
 	factory$6
@@ -24405,7 +24409,7 @@ var smkRef$16 = window.SMK, factory$5 = Tool.defineComposite([
 smkRef$16.TYPE["tool-query"] = factory$5;
 //#endregion
 //#region src/smk/tool/query-place/feature-place.html?raw
-var feature_place_default = "\n<div>\n    <div class=\"smk-address\" v-if=\"feature.properties\">\n        <div class=\"smk-intersection\" v-if=\"feature.properties.intersectionName\">\n            <span class=\"smk-intersection-name\">{{ feature.properties.intersectionName }}</span>\n        </div>\n        <div class=\"smk-street\" v-if=\"feature.properties.streetName\">\n            <span class=\"smk-civic-number\">{{ feature.properties.civicNumber }}</span>\n            <span class=\"smk-street-name\">{{ feature.properties.streetName }}</span>\n            <span class=\"smk-street-qualifier\">{{ feature.properties.streetQualifier }}</span>\n            <span class=\"smk-street-type\">{{ feature.properties.streetType }}</span>\n        </div>\n        <div class=\"smk-locality\" v-if=\"feature.properties.localityName\">\n            <span class=\"smk-locality-name\">{{ feature.properties.localityName }}</span>\n            <span class=\"smk-locality-type\" v-if=\"feature.properties.localityType != 'Unknown'\">({{ feature.properties.localityType }})</span>\n        </div>\n    </div>\n\n    <div class=\"smk-coordinate\" v-if=\"feature.geometry\">\n        <span class=\"smk-ordinate\">\n            <label>latitude<div>{{ feature.geometry.coordinates[ 1 ] | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n        <span class=\"smk-ordinate\">\n            <label>longitude<div>{{ feature.geometry.coordinates[ 0 ] | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n    </div>\n</div>", smkRef$15 = window.SMK;
+var feature_place_default = "\n<div>\n    <div class=\"smk-address\" v-if=\"feature.properties\">\n        <div class=\"smk-intersection\" v-if=\"feature.properties.intersectionName\">\n            <span class=\"smk-intersection-name\">{{ feature.properties.intersectionName }}</span>\n        </div>\n        <div class=\"smk-street\" v-if=\"feature.properties.streetName\">\n            <span class=\"smk-civic-number\">{{ feature.properties.civicNumber }}</span>\n            <span class=\"smk-street-name\">{{ feature.properties.streetName }}</span>\n            <span class=\"smk-street-qualifier\">{{ feature.properties.streetQualifier }}</span>\n            <span class=\"smk-street-type\">{{ feature.properties.streetType }}</span>\n        </div>\n        <div class=\"smk-locality\" v-if=\"feature.properties.localityName\">\n            <span class=\"smk-locality-name\">{{ feature.properties.localityName }}</span>\n            <span class=\"smk-locality-type\" v-if=\"feature.properties.localityType != 'Unknown'\">({{ feature.properties.localityType }})</span>\n        </div>\n    </div>\n\n    <div class=\"smk-coordinate\" v-if=\"feature.geometry\">\n        <span class=\"smk-ordinate\">\n            <label>latitude<div>{{ feature.geometry.coordinates[ 1 ] | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n        <span class=\"smk-ordinate\">\n            <label>longitude<div>{{ feature.geometry.coordinates[ 0 ] | formatNumber( 6, 3 ) }}</div></label>\n        </span>\n    </div>\n</div>", smkRef$15 = SMK$1;
 Vue.component("query-place-widget", { extends: smkRef$15.COMPONENT.ToolWidgetBase }), Vue.component("feature-place", {
 	extends: smkRef$15.TYPE.VueFeatureComponent,
 	template: feature_place_default
@@ -24420,7 +24424,7 @@ function QueryPlaceTool(e) {
 smkRef$15.TYPE.QueryTool ? (Object.assign(QueryPlaceTool.prototype, smkRef$15.TYPE.QueryTool.prototype), QueryPlaceTool.prototype.afterInitialize = smkRef$15.TYPE.QueryTool.prototype.afterInitialize.concat([]), smkRef$15.TYPE.QueryPlaceTool = QueryPlaceTool, smkRef$15.TYPE["tool-query-place"] = QueryPlaceTool) : console.warn("SMK: tool-query-place: QueryTool not defined, skipping registration");
 //#endregion
 //#region src/smk/tool/directions/panel-directions.html?raw
-var panel_directions_default = "<tool-panel class=\"smk-directions-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-route\"\n            v-bind:disabled=\"busy || !hasRoute\"\n            v-on:click=\"$$emit( 'route' )\"\n        >See Route Details</command-button>\n\n        <command-button class=\"smk-reverse\"\n            title=\"Reverse route\"\n            v-bind:disabled=\"busy || waypoints.length < 2\"\n            v-on:click=\"$$emit( 'reverse' )\"\n            icon=\"autorenew\"\n        ></command-button>\n\n        <command-button class=\"smk-reset\"\n            title=\"Clear route\"\n            v-bind:disabled=\"busy || waypoints.length == 0\"\n            v-on:click=\"$$emit( 'clear' )\"\n            icon=\"highlight_off\"\n        ></command-button>\n\n        <command-button class=\"smk-options\"\n            title=\"Route and Vehicle Options\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'options' )\"\n            icon=\"settings_applications\"\n        ></command-button>\n\n        <address-search class=\"smk-address\"\n            ref=\"address\"\n            placeholder=\"Enter address here, or click on map\"\n            v-bind:geocoderService=\"geocoderService\"\n            v-on:update=\"$$emit( 'new-waypoint', $event ); $refs.address.clear()\"\n        ></address-search>\n\n        <command-button class=\"smk-current\"\n            title=\"Add current location\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'current-location' )\"\n            icon=\"add_location\"\n        ></command-button>\n    </template>\n\n    <draggable class=\"smk-waypoints\"\n        v-bind:list=\"waypoints\"\n        v-bind:options=\"{ handle: '.smk-handle', disabled: optimal }\"\n        v-on:end=\"$$emit( 'changed-waypoints' )\"\n    >\n        <div class=\"smk-waypoint smk-item\"\n            v-for=\"( site, i ) in waypoints\"\n        >\n            <command-button class=\"smk-handle\"\n                v-bind:disabled=\"optimal || busy\"\n                v-bind:title=\"optimal ? 'In optimal order' : 'Drag to reorder'\"\n                icon=\"drag_handle\"\n            ></command-button>\n\n            <div class=\"smk-description\">\n                <div class=\"smk-address\"\n                    v-if=\"site.fullAddress\"\n                    v-bind:class=\"'smk-precision-' + ( site.matchPrecision || 'unknown' ).toLowerCase()\"\n                >\n                    <div class=\"smk-site\"\n                        v-if=\"site.siteName\"\n                    >\n                        <span class=\"smk-site-name\">{{ site.siteName }}</span>\n                    </div>\n                    <div class=\"smk-street\"\n                        v-if=\"site.streetName\"\n                    >\n                        <span class=\"smk-civic-number\">{{ site.civicNumber }}{{ site.civicNumberSuffix || '' }}</span>\n                        <span class=\"smk-street-name\">{{ site.streetName }}</span>\n                        <span class=\"smk-street-type\">{{ site.streetType }}</span>\n                    </div>\n                    <div class=\"smk-locality\"\n                        v-if=\"site.localityName\"\n                    >\n                        <span class=\"smk-locality-name\">{{ site.localityName || '&nbsp;' }}</span>\n                        <!-- <span class=\"smk-locality-type\" v-if=\"site.localityType && site.localityType != 'Unknown'\">({{ site.localityType }})</span> -->\n                    </div>\n                </div>\n\n                <div class=\"smk-coordinate\"\n                    v-else\n                >\n                    <span class=\"smk-ordinate\">\n                        <label>latitude<div>{{ site.latitude | formatNumber( 6, 3 ) }}</div></label>\n                    </span>\n                    <span class=\"smk-ordinate\">\n                        <label>longitude<div>{{ site.longitude | formatNumber( 6, 3 ) }}</div></label>\n                    </span>\n                </div>\n            </div>\n\n            <command-button class=\"smk-zoomto\"\n                v-bind:class=\"{\n                    'smk-first':    i == 0,\n                    'smk-middle':   i != 0 && i != waypoints.length - 1,\n                    'smk-last':     i != 0 && i == waypoints.length - 1\n                }\"\n                v-bind:disabled=\"busy\"\n                v-on:click=\"$$emit( 'zoom-waypoint', { waypoint: site, index: i } )\"\n                icon=\"location_on\"\n                title=\"Zoom to this waypoint\"\n            ></command-button>\n\n            <command-button class=\"smk-remove\"\n                v-bind:disabled=\"waypoints.length == 0 || busy\"\n                v-on:click=\"waypoints.length > 0 && $$emit( 'remove-waypoint', { index: i } )\"\n                icon=\"delete\"\n                title=\"Remove this waypoint\"\n            ></command-button>\n        </div>\n    </draggable>\n\n</tool-panel>", smkRef$14 = window.SMK;
+var panel_directions_default = "<tool-panel class=\"smk-directions-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-route\"\n            v-bind:disabled=\"busy || !hasRoute\"\n            v-on:click=\"$$emit( 'route' )\"\n        >See Route Details</command-button>\n\n        <command-button class=\"smk-reverse\"\n            title=\"Reverse route\"\n            v-bind:disabled=\"busy || waypoints.length < 2\"\n            v-on:click=\"$$emit( 'reverse' )\"\n            icon=\"autorenew\"\n        ></command-button>\n\n        <command-button class=\"smk-reset\"\n            title=\"Clear route\"\n            v-bind:disabled=\"busy || waypoints.length == 0\"\n            v-on:click=\"$$emit( 'clear' )\"\n            icon=\"highlight_off\"\n        ></command-button>\n\n        <command-button class=\"smk-options\"\n            title=\"Route and Vehicle Options\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'options' )\"\n            icon=\"settings_applications\"\n        ></command-button>\n\n        <address-search class=\"smk-address\"\n            ref=\"address\"\n            placeholder=\"Enter address here, or click on map\"\n            v-bind:geocoderService=\"geocoderService\"\n            v-on:update=\"$$emit( 'new-waypoint', $event ); $refs.address.clear()\"\n        ></address-search>\n\n        <command-button class=\"smk-current\"\n            title=\"Add current location\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'current-location' )\"\n            icon=\"add_location\"\n        ></command-button>\n    </template>\n\n    <draggable class=\"smk-waypoints\"\n        v-bind:list=\"waypoints\"\n        v-bind:options=\"{ handle: '.smk-handle', disabled: optimal }\"\n        v-on:end=\"$$emit( 'changed-waypoints' )\"\n    >\n        <div class=\"smk-waypoint smk-item\"\n            v-for=\"( site, i ) in waypoints\"\n        >\n            <command-button class=\"smk-handle\"\n                v-bind:disabled=\"optimal || busy\"\n                v-bind:title=\"optimal ? 'In optimal order' : 'Drag to reorder'\"\n                icon=\"drag_handle\"\n            ></command-button>\n\n            <div class=\"smk-description\">\n                <div class=\"smk-address\"\n                    v-if=\"site.fullAddress\"\n                    v-bind:class=\"'smk-precision-' + ( site.matchPrecision || 'unknown' ).toLowerCase()\"\n                >\n                    <div class=\"smk-site\"\n                        v-if=\"site.siteName\"\n                    >\n                        <span class=\"smk-site-name\">{{ site.siteName }}</span>\n                    </div>\n                    <div class=\"smk-street\"\n                        v-if=\"site.streetName\"\n                    >\n                        <span class=\"smk-civic-number\">{{ site.civicNumber }}{{ site.civicNumberSuffix || '' }}</span>\n                        <span class=\"smk-street-name\">{{ site.streetName }}</span>\n                        <span class=\"smk-street-type\">{{ site.streetType }}</span>\n                    </div>\n                    <div class=\"smk-locality\"\n                        v-if=\"site.localityName\"\n                    >\n                        <span class=\"smk-locality-name\">{{ site.localityName || '&nbsp;' }}</span>\n                        <!-- <span class=\"smk-locality-type\" v-if=\"site.localityType && site.localityType != 'Unknown'\">({{ site.localityType }})</span> -->\n                    </div>\n                </div>\n\n                <div class=\"smk-coordinate\"\n                    v-else\n                >\n                    <span class=\"smk-ordinate\">\n                        <label>latitude<div>{{ site.latitude | formatNumber( 6, 3 ) }}</div></label>\n                    </span>\n                    <span class=\"smk-ordinate\">\n                        <label>longitude<div>{{ site.longitude | formatNumber( 6, 3 ) }}</div></label>\n                    </span>\n                </div>\n            </div>\n\n            <command-button class=\"smk-zoomto\"\n                v-bind:class=\"{\n                    'smk-first':    i == 0,\n                    'smk-middle':   i != 0 && i != waypoints.length - 1,\n                    'smk-last':     i != 0 && i == waypoints.length - 1\n                }\"\n                v-bind:disabled=\"busy\"\n                v-on:click=\"$$emit( 'zoom-waypoint', { waypoint: site, index: i } )\"\n                icon=\"location_on\"\n                title=\"Zoom to this waypoint\"\n            ></command-button>\n\n            <command-button class=\"smk-remove\"\n                v-bind:disabled=\"waypoints.length == 0 || busy\"\n                v-on:click=\"waypoints.length > 0 && $$emit( 'remove-waypoint', { index: i } )\"\n                icon=\"delete\"\n                title=\"Remove this waypoint\"\n            ></command-button>\n        </div>\n    </draggable>\n\n</tool-panel>", smkRef$14 = SMK$1;
 function close(e, t) {
 	return !(Math.abs(e.latitude - t.latitude) > 1e-5 || Math.abs(e.longitude - t.longitude) > 1e-5);
 }
@@ -24601,7 +24605,7 @@ var factory$4 = Tool.define("DirectionsWaypointsTool", function() {
 smkRef$14.TYPE["tool-directions-waypoints"] = factory$4;
 //#endregion
 //#region src/smk/tool/directions/panel-directions-options.html?raw
-var panel_directions_options_default = "<tool-panel class=\"smk-directions-options-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n    </template>\n\n    <select-option class=\"smk-directions-optimal\"\n        v-if=\"command.optimal !== false\"\n        v-bind:value=\"optimal\"\n        v-on:change=\"!busy && $$emit( 'change', { optimal: $event } )\"\n        v-bind:options=\"[\n            { value: false, label: 'No, leave as is' },\n            { value: true, label: 'Yes, optimize route' }\n        ]\"\n    >Should route be optimized?</select-option>\n\n    <select-option class=\"smk-directions-round-trip\"\n        v-if=\"command.roundTrip !== false\"\n        v-bind:value=\"roundTrip\"\n        v-on:change=\"!busy && $$emit( 'change', { roundTrip: $event } )\"\n        v-bind:options=\"[\n            { value: false, label: 'No, one-way' },\n            { value: true, label: 'Yes, a round-trip' }\n        ]\"\n    >Is this route a round-trip?</select-option>\n\n    <select-option class=\"smk-directions-criteria\"\n        v-if=\"command.criteria !== false\"\n        v-bind:value=\"criteria\"\n        v-on:change=\"!busy && $$emit( 'change', { criteria: $event } )\"\n        v-bind:options=\"[\n            { value: 'shortest', label: 'Shortest route' },\n            { value: 'fastest', label: 'Fastest route' }\n        ]\"\n    >Which is more important?</select-option>\n\n    <select-option class=\"smk-directions-truck\"\n        v-if=\"command.vehicleType !== false\"\n        v-bind:value=\"truck\"\n        v-on:change=\"!busy && $$emit( 'change', { truck: $event } )\"\n        v-bind:options=\"[\n            { value: false, label: 'Car' },\n            { value: true, label: 'Truck' }\n        ]\"\n    >Type of vehicle</select-option>\n\n    <div class=\"smk-truck-parameters\"\n        v-if=\"truck\"\n    >\n        <select-option class=\"smk-directions-truck-route\"\n            v-if=\"command.truckRoute !== false\"\n            v-bind:value=\"truckRoute\"\n            v-on:change=\"!busy && $$emit( 'change', { truckRoute: $event } )\"\n            v-bind:options=\"[\n                { value: 1, label: 'Loose' },\n                { value: 10, label: 'Normal' },\n                { value: 100, label: 'Tight' }\n            ]\"\n        >Adherence to designated truck route</select-option>\n\n        <div class=\"smk-directions-bespoke\"\n            v-if=\"command.bespoke !== false\"\n            v-content=\"bespoke\"\n        ></div>\n\n        <enter-number class=\"smk-directions-truck-height\"\n            v-if=\"command.truckHeight !== false\"\n            v-bind:value=\"formatNumber( toUnit( truckHeight, truckHeightUnit ), 2 )\"\n            v-bind:option=\"{ min: 0, step: 1 }\"\n            v-on:change=\"!busy && $$emit( 'change', { truckHeight: fromUnit( $event, truckHeightUnit ) } )\"\n        >Height OAH\n            <template slot=\"after-input\">\n                <div class=\"smk-input\">\n                    <select\n                        v-bind:value=\"truckHeightUnit\"\n                        v-on:change=\"$$emit( 'change', { truckHeightUnit: parseFloat( $event.target.value ) } )\"\n                    >\n                        <option value=\"0.3048006096012192\">ft</option>\n                        <option value=\"1\">m</option>\n                    </select>\n                </div>\n            </template>            \n        </enter-number>\n\n        <enter-number class=\"smk-directions-truck-width\"\n            v-if=\"command.truckWidth !== false\"\n            v-bind:value=\"formatNumber( toUnit( truckWidth, truckWidthUnit ), 2 )\"\n            v-bind:option=\"{ min: 0, step: 0.01 }\"\n            v-on:change=\"!busy && $$emit( 'change', { truckWidth: fromUnit( $event, truckWidthUnit ) } )\"\n        >Width OAW\n            <template slot=\"after-input\">\n                <div class=\"smk-input\">\n                    <select\n                        v-bind:value=\"truckWidthUnit\"\n                        v-on:change=\"$$emit( 'change', { truckWidthUnit: parseFloat( $event.target.value ) } )\"\n                    >\n                        <option value=\"0.3048006096012192\">ft</option>\n                        <option value=\"1\">m</option>\n                    </select>\n                </div>\n            </template>            \n        </enter-number>\n\n        <enter-number class=\"smk-directions-truck-length\"\n            v-if=\"command.truckLength !== false\"\n            v-bind:value=\"formatNumber( toUnit( truckLength, truckLengthUnit ), 2 )\"\n            v-bind:option=\"{ min: 0, step: 0.01 }\"\n            v-on:change=\"!busy && $$emit( 'change', { truckLength: fromUnit( $event, truckLengthUnit ) } )\"\n        >Length OAL\n            <template slot=\"after-input\">\n                <div class=\"smk-input\">\n                    <select\n                        v-bind:value=\"truckLengthUnit\"\n                        v-on:change=\"$$emit( 'change', { truckLengthUnit: parseFloat( $event.target.value ) } )\"\n                    >\n                        <option value=\"0.3048006096012192\">ft</option>\n                        <option value=\"1\">m</option>\n                    </select>\n                </div>\n            </template>            \n        </enter-number>\n\n        <enter-number class=\"smk-directions-truck-weight\"\n            v-if=\"command.truckWeight !== false\"\n            v-bind:value=\"formatNumber( toUnit( truckWeight, truckWeightUnit ), 0 )\"\n            v-bind:option=\"{ min: 0, step: 1 }\"\n            v-on:change=\"!busy && $$emit( 'change', { truckWeight: fromUnit( $event, truckWeightUnit ) } )\"\n        >Weight GVW\n            <template slot=\"after-input\">\n                <div class=\"smk-input\">\n                    <select\n                        v-bind:value=\"truckWeightUnit\"\n                        v-on:change=\"$$emit( 'change', { truckWeightUnit: parseFloat( $event.target.value ) } )\"\n                    >\n                        <option value=\"2.20462262185\">lb</option>\n                        <option value=\"1\">kg</option>\n                    </select>\n                </div>\n            </template>            \n        </enter-number>\n    </div>\n\n</tool-panel>", smkRef$13 = window.SMK;
+var panel_directions_options_default = "<tool-panel class=\"smk-directions-options-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n    </template>\n\n    <select-option class=\"smk-directions-optimal\"\n        v-if=\"command.optimal !== false\"\n        v-bind:value=\"optimal\"\n        v-on:change=\"!busy && $$emit( 'change', { optimal: $event } )\"\n        v-bind:options=\"[\n            { value: false, label: 'No, leave as is' },\n            { value: true, label: 'Yes, optimize route' }\n        ]\"\n    >Should route be optimized?</select-option>\n\n    <select-option class=\"smk-directions-round-trip\"\n        v-if=\"command.roundTrip !== false\"\n        v-bind:value=\"roundTrip\"\n        v-on:change=\"!busy && $$emit( 'change', { roundTrip: $event } )\"\n        v-bind:options=\"[\n            { value: false, label: 'No, one-way' },\n            { value: true, label: 'Yes, a round-trip' }\n        ]\"\n    >Is this route a round-trip?</select-option>\n\n    <select-option class=\"smk-directions-criteria\"\n        v-if=\"command.criteria !== false\"\n        v-bind:value=\"criteria\"\n        v-on:change=\"!busy && $$emit( 'change', { criteria: $event } )\"\n        v-bind:options=\"[\n            { value: 'shortest', label: 'Shortest route' },\n            { value: 'fastest', label: 'Fastest route' }\n        ]\"\n    >Which is more important?</select-option>\n\n    <select-option class=\"smk-directions-truck\"\n        v-if=\"command.vehicleType !== false\"\n        v-bind:value=\"truck\"\n        v-on:change=\"!busy && $$emit( 'change', { truck: $event } )\"\n        v-bind:options=\"[\n            { value: false, label: 'Car' },\n            { value: true, label: 'Truck' }\n        ]\"\n    >Type of vehicle</select-option>\n\n    <div class=\"smk-truck-parameters\"\n        v-if=\"truck\"\n    >\n        <select-option class=\"smk-directions-truck-route\"\n            v-if=\"command.truckRoute !== false\"\n            v-bind:value=\"truckRoute\"\n            v-on:change=\"!busy && $$emit( 'change', { truckRoute: $event } )\"\n            v-bind:options=\"[\n                { value: 1, label: 'Loose' },\n                { value: 10, label: 'Normal' },\n                { value: 100, label: 'Tight' }\n            ]\"\n        >Adherence to designated truck route</select-option>\n\n        <div class=\"smk-directions-bespoke\"\n            v-if=\"command.bespoke !== false\"\n            v-content=\"bespoke\"\n        ></div>\n\n        <enter-number class=\"smk-directions-truck-height\"\n            v-if=\"command.truckHeight !== false\"\n            v-bind:value=\"formatNumber( toUnit( truckHeight, truckHeightUnit ), 2 )\"\n            v-bind:option=\"{ min: 0, step: 1 }\"\n            v-on:change=\"!busy && $$emit( 'change', { truckHeight: fromUnit( $event, truckHeightUnit ) } )\"\n        >Height OAH\n            <template slot=\"after-input\">\n                <div class=\"smk-input\">\n                    <select\n                        v-bind:value=\"truckHeightUnit\"\n                        v-on:change=\"$$emit( 'change', { truckHeightUnit: parseFloat( $event.target.value ) } )\"\n                    >\n                        <option value=\"0.3048006096012192\">ft</option>\n                        <option value=\"1\">m</option>\n                    </select>\n                </div>\n            </template>            \n        </enter-number>\n\n        <enter-number class=\"smk-directions-truck-width\"\n            v-if=\"command.truckWidth !== false\"\n            v-bind:value=\"formatNumber( toUnit( truckWidth, truckWidthUnit ), 2 )\"\n            v-bind:option=\"{ min: 0, step: 0.01 }\"\n            v-on:change=\"!busy && $$emit( 'change', { truckWidth: fromUnit( $event, truckWidthUnit ) } )\"\n        >Width OAW\n            <template slot=\"after-input\">\n                <div class=\"smk-input\">\n                    <select\n                        v-bind:value=\"truckWidthUnit\"\n                        v-on:change=\"$$emit( 'change', { truckWidthUnit: parseFloat( $event.target.value ) } )\"\n                    >\n                        <option value=\"0.3048006096012192\">ft</option>\n                        <option value=\"1\">m</option>\n                    </select>\n                </div>\n            </template>            \n        </enter-number>\n\n        <enter-number class=\"smk-directions-truck-length\"\n            v-if=\"command.truckLength !== false\"\n            v-bind:value=\"formatNumber( toUnit( truckLength, truckLengthUnit ), 2 )\"\n            v-bind:option=\"{ min: 0, step: 0.01 }\"\n            v-on:change=\"!busy && $$emit( 'change', { truckLength: fromUnit( $event, truckLengthUnit ) } )\"\n        >Length OAL\n            <template slot=\"after-input\">\n                <div class=\"smk-input\">\n                    <select\n                        v-bind:value=\"truckLengthUnit\"\n                        v-on:change=\"$$emit( 'change', { truckLengthUnit: parseFloat( $event.target.value ) } )\"\n                    >\n                        <option value=\"0.3048006096012192\">ft</option>\n                        <option value=\"1\">m</option>\n                    </select>\n                </div>\n            </template>            \n        </enter-number>\n\n        <enter-number class=\"smk-directions-truck-weight\"\n            v-if=\"command.truckWeight !== false\"\n            v-bind:value=\"formatNumber( toUnit( truckWeight, truckWeightUnit ), 0 )\"\n            v-bind:option=\"{ min: 0, step: 1 }\"\n            v-on:change=\"!busy && $$emit( 'change', { truckWeight: fromUnit( $event, truckWeightUnit ) } )\"\n        >Weight GVW\n            <template slot=\"after-input\">\n                <div class=\"smk-input\">\n                    <select\n                        v-bind:value=\"truckWeightUnit\"\n                        v-on:change=\"$$emit( 'change', { truckWeightUnit: parseFloat( $event.target.value ) } )\"\n                    >\n                        <option value=\"2.20462262185\">lb</option>\n                        <option value=\"1\">kg</option>\n                    </select>\n                </div>\n            </template>            \n        </enter-number>\n    </div>\n\n</tool-panel>", smkRef$13 = SMK$1;
 Vue.component("directions-options-panel", {
 	extends: smkRef$13.COMPONENT.ToolPanelBase,
 	template: panel_directions_options_default,
@@ -24657,7 +24661,7 @@ var factory$3 = Tool.define("DirectionsOptionsTool", function() {
 smkRef$13.TYPE["tool-directions-options"] = factory$3;
 //#endregion
 //#region src/smk/tool/directions/panel-directions-route.html?raw
-var panel_directions_route_default = "<tool-panel class=\"smk-directions-route-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-print-route\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'print', { debug: $event.shiftKey } )\"\n        >Print</command-button>\n    </template>\n\n    <div class=\"smk-directions\">\n        <div class=\"smk-direction\"\n            v-for=\"( direction, i ) in directions\"\n            v-if=\"direction.name\"\n            v-on:mouseenter=\"$$emit( 'hover-direction', { highlight: i } )\"\n            v-on:mouseleave=\"$$emit( 'hover-direction', { highlight: null } )\"\n            v-on:click=\"$$emit( 'pick-direction', { pick: i } )\"\n            v-bind:class=\"{ 'smk-highlight': i == directionHighlight, 'smk-pick': i == directionPick }\"\n        >\n            <i class=\"smk-instruction-type material-icons\"\n                v-bind:class=\"[ instructionTypeClass( direction.type ) ]\"\n                v-bind:title=\"direction.type\"\n            >{{ instructionTypeIcon( direction.type ) }}</i>\n            <span class=\"smk-instruction\">{{ instructionTypePrefix( direction.type, direction.heading ) }} {{ direction.name }}</span>\n            <!-- <span class=\"smk-instruction\" v-else>{{ direction.instruction }}</span> TODO remove -->\n            <span class=\"smk-metric\"\n                v-if=\"direction.distance\"\n            >for {{ direction.distanceUnit.value | dimensionalNumber( 1, direction.distanceUnit.unit, 3 ) }} ({{ direction.time | formatTime }})</span>\n            <i class=\"material-icons smk-instruction-notification\"\n                v-if=\"direction.notifications && direction.notifications.length > 0\"\n                v-bind:title=\"direction.notifications[0].message\"\n            >warning</i>\n        </div>\n    </div>\n\n</tool-panel>", smkRef$12 = window.SMK, instructionType = {
+var panel_directions_route_default = "<tool-panel class=\"smk-directions-route-panel\" \n    v-bind=\"$$projectProps( 'tool-panel' )\"\n>\n    <template slot=\"header\">\n        <slot></slot>\n    </template>\n\n    <template slot=\"commands\">\n        <command-button class=\"smk-print-route\"\n            v-bind:disabled=\"busy\"\n            v-on:click=\"$$emit( 'print', { debug: $event.shiftKey } )\"\n        >Print</command-button>\n    </template>\n\n    <div class=\"smk-directions\">\n        <div class=\"smk-direction\"\n            v-for=\"( direction, i ) in directions\"\n            v-if=\"direction.name\"\n            v-on:mouseenter=\"$$emit( 'hover-direction', { highlight: i } )\"\n            v-on:mouseleave=\"$$emit( 'hover-direction', { highlight: null } )\"\n            v-on:click=\"$$emit( 'pick-direction', { pick: i } )\"\n            v-bind:class=\"{ 'smk-highlight': i == directionHighlight, 'smk-pick': i == directionPick }\"\n        >\n            <i class=\"smk-instruction-type material-icons\"\n                v-bind:class=\"[ instructionTypeClass( direction.type ) ]\"\n                v-bind:title=\"direction.type\"\n            >{{ instructionTypeIcon( direction.type ) }}</i>\n            <span class=\"smk-instruction\">{{ instructionTypePrefix( direction.type, direction.heading ) }} {{ direction.name }}</span>\n            <!-- <span class=\"smk-instruction\" v-else>{{ direction.instruction }}</span> TODO remove -->\n            <span class=\"smk-metric\"\n                v-if=\"direction.distance\"\n            >for {{ direction.distanceUnit.value | dimensionalNumber( 1, direction.distanceUnit.unit, 3 ) }} ({{ direction.time | formatTime }})</span>\n            <i class=\"material-icons smk-instruction-notification\"\n                v-if=\"direction.notifications && direction.notifications.length > 0\"\n                v-bind:title=\"direction.notifications[0].message\"\n            >warning</i>\n        </div>\n    </div>\n\n</tool-panel>", smkRef$12 = SMK$1, instructionType = {
 	START: [
 		"trip_origin",
 		null,
@@ -24785,16 +24789,16 @@ var factory$2 = Tool.define("DirectionsRouteTool", function() {
 smkRef$12.TYPE["tool-directions-route"] = factory$2;
 //#endregion
 //#region src/smk/tool/directions/tool-directions.ts
-var smkRef$11 = window.SMK, factory$1 = Tool.defineComposite([
+var smkRef$11 = SMK$1, factory$1 = Tool.defineComposite([
 	factory$4,
 	factory$3,
 	factory$2
 ]);
 //#endregion
 //#region src/smk/viewer-leaflet/tool/identify/tool-identify-leaflet.ts
-smkRef$11.TYPE["tool-directions"] = factory$1, window.SMK.TYPE.PanTool.addInitializer(function(e) {
+smkRef$11.TYPE["tool-directions"] = factory$1, SMK$1.TYPE.PanTool.addInitializer(function(e) {
 	e.$viewer.type === "leaflet" && e.$viewer.map?.dragging && (e.$viewer.map.dragging.enable(), this.control = !1);
-}), window.SMK.TYPE.ZoomTool.addInitializer(function(e) {
+}), SMK$1.TYPE.ZoomTool.addInitializer(function(e) {
 	e.$viewer.type === "leaflet" && e.$viewer.map?.scrollWheelZoom && (this.mouseWheel && e.$viewer.map.scrollWheelZoom.enable(), this.doubleClick && e.$viewer.map.doubleClickZoom.enable(), this.box && e.$viewer.map.boxZoom.enable(), this.control && e.on(this.id, {
 		"trigger-zoom-in": function() {
 			e.$viewer.map.zoomIn();
@@ -24803,7 +24807,7 @@ smkRef$11.TYPE["tool-directions"] = factory$1, window.SMK.TYPE.PanTool.addInitia
 			e.$viewer.map.zoomOut();
 		}
 	}));
-}), window.SMK.TYPE.IdentifyListTool.addInitializer(function(e) {
+}), SMK$1.TYPE.IdentifyListTool.addInitializer(function(e) {
 	if (e.$viewer.type !== "leaflet") return;
 	let t = this, n = L.layerGroup().addTo(e.$viewer.map);
 	this.clearMarker = function() {
@@ -24839,7 +24843,7 @@ function llToTurf(e) {
 }
 //#endregion
 //#region src/smk/viewer-leaflet/tool/tool-feature-list-clustering-leaflet.ts
-var smkRef$10 = window.SMK;
+var smkRef$10 = SMK$1;
 function toolFeatureListClusteringLeaflet(e) {
 	if (e.$viewer.type !== "leaflet") return;
 	let t = this;
@@ -24892,7 +24896,7 @@ function toolFeatureListClusteringLeaflet(e) {
 smkRef$10.TYPE["tool-feature-list-clustering-leaflet"] = toolFeatureListClusteringLeaflet;
 //#endregion
 //#region src/smk/viewer-leaflet/tool/select/tool-select-leaflet.ts
-var smkRef$9 = window.SMK;
+var smkRef$9 = SMK$1;
 smkRef$9.TYPE.SelectListTool.addInitializer(function() {
 	this.styleFeature = function() {
 		let e = this;
@@ -24924,7 +24928,7 @@ smkRef$9.TYPE.SelectListTool.addInitializer(function() {
 });
 //#endregion
 //#region src/smk/viewer-leaflet/tool/query/tool-query-leaflet.ts
-var smkRef$8 = window.SMK;
+var smkRef$8 = SMK$1;
 //#endregion
 //#region src/smk/viewer-leaflet/tool/measure/tool-measure-leaflet.ts
 smkRef$8.TYPE.QueryResultsTool.addInitializer(function() {
@@ -38747,7 +38751,7 @@ var require_Control_MiniMap_3_6_1_min = /* @__PURE__ */ __commonJSMin(((e, t) =>
 		}), t;
 	}, window);
 })), import_Control_MiniMap_3_6_1_min = require_Control_MiniMap_3_6_1_min();
-window.SMK.TYPE.MinimapTool.addInitializer(function(e) {
+SMK$1.TYPE.MinimapTool.addInitializer(function(e) {
 	if (e.$viewer.type !== "leaflet" || e.$device === "mobile") return;
 	let t = document.createElement("div");
 	t.className = "smk-spacer", t.style.height = "170px", e.addToStatus(t);
@@ -38756,7 +38760,7 @@ window.SMK.TYPE.MinimapTool.addInitializer(function(e) {
 });
 //#endregion
 //#region src/smk/viewer-esri3d/tool/pan/tool-pan-esri3d.ts
-var smkRef$7 = window.SMK;
+var smkRef$7 = SMK$1;
 smkRef$7.TYPE.PanTool.addInitializer(function(e) {
 	if (!e.$viewer.view) return;
 	let t = this;
@@ -38779,7 +38783,7 @@ smkRef$7.TYPE.PanTool.addInitializer(function(e) {
 });
 //#endregion
 //#region src/smk/viewer-esri3d/tool/zoom/tool-zoom-esri3d.ts
-var smkRef$6 = window.SMK;
+var smkRef$6 = SMK$1;
 smkRef$6.TYPE.ZoomTool.addInitializer(function(e) {
 	if (e.$viewer.view && (this.mouseWheel && e.$viewer.zoomHandler.mouseWheel.remove(), this.doubleClick && (e.$viewer.zoomHandler.doubleClick1.remove(), e.$viewer.zoomHandler.doubleClick2.remove()), this.box && (e.$viewer.zoomHandler.drag1.remove(), e.$viewer.zoomHandler.drag2.remove()), this.control)) {
 		e.$viewer.zoomHandler.keyDown.remove();
@@ -38792,7 +38796,7 @@ smkRef$6.TYPE.ZoomTool.addInitializer(function(e) {
 });
 //#endregion
 //#region src/smk/viewer-esri3d/tool/identify/tool-identify-esri3d.ts
-var smkRef$5 = window.SMK;
+var smkRef$5 = SMK$1;
 smkRef$5.TYPE.IdentifyListTool.prototype.styleFeature = function(e) {
 	return Object.assign({
 		strokeColor: "black",
@@ -38812,7 +38816,7 @@ smkRef$5.TYPE.IdentifyListTool.prototype.styleFeature = function(e) {
 });
 //#endregion
 //#region src/smk/viewer-esri3d/tool/select/tool-select-esri3d.ts
-var smkRef$4 = window.SMK;
+var smkRef$4 = SMK$1;
 smkRef$4.TYPE.SelectListTool.prototype.styleFeature = function(e) {
 	return Object.assign({
 		strokeColor: "blue",
@@ -38824,7 +38828,7 @@ smkRef$4.TYPE.SelectListTool.prototype.styleFeature = function(e) {
 };
 //#endregion
 //#region src/smk/viewer-esri3d/tool/query/tool-query-esri3d.ts
-var smkRef$3 = window.SMK;
+var smkRef$3 = SMK$1;
 //#endregion
 //#region src/smk/viewer-esri3d/tool/search/tool-search-esri3d.ts
 smkRef$3.TYPE.QueryResultsTool.prototype.styleFeature = function(e) {
@@ -38835,7 +38839,7 @@ smkRef$3.TYPE.QueryResultsTool.prototype.styleFeature = function(e) {
 		fillColor: "white",
 		fillOpacity: .5
 	}, this.style, e);
-}, window.SMK.TYPE.SearchListTool.addInitializer(function(e) {
+}, SMK$1.TYPE.SearchListTool.addInitializer(function(e) {
 	if (!e.$viewer.view) return;
 	let t = this;
 	e.$viewer.handlePick(3, function(n) {
@@ -38846,7 +38850,7 @@ smkRef$3.TYPE.QueryResultsTool.prototype.styleFeature = function(e) {
 });
 //#endregion
 //#region src/smk/viewer-esri3d/tool/measure/tool-measure-esri3d.ts
-var smkRef$2 = window.SMK;
+var smkRef$2 = SMK$1;
 smkRef$2.TYPE.MeasureTool.addInitializer(function(e) {
 	if (!e.$viewer.view) return;
 	let t = this, n = smkRef$2.TYPE.Esri3d;
@@ -38886,7 +38890,7 @@ smkRef$2.TYPE.MeasureTool.addInitializer(function(e) {
 });
 //#endregion
 //#region src/smk/viewer-esri3d/tool/directions/tool-directions-esri3d.ts
-var smkRef$1 = window.SMK;
+var smkRef$1 = SMK$1;
 //#endregion
 //#region src/smk/viewer-maplibre/tool/zoom/tool-zoom-maplibre.ts
 smkRef$1.TYPE.DirectionsWaypointsTool.addInitializer(function(e) {
@@ -39047,9 +39051,9 @@ smkRef$1.TYPE.DirectionsWaypointsTool.addInitializer(function(e) {
 			});
 		}
 	});
-}), window.SMK.TYPE.PanTool.addInitializer(function(e) {
+}), SMK$1.TYPE.PanTool.addInitializer(function(e) {
 	e.$viewer.map?.dragPan && (e.$viewer.map.dragPan.enable(), e.$viewer.map.keyboard.enable(), this.control = !1);
-}), window.SMK.TYPE.ZoomTool.addInitializer(function(e) {
+}), SMK$1.TYPE.ZoomTool.addInitializer(function(e) {
 	e.$viewer.map?.scrollZoom && (this.mouseWheel && e.$viewer.map.scrollZoom.enable(), this.doubleClick && e.$viewer.map.doubleClickZoom.enable(), this.box && e.$viewer.map.boxZoom.enable(), this.control && e.on(this.id, {
 		"trigger-zoom-in": function() {
 			e.$viewer.map.zoomIn();
@@ -39061,7 +39065,7 @@ smkRef$1.TYPE.DirectionsWaypointsTool.addInitializer(function(e) {
 });
 //#endregion
 //#region src/smk/viewer-maplibre/tool/mode/widget-mode.html?raw
-var widget_mode_default = "<div class=\"smk-tool\"\n    v-bind:class=\"classes\"\n    v-on:click=\"$$emit( 'trigger' )\"\n    v-bind:title=\"title\"\n>\n    <span class=\"smk-tool-mode-label\">{{ status === '3d' ? '3D' : '2D' }}</span>\n    <span v-if=\"showTitle && title\">{{ title }}</span>\n</div>\n", smkRef = window.SMK;
+var widget_mode_default = "<div class=\"smk-tool\"\n    v-bind:class=\"classes\"\n    v-on:click=\"$$emit( 'trigger' )\"\n    v-bind:title=\"title\"\n>\n    <span class=\"smk-tool-mode-label\">{{ status === '3d' ? '3D' : '2D' }}</span>\n    <span v-if=\"showTitle && title\">{{ title }}</span>\n</div>\n", smkRef = SMK$1;
 Vue.component("mode-widget", {
 	extends: smkRef.COMPONENT.ToolWidgetBase,
 	template: widget_mode_default
@@ -39670,7 +39674,7 @@ SMK.TYPE.MinimapTool.addInitializer(function(e) {
 //#endregion
 //#region src/smk/viewer-maplibre/tool/directions/tool-directions-maplibre.ts
 var HIGHLIGHT_SOURCE = "_smk-directions-highlight", PICK_SOURCE = "_smk-directions-pick", HIGHLIGHT_LAYER = "_smk-directions-highlight-layer", PICK_LAYER = "_smk-directions-pick-layer";
-window.SMK.TYPE.DirectionsWaypointsTool.addInitializer(function(e) {
+SMK$1.TYPE.DirectionsWaypointsTool.addInitializer(function(e) {
 	if (e.$viewer.type !== "maplibre") return;
 	let t = this, n = e.$viewer.map;
 	function i() {

@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import toolbarHtml from './toolbar.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 const factory = ( Tool as any ).define( 'ToolBarTool',
     function ( this: any ) {

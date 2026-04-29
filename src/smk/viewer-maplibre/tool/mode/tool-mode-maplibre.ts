@@ -6,10 +6,11 @@
 import Tool from '../../../tool'
 import widgetModeHtml from './widget-mode.html?raw'
 import './widget-mode.css'
+import { SMK } from '../../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'mode-widget', {
     extends: smkRef.COMPONENT.ToolWidgetBase,

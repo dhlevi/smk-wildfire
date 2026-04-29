@@ -5,11 +5,12 @@
 
 import Tool from '../../tool'
 import widgetCurrentLocationHtml from './widget-current-location.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 declare const turf: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'current-location-widget', {
     extends: smkRef.COMPONENT.ToolWidgetBase,

@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import panelListMenuHtml from './panel-list-menu.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'list-menu-widget', {
     extends: smkRef.COMPONENT.ToolWidgetBase,

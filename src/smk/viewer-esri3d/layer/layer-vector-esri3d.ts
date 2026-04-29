@@ -4,10 +4,11 @@
  */
 
 import { VectorLayer } from '../../layer/layer-types'
+import { SMK } from '../../smk-ref'
 
 declare const turf: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 class VectorEsri3dLayer extends VectorLayer {}
 

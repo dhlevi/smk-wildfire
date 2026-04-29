@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import scaleHtml from './scale.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 const factory = ( Tool as any ).define( 'ScaleTool',
     function ( this: any ) {

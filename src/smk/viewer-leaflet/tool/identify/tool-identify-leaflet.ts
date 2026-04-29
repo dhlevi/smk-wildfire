@@ -6,8 +6,9 @@ declare const L:    any
 declare const turf: any
 
 import '../../../tool/identify/tool-identify-list'
+import { SMK } from '../../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 smkRef.TYPE.IdentifyListTool.addInitializer( function ( this: any, smk: any ) {
     // This initializer is Leaflet-specific; bail out for other viewer types

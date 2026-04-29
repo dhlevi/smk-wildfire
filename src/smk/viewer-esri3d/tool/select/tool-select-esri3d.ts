@@ -4,8 +4,9 @@
  */
 
 import '../../../tool/select/tool-select-list'
+import { SMK } from '../../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 // Patches SelectListTool (not SelectTool — that name never existed; Leaflet
 // equivalent uses SelectListTool.addInitializer)

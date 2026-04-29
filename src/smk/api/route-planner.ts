@@ -1,3 +1,4 @@
+import { SMK } from '../smk-ref'
 /**
  * RoutePlanner — BC Route Planner API wrapper.
  * Converted from api/route-planner.js.
@@ -5,7 +6,7 @@
 
 declare const turf: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 function RoutePlanner( this: any, config: any ) {
     Object.assign( this, {

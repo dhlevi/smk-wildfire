@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import panelVersionHtml from './panel-version.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'version-widget', {
     extends: smkRef.COMPONENT.ToolWidgetBase,

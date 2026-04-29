@@ -5,6 +5,7 @@
 
 import { Viewer } from '../viewer'
 import { defineBaseMaps } from '../base-maps'
+import { SMK } from '../smk-ref'
 
 declare const L:    any
 declare const turf: any
@@ -21,7 +22,7 @@ export class ViewerLeaflet extends Viewer {
 // the rest of the file doesn't need to change.
 
 // Register on SMK.TYPE.Viewer.leaflet
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 if ( smkRef ) {
     if ( !smkRef.TYPE )         smkRef.TYPE = {}
     if ( !smkRef.TYPE.Viewer )  smkRef.TYPE.Viewer = {}
@@ -58,7 +59,7 @@ ViewerLeaflet.prototype.initialize = function ( smk: any ) {
         self.setBasemap( smk.viewer.baseMap )
     }
 
-    this.changedViewDebounced = ( window as any ).SMK.UTIL.makeDelayedCall( function () {
+    this.changedViewDebounced = SMK.UTIL.makeDelayedCall( function () {
         self.changedView()
     }, { delay: 1000 } )
 

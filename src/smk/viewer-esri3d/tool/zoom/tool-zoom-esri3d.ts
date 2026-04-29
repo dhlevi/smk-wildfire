@@ -4,8 +4,9 @@
  */
 
 import '../../../tool/zoom/tool-zoom'
+import { SMK } from '../../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 smkRef.TYPE.ZoomTool.addInitializer( function ( this: any, smk: any ) {
     if ( !smk.$viewer.view ) return   // not an esri3d viewer

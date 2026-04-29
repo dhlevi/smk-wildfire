@@ -6,8 +6,9 @@
 import Tool from '../../tool'
 import SearchListFactory from './tool-search-list'
 import SearchLocationFactory from './tool-search-location'
+import { SMK } from '../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 const factory = ( Tool as any ).defineComposite( [
     SearchListFactory,

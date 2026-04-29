@@ -7,8 +7,9 @@ import Tool from '../../tool'
 import DirectionsWaypointsFactory from './tool-directions-waypoints'
 import DirectionsOptionsFactory from './tool-directions-options'
 import DirectionsRouteFactory from './tool-directions-route'
+import { SMK } from '../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 const factory = ( Tool as any ).defineComposite( [
     DirectionsWaypointsFactory,

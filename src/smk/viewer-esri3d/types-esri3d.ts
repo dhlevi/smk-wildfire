@@ -1,3 +1,4 @@
+import { SMK } from '../smk-ref'
 /**
  * types-esri3d — Load ArcGIS JS API 4.x modules into SMK.TYPE.Esri3d.
  * Converted from types-esri3d.js (include.module -> ES module).
@@ -7,7 +8,7 @@
 
 declare const require: ( modules: string[], callback: ( ...args: any[] ) => void ) => void
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 const objs = [
     'esri/config',

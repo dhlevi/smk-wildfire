@@ -6,10 +6,11 @@
 import '../../../tool/minimap/tool-minimap'
 import './lib/Control.MiniMap-3.6.1.min.css'
 import './lib/Control.MiniMap-3.6.1.min.js'
+import { SMK } from '../../../smk-ref'
 
 declare const L: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 smkRef.TYPE.MinimapTool.addInitializer( function ( this: any, smk: any ) {
     if ( smk.$viewer.type !== 'leaflet' ) return

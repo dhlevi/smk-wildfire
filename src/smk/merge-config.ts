@@ -4,6 +4,7 @@
  */
 
 import { type as smkType } from './util'
+import { SMK } from './smk-ref'
 
 type ObjectIndex = [ Record<string, any>, string | number ]
 
@@ -347,7 +348,7 @@ export function toolMerge( base: ObjectIndex, source: ObjectIndex, path: string 
 // ---------------------------------------------------------------------------
 
 export function mergeConfigs( configs: any[] ): any {
-    const base = JSON.parse( JSON.stringify( ( window as any ).SMK?.CONFIG || {} ) )
+    const base = JSON.parse( JSON.stringify( SMK?.CONFIG || {} ) )
     let inline = 0
 
     while ( configs.length > 0 ) {
@@ -378,7 +379,7 @@ mergeConfigs.valueMerge        = valueMerge
 
 // Assign to SMK.TYPE for backward compat (smk-map.ts looks up smk.TYPE.mergeConfigs)
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk && smk.TYPE ) smk.TYPE.mergeConfigs = mergeConfigs
 }
 

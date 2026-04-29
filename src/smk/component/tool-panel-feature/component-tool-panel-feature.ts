@@ -2,10 +2,11 @@
  * component-tool-panel-feature — panel for displaying a single feature's details.
  */
 import template from './component-tool-panel-feature.html?raw'
+import { SMK } from '../../smk-ref'
 declare const Vue: any
 
 Vue.component( 'tool-panel-feature', {
-    extends: ( window as any ).SMK?.COMPONENT?.ToolPanelBase,
+    extends: SMK?.COMPONENT?.ToolPanelBase,
     template,
     props: [
         'feature',
@@ -34,7 +35,7 @@ Vue.component( 'tool-panel-feature', {
         },
         customLabel( this: any ): any {
             if ( !this.command?.custom ) return false
-            return ( window as any ).SMK?.HANDLER?.get( this.id, 'show-custom' )( this )
+            return SMK?.HANDLER?.get( this.id, 'show-custom' )( this )
         },
     },
 } )

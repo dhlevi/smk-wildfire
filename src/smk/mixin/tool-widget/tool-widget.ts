@@ -1,3 +1,4 @@
+import { SMK } from '../../smk-ref'
 /**
  * tool-widget mixin — adds widget component support to a Tool.
  * Converted from mixin/tool-widget/tool-widget.js (include.module -> ES module).
@@ -32,7 +33,7 @@ export function ToolWidget( this: any, componentName: string ): void {
 
 // Assign to SMK.TYPE for backward compat
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk && smk.TYPE ) smk.TYPE.ToolWidget = ToolWidget
 }
 

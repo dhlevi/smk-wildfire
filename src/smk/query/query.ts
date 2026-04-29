@@ -23,6 +23,7 @@
 
 import { SMKEvent }             from '../event'
 import { makePromise, resolved, asyncReduce } from '../util'
+import { SMK } from '../smk-ref'
 
 // ---------------------------------------------------------------------------
 // Predicate / parameter types shared by all query types
@@ -872,9 +873,9 @@ function fetchWmsUniqueValues(
 // Backward compat
 // ---------------------------------------------------------------------------
 
-if ( typeof window !== 'undefined' && ( window as any ).SMK ) {
-    ;( window as any ).SMK.TYPE.Query          = Query
-    ;( window as any ).SMK.TYPE.QueryParameter = QueryParameter
+if ( typeof window !== 'undefined' && SMK ) {
+    ;SMK.TYPE.Query          = Query
+    ;SMK.TYPE.QueryParameter = QueryParameter
 }
 
 export default Query

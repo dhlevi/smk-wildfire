@@ -4,8 +4,9 @@
  */
 
 import '../../../tool/identify/tool-identify-list'
+import { SMK } from '../../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 smkRef.TYPE.IdentifyListTool.prototype.styleFeature = function ( this: any, override: any ) {
     return Object.assign( {

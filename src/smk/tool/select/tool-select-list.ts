@@ -5,10 +5,11 @@
 
 import Tool from '../../tool'
 import panelSelectHtml from './panel-select.html?raw'
+import { SMK } from '../../smk-ref'
 
 declare const Vue: any
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 Vue.component( 'select-widget', {
     extends: smkRef.COMPONENT.ToolWidgetBase,

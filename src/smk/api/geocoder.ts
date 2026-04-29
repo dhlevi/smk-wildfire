@@ -1,9 +1,10 @@
+import { SMK } from '../smk-ref'
 /**
  * Geocoder — BC Geocoder API wrapper.
  * Converted from api/geocoder.js.
  */
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 function Geocoder( this: any, config: any ) {
     Object.assign( this, {

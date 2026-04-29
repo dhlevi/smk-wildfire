@@ -1,3 +1,4 @@
+import { SMK } from '../../smk-ref'
 /**
  * tool-base mixin — defines base properties for all Tool instances.
  * Converted from mixin/tool-base/tool-base.js (include.module -> ES module).
@@ -139,7 +140,7 @@ export function ToolBase( this: any ): void {
 
 // Assign to SMK.TYPE for backward compat
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk && smk.TYPE ) smk.TYPE.ToolBase = ToolBase
 }
 

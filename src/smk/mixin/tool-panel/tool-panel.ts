@@ -1,3 +1,4 @@
+import { SMK } from '../../smk-ref'
 /**
  * tool-panel mixin — adds panel component support to a Tool.
  * Converted from mixin/tool-panel/tool-panel.js (include.module -> ES module).
@@ -30,7 +31,7 @@ export function ToolPanel( this: any, componentName: string ): void {
 
 // Assign to SMK.TYPE for backward compat
 if ( typeof window !== 'undefined' ) {
-    const smk = ( window as any ).SMK
+    const smk = SMK
     if ( smk && smk.TYPE ) smk.TYPE.ToolPanel = ToolPanel
 }
 

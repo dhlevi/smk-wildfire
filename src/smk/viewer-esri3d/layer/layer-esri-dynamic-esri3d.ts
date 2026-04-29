@@ -4,8 +4,9 @@
  */
 
 import { EsriDynamicLayer } from '../../layer/layer-types'
+import { SMK } from '../../smk-ref'
 
-const smkRef = ( window as any ).SMK
+const smkRef = SMK
 
 class EsriDynamicEsri3dLayer extends EsriDynamicLayer {}
 
