@@ -28,17 +28,13 @@
         }
     },
     "include": [
-        "src/**/*.ts",
-        "src/**/*.js"
+        "src/**/*.ts"
     ],
     "exclude": [
         "node_modules",
         "dist",
         "temp",
         // Vendored third-party libs — not migrated, excluded from compilation
-        "src/lib",
-        // Grunt build-tool scripts — not app source
-        "src/smk-tags.js",
-        "build"
+        "src/lib"
     ]
 }
