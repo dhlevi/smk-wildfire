@@ -19,7 +19,7 @@ Vue.component( 'search-location-panel', {
     props: [ 'feature', 'tool', 'command', 'locationComponent' ],
 } )
 
-const factory = ( Tool as any ).define( 'SearchLocationTool',
+const factory = Tool.define( 'SearchLocationTool',
     function ( this: any ) {
         smkRef.TYPE.ToolPanel.call( this, 'search-location-panel' )
 

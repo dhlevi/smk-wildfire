@@ -16,7 +16,7 @@ Vue.component( 'reset-view-widget', {
     template: widgetResetViewHtml,
 } )
 
-const factory = ( Tool as any ).define( 'ResetViewTool',
+const factory = Tool.define( 'ResetViewTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'reset-view-widget' )
     },

@@ -39,7 +39,7 @@ Vue.component( 'menu-panel', {
     },
 } )
 
-const factory = ( Tool as any ).define( 'MenuTool',
+const factory = Tool.define( 'MenuTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'menu-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'menu-panel' )

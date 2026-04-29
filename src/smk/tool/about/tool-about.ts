@@ -21,7 +21,7 @@ Vue.component( 'about-panel', {
     props: [ 'content' ],
 } )
 
-const factory = ( Tool as any ).define( 'AboutTool',
+const factory = Tool.define( 'AboutTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'about-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'about-panel' )

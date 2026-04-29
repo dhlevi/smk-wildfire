@@ -22798,7 +22798,7 @@ var ToolEvent = SMKEvent.define([
 function Tool() {
 	ToolEvent.prototype.constructor.call(this), this.$prop = {}, this.$propFilter = { constructor: !1 }, this.$componentProp = {}, this.$initializers = [];
 }
-if (Object.assign(Tool.prototype, ToolEvent.prototype), Tool.prototype.configure = function(e, t) {
+Object.assign(Tool.prototype, ToolEvent.prototype), Tool.prototype.configure = function(e, t) {
 	return Object.assign(this, t), this.instance ? (this.id = e + "--" + this.instance, this.parentId &&= this.parentId + "--" + this.instance) : this.id = e, this;
 }, Tool.prototype.initialize = function(e) {
 	let t = this;
@@ -22847,9 +22847,11 @@ if (Object.assign(Tool.prototype, ToolEvent.prototype), Tool.prototype.configure
 	Object.keys(this.$componentProp).forEach(function(i) {
 		e in n.$componentProp[i] && t.call(n, n.$componentProp[i][e], i);
 	});
-}, Tool.define = function(e, t, n, i) {
+};
+var ToolStatic = Tool;
+if (ToolStatic.define = function(e, t, n, i) {
 	let a = {
-		construct: t,
+		construct: typeof t == "function" ? t : void 0,
 		initialize: n,
 		methods: i
 	};
@@ -22858,14 +22860,16 @@ if (Object.assign(Tool.prototype, ToolEvent.prototype), Tool.prototype.configure
 	a.events && (s = SMKEvent.define(a.events));
 	let c = SMK$1;
 	if (!c || !c.TYPE) throw Error("SMK.TYPE not available");
-	return c.TYPE[e] = function() {
+	c.TYPE[e] = function() {
 		Tool.prototype.constructor.call(this), s && s.prototype.constructor.call(this), ToolBase.call(this), a.construct && a.construct.call(this), a.initialize && this.$initializers.push(a.initialize), this.$moreInitializers = o, Object.assign(this, a.methods);
 	}, Object.assign(c.TYPE[e].prototype, Tool.prototype), s && Object.assign(c.TYPE[e].prototype, s.prototype), c.TYPE[e].addInitializer = function(e) {
 		o.push(e);
-	}, function(t) {
+	};
+	let l = function(t) {
 		return [new c.TYPE[e]().configure(e, t)];
 	};
-}, Tool.defineComposite = function(e) {
+	return l.addInitializer = c.TYPE[e].addInitializer, l;
+}, ToolStatic.defineComposite = function(e) {
 	return function(t) {
 		return e.map(function(e) {
 			return e(t)[0];
@@ -22883,7 +22887,7 @@ Vue.component("about-widget", { extends: smkRef$51.COMPONENT.ToolWidgetBase }), 
 	template: panel_about_default,
 	props: ["content"]
 });
-var factory$40 = Tool.define("AboutTool", function() {
+var factory$40 = ToolStatic.define("AboutTool", function() {
 	smkRef$51.TYPE.ToolWidget.call(this, "about-widget"), smkRef$51.TYPE.ToolPanel.call(this, "about-panel"), this.defineProp("content");
 });
 smkRef$51.TYPE["tool-about"] = factory$40;
@@ -22909,7 +22913,7 @@ Vue.component("pan-widget", {
 		}
 	}
 });
-var factory$39 = Tool.define("PanTool", {
+var factory$39 = ToolStatic.define("PanTool", {
 	construct() {
 		smkRef$50.TYPE.ToolWidget.call(this, "pan-widget"), this.defineProp("control"), this.defineProp("navMode"), this.defineProp("compassStyle"), this.navMode = "pan";
 	},
@@ -22924,7 +22928,7 @@ Vue.component("zoom-widget", {
 	template: widget_zoom_default,
 	props: ["control"]
 });
-var factory$38 = Tool.define("ZoomTool", {
+var factory$38 = ToolStatic.define("ZoomTool", {
 	construct() {
 		smkRef$49.TYPE.ToolWidget.call(this, "zoom-widget"), this.defineProp("control");
 	},
@@ -22933,7 +22937,7 @@ var factory$38 = Tool.define("ZoomTool", {
 smkRef$49.TYPE["tool-zoom"] = factory$38;
 //#endregion
 //#region src/smk/tool/coordinate/coordinate.html?raw
-var coordinate_default = "<div class=\"smk-coordinate\"\n    v-if=\"latitude && longitude\"\n>\n    <span class=\"smk-ordinate\">\n        <label>latitude<div>{{ formatValue( latitude )  }}</div></label>\n    </span>\n    <span class=\"smk-ordinate\">\n        <label>longitude<div>{{ formatValue( longitude ) }}</div></label>\n    </span>\n\n</div>", smkRef$48 = SMK$1, factory$37 = Tool.define("CoordinateTool", null, function(e) {
+var coordinate_default = "<div class=\"smk-coordinate\"\n    v-if=\"latitude && longitude\"\n>\n    <span class=\"smk-ordinate\">\n        <label>latitude<div>{{ formatValue( latitude )  }}</div></label>\n    </span>\n    <span class=\"smk-ordinate\">\n        <label>longitude<div>{{ formatValue( longitude ) }}</div></label>\n    </span>\n\n</div>", smkRef$48 = SMK$1, factory$37 = ToolStatic.define("CoordinateTool", null, function(e) {
 	let t = this;
 	if (e.$device === "mobile") return;
 	this.model = {
@@ -22970,7 +22974,7 @@ Vue.component("version-widget", { extends: smkRef$47.COMPONENT.ToolWidgetBase })
 	template: panel_version_default,
 	props: ["build", "config"]
 });
-var factory$36 = Tool.define("VersionTool", function() {
+var factory$36 = ToolStatic.define("VersionTool", function() {
 	smkRef$47.TYPE.ToolWidget.call(this, "version-widget"), smkRef$47.TYPE.ToolPanel.call(this, "version-panel"), this.defineProp("build"), this.defineProp("config");
 }, function(e) {
 	this.config = smkRef$47.UTIL.projection("lmfId", "lmfRevision", "createdBy", "_rev", "published")(e), this.config.enabledTools = Object.keys(e.$toolType).sort();
@@ -22978,7 +22982,7 @@ var factory$36 = Tool.define("VersionTool", function() {
 smkRef$47.TYPE["tool-version"] = factory$36;
 //#endregion
 //#region src/smk/tool/scale/scale.html?raw
-var scale_default = "<div class=\"smk-scale\">\n\n    <div class=\"smk-denom\"\n        v-if=\"scaleDenom\"\n    >1 : {{ scaleDenom | formatNumber( 3 ) }}<span v-if=\"zoomLevel\"> ({{ zoomLevel.toFixed( 1 ) }})</span></div>\n\n    <div class=\"smk-ruler\">\n        <div\n            class=\"smk-sections\"\n            v-if=\"rulerSectionWidth\"\n        ><span\n            class=\"smk-upper\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-lower\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-upper\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-lower\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span></div>\n\n        <div class=\"smk-labels\"\n            v-if=\"rulerLength\"\n        >\n            <span class=\"smk-first\">0</span>\n            <span class=\"smk-middle\">{{ ( rulerLength / 2 ) | formatNumber( 2 ) }}</span>\n            <span class=\"smk-last\">{{ rulerLength | formatNumber( 2 ) }}{{ rulerUnit }}</span>\n        </div>\n    </div>\n\n</div>", smkRef$46 = SMK$1, factory$35 = Tool.define("ScaleTool", function() {
+var scale_default = "<div class=\"smk-scale\">\n\n    <div class=\"smk-denom\"\n        v-if=\"scaleDenom\"\n    >1 : {{ scaleDenom | formatNumber( 3 ) }}<span v-if=\"zoomLevel\"> ({{ zoomLevel.toFixed( 1 ) }})</span></div>\n\n    <div class=\"smk-ruler\">\n        <div\n            class=\"smk-sections\"\n            v-if=\"rulerSectionWidth\"\n        ><span\n            class=\"smk-upper\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-lower\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-upper\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span><span\n            class=\"smk-lower\"\n            v-bind:style=\"{ width: rulerSectionWidth + 'px' }\"\n        ></span></div>\n\n        <div class=\"smk-labels\"\n            v-if=\"rulerLength\"\n        >\n            <span class=\"smk-first\">0</span>\n            <span class=\"smk-middle\">{{ ( rulerLength / 2 ) | formatNumber( 2 ) }}</span>\n            <span class=\"smk-last\">{{ rulerLength | formatNumber( 2 ) }}{{ rulerUnit }}</span>\n        </div>\n    </div>\n\n</div>", smkRef$46 = SMK$1, factory$35 = ToolStatic.define("ScaleTool", function() {
 	this.defineProp("showFactor"), this.defineProp("showBar"), this.defineProp("showZoom");
 }, function(e) {
 	let t = this;
@@ -23037,7 +23041,7 @@ Vue.component("reset-view-widget", {
 	extends: smkRef$45.COMPONENT.ToolWidgetBase,
 	template: widget_reset_view_default
 });
-var factory$34 = Tool.define("ResetViewTool", function() {
+var factory$34 = ToolStatic.define("ResetViewTool", function() {
 	smkRef$45.TYPE.ToolWidget.call(this, "reset-view-widget");
 }, function(e) {
 	e.on(this.id, { trigger(t) {
@@ -23047,7 +23051,7 @@ var factory$34 = Tool.define("ResetViewTool", function() {
 smkRef$45.TYPE["tool-reset-view"] = factory$34;
 //#endregion
 //#region src/smk/tool/minimap/tool-minimap.ts
-var smkRef$44 = SMK$1, factory$33 = Tool.define("MinimapTool");
+var smkRef$44 = SMK$1, factory$33 = ToolStatic.define("MinimapTool");
 smkRef$44.TYPE["tool-minimap"] = factory$33;
 //#endregion
 //#region src/smk/tool/menu/panel-menu.html?raw
@@ -23072,7 +23076,7 @@ Vue.component("menu-widget", { extends: smkRef$43.COMPONENT.ToolWidgetBase }), V
 		}
 	}
 });
-var factory$32 = Tool.define("MenuTool", function() {
+var factory$32 = ToolStatic.define("MenuTool", function() {
 	smkRef$43.TYPE.ToolWidget.call(this, "menu-widget"), smkRef$43.TYPE.ToolPanel.call(this, "menu-panel"), this.defineProp("subWidgets"), this.defineProp("subPanels"), this.subWidgets = [], this.subPanels = [];
 }, function(e) {
 	let t = this;
@@ -23102,7 +23106,7 @@ var factory$32 = Tool.define("MenuTool", function() {
 smkRef$43.TYPE["tool-menu"] = factory$32;
 //#endregion
 //#region src/smk/tool/toolbar/toolbar.html?raw
-var toolbar_default = "<div class=\"smk-toolbar\"\n    v-bind:class=\"{ 'smk-hidden': widgets.length == 0 }\"\n>\n    <component\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n        v-bind:active=\"w.prop.group\"\n    ></component>\n</div>\n", smkRef$42 = SMK$1, factory$31 = Tool.define("ToolBarTool", function() {
+var toolbar_default = "<div class=\"smk-toolbar\"\n    v-bind:class=\"{ 'smk-hidden': widgets.length == 0 }\"\n>\n    <component\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n        v-bind:active=\"w.prop.group\"\n    ></component>\n</div>\n", smkRef$42 = SMK$1, factory$31 = ToolStatic.define("ToolBarTool", function() {
 	this.model = { widgets: [] };
 }, function(e) {
 	let t = e.addToOverlay(toolbar_default);
@@ -23119,7 +23123,7 @@ var toolbar_default = "<div class=\"smk-toolbar\"\n    v-bind:class=\"{ 'smk-hid
 smkRef$42.TYPE["tool-toolbar"] = factory$31;
 //#endregion
 //#region src/smk/tool/actionbar/actionbar.html?raw
-var actionbar_default = "<div class=\"smk-actionbar\"\n    v-bind:class=\"{ 'smk-hidden': widgets.length == 0 }\"\n>\n    <component\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n        v-bind:active=\"w.prop.group\"\n    ></component>\n</div>\n", smkRef$41 = SMK$1, factory$30 = Tool.define("ActionBarTool", function() {
+var actionbar_default = "<div class=\"smk-actionbar\"\n    v-bind:class=\"{ 'smk-hidden': widgets.length == 0 }\"\n>\n    <component\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n        v-bind:active=\"w.prop.group\"\n    ></component>\n</div>\n", smkRef$41 = SMK$1, factory$30 = ToolStatic.define("ActionBarTool", function() {
 	this.model = { widgets: [] };
 }, function(e) {
 	this.vm = new Vue({
@@ -23151,7 +23155,7 @@ Vue.component("dropdown-widget", { extends: smkRef$40.COMPONENT.ToolWidgetBase }
 		return e.title = null, e;
 	} }
 });
-var factory$29 = Tool.define("DropdownTool", function() {
+var factory$29 = ToolStatic.define("DropdownTool", function() {
 	this.defineProp("subWidgets"), this.defineProp("subPanels"), this.defineProp("activeToolId"), this.subWidgets = [], this.subPanels = {}, this.activeToolId = null;
 }, function(e) {
 	let t = this;
@@ -23198,7 +23202,7 @@ Vue.component("base-maps-widget", { extends: smkRef$39.COMPONENT.ToolWidgetBase 
 		"mapStyle"
 	]
 });
-var factory$28 = Tool.define("BaseMapsTool", function() {
+var factory$28 = ToolStatic.define("BaseMapsTool", function() {
 	smkRef$39.TYPE.ToolWidget.call(this, "base-maps-widget"), smkRef$39.TYPE.ToolPanel.call(this, "base-maps-panel"), this.defineProp("current"), this.defineProp("basemaps"), this.defineProp("mapStyle"), this.basemaps = [], this.mapStyle = {
 		width: "110px",
 		height: "110px"
@@ -23275,7 +23279,7 @@ Vue.component("list-menu-widget", { extends: smkRef$38.COMPONENT.ToolWidgetBase 
 	template: panel_list_menu_default,
 	props: ["subWidgets"]
 });
-var factory$27 = Tool.define("ListMenuTool", function() {
+var factory$27 = ToolStatic.define("ListMenuTool", function() {
 	smkRef$38.TYPE.ToolWidget.call(this, "list-menu-widget"), smkRef$38.TYPE.ToolPanel.call(this, "list-menu-panel"), this.defineProp("subWidgets"), this.subWidgets = [];
 }, function(e) {
 	e.on(this.id, {
@@ -23292,7 +23296,7 @@ var factory$27 = Tool.define("ListMenuTool", function() {
 smkRef$38.TYPE["tool-list-menu"] = factory$27;
 //#endregion
 //#region src/smk/tool/shortcut-menu/shortcut-menu.html?raw
-var shortcut_menu_default = "<div class=\"smk-shortcut-menu\">\n    <component class=\"smk-tool\"\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n    ></component>\n</div>", smkRef$37 = SMK$1, factory$26 = Tool.define("ShortcutMenuTool", function() {
+var shortcut_menu_default = "<div class=\"smk-shortcut-menu\">\n    <component class=\"smk-tool\"\n        v-for=\"w in widgets\"\n        v-bind:key=\"w.prop.id\"\n        v-bind:is=\"w.component\"\n        v-bind=\"w.prop\"\n    ></component>\n</div>", smkRef$37 = SMK$1, factory$26 = ToolStatic.define("ShortcutMenuTool", function() {
 	this.model = { widgets: [] };
 }, function(e) {
 	this.vm = new Vue({
@@ -23314,7 +23318,7 @@ Vue.component("bespoke-widget", { extends: smkRef$36.COMPONENT.ToolWidgetBase })
 	template: panel_bespoke_default,
 	props: ["content", "component"]
 });
-var factory$25 = Tool.define("BespokeTool", function() {
+var factory$25 = ToolStatic.define("BespokeTool", function() {
 	smkRef$36.TYPE.ToolWidget.call(this, "bespoke-widget"), smkRef$36.TYPE.ToolPanel.call(this, "bespoke-panel"), this.defineProp("content"), this.defineProp("component");
 }, function(e) {
 	let t = this;
@@ -23345,7 +23349,7 @@ Vue.component("bookmarks-widget", { extends: smkRef$35.COMPONENT.ToolWidgetBase 
 	template: panel_bookmarks_default,
 	props: ["bookmarks"]
 });
-var factory$24 = Tool.define("BookmarksTool", function() {
+var factory$24 = ToolStatic.define("BookmarksTool", function() {
 	smkRef$35.TYPE.ToolWidget.call(this, "bookmarks-widget"), smkRef$35.TYPE.ToolPanel.call(this, "bookmarks-panel"), this.defineProp("bookmarks"), this.bookmarks = [];
 }, function(e) {
 	let t = this;
@@ -23366,7 +23370,7 @@ Vue.component("current-location-widget", {
 	extends: smkRef$34.COMPONENT.ToolWidgetBase,
 	template: widget_current_location_default
 });
-var factory$23 = Tool.define("CurrentLocationTool", function() {
+var factory$23 = ToolStatic.define("CurrentLocationTool", function() {
 	smkRef$34.TYPE.ToolWidget.call(this, "current-location-widget"), smkRef$34.TYPE.ToolInternalLayers.call(this), this.internalLayers.push({
 		id: "location",
 		title: "Current Location",
@@ -23404,7 +23408,7 @@ Vue.component("location-widget", { extends: smkRef$33.COMPONENT.ToolWidgetBase }
 		"titleComp"
 	]
 });
-var factory$22 = Tool.define("LocationTool", function() {
+var factory$22 = ToolStatic.define("LocationTool", function() {
 	smkRef$33.TYPE.ToolPanel.call(this, "location-panel"), smkRef$33.TYPE.ToolInternalLayers.call(this), this.internalLayers.push({
 		id: "location",
 		style: {
@@ -23440,7 +23444,7 @@ Vue.component("legend-display", {
 		}
 	}
 });
-var factory$21 = Tool.define("LegendTool", null, function(e) {
+var factory$21 = ToolStatic.define("LegendTool", null, function(e) {
 	let t = { contexts: [] };
 	this.vm = new Vue({
 		el: e.addToStatus(legend_default),
@@ -23477,7 +23481,7 @@ Vue.component("layer-display", {
 		"legend"
 	]
 });
-var factory$20 = Tool.define("LayersTool", function() {
+var factory$20 = ToolStatic.define("LayersTool", function() {
 	smkRef$31.TYPE.ToolWidget.call(this, "layers-widget"), smkRef$31.TYPE.ToolPanel.call(this, "layers-panel"), this.defineProp("contexts"), this.defineProp("allVisible"), this.defineProp("glyph"), this.defineProp("command"), this.defineProp("filter"), this.defineProp("legend"), this.contexts = [], this.allVisible = !0, this.legend = !1, this.command = {
 		allVisibility: !0,
 		filter: !0,
@@ -23547,7 +23551,7 @@ Vue.component("markup-widget", {
 	extends: smkRef$30.COMPONENT.ToolWidgetBase,
 	props: ["drawMode"]
 });
-var factory$19 = Tool.define("MarkupTool", function() {
+var factory$19 = ToolStatic.define("MarkupTool", function() {
 	smkRef$30.TYPE.ToolWidget.call(this, "markup-widget"), this.defineProp("drawMode"), this.drawMode = "Polygon";
 }, function(e) {
 	let t = this;
@@ -23577,7 +23581,7 @@ Vue.component("measure-widget", { extends: smkRef$29.COMPONENT.ToolWidgetBase })
 		return Vue.filter("dimensionalNumber");
 	} }
 });
-var factory$18 = Tool.define("MeasureTool", function() {
+var factory$18 = ToolStatic.define("MeasureTool", function() {
 	smkRef$29.TYPE.ToolWidget.call(this, "measure-widget"), smkRef$29.TYPE.ToolPanel.call(this, "measure-panel"), this.defineProp("results"), this.defineProp("viewer"), this.defineProp("content"), this.defineProp("unit"), this.results = [], this.viewer = {}, this.unit = "metric", this.$propFilter.dimensionalNumber = !1;
 }, function(e) {
 	let t = this;
@@ -23605,7 +23609,7 @@ Vue.component("identify-widget", { extends: smkRef$28.COMPONENT.ToolWidgetBase }
 		return n.toString() + i.toFixed(t).substr(1);
 	} }
 });
-var factory$17 = Tool.define("IdentifyListTool", function() {
+var factory$17 = ToolStatic.define("IdentifyListTool", function() {
 	smkRef$28.TYPE.ToolWidget.call(this, "identify-widget"), smkRef$28.TYPE.ToolPanel.call(this, "identify-panel"), smkRef$28.TYPE.ToolInternalLayers.call(this), smkRef$28.TYPE.ToolFeatureList.call(this, function(e) {
 		return e.$viewer.identified;
 	}), this.defineProp("tool"), this.defineProp("command"), this.defineProp("radius"), this.defineProp("radiusUnit"), this.tool = {}, this.command = {
@@ -23789,7 +23793,7 @@ var factory$17 = Tool.define("IdentifyListTool", function() {
 smkRef$28.TYPE["tool-identify-list"] = factory$17;
 //#endregion
 //#region src/smk/tool/identify/tool-identify-feature.ts
-var smkRef$27 = SMK$1, factory$16 = Tool.define("IdentifyFeatureTool", function() {
+var smkRef$27 = SMK$1, factory$16 = ToolStatic.define("IdentifyFeatureTool", function() {
 	smkRef$27.TYPE.ToolPanel.call(this, "tool-panel-feature"), smkRef$27.TYPE.ToolPanelFeature.call(this, function(e) {
 		return e.$viewer.identified;
 	}), this.parentId = "IdentifyListTool";
@@ -23862,7 +23866,7 @@ var smkRef$27 = SMK$1, factory$16 = Tool.define("IdentifyFeatureTool", function(
 smkRef$27.TYPE["tool-identify-feature"] = factory$16;
 //#endregion
 //#region src/smk/tool/identify/tool-identify.ts
-var smkRef$26 = SMK$1, factory$15 = Tool.defineComposite([factory$17, factory$16]);
+var smkRef$26 = SMK$1, factory$15 = ToolStatic.defineComposite([factory$17, factory$16]);
 smkRef$26.TYPE["tool-identify"] = factory$15;
 //#endregion
 //#region src/smk/tool/search/widget-search.html?raw
@@ -23953,7 +23957,7 @@ Vue.component("search-widget", {
 		return { search: null };
 	}
 });
-var factory$14 = Tool.define("SearchListTool", function() {
+var factory$14 = ToolStatic.define("SearchListTool", function() {
 	smkRef$25.TYPE.ToolWidget.call(this, "search-widget"), smkRef$25.TYPE.ToolPanel.call(this, "search-panel"), smkRef$25.TYPE.ToolInternalLayers.call(this), this.internalLayers.push({
 		id: "result-selected",
 		title: "Selected Search Result",
@@ -24035,7 +24039,7 @@ Vue.component("search-location-panel", {
 		"locationComponent"
 	]
 });
-var factory$13 = Tool.define("SearchLocationTool", function() {
+var factory$13 = ToolStatic.define("SearchLocationTool", function() {
 	smkRef$24.TYPE.ToolPanel.call(this, "search-location-panel"), this.defineProp("feature"), this.defineProp("tool"), this.defineProp("command"), this.defineProp("locationComponent"), this.feature = {}, this.tool = {}, this.command = {}, this.locationComponent = {}, this.parentId = "SearchListTool";
 }, function(e) {
 	let t = this;
@@ -24073,7 +24077,7 @@ var factory$13 = Tool.define("SearchLocationTool", function() {
 smkRef$24.TYPE["tool-search-location"] = factory$13;
 //#endregion
 //#region src/smk/tool/search/tool-search.ts
-var smkRef$23 = SMK$1, factory$12 = Tool.defineComposite([factory$14, factory$13]);
+var smkRef$23 = SMK$1, factory$12 = ToolStatic.defineComposite([factory$14, factory$13]);
 smkRef$23.TYPE["tool-search"] = factory$12;
 //#endregion
 //#region src/smk/tool/select/panel-select.html?raw
@@ -24087,7 +24091,7 @@ Vue.component("select-widget", { extends: smkRef$22.COMPONENT.ToolWidgetBase }),
 		"command"
 	]
 });
-var factory$11 = Tool.define("SelectListTool", function() {
+var factory$11 = ToolStatic.define("SelectListTool", function() {
 	smkRef$22.TYPE.ToolWidget.call(this, "select-widget"), smkRef$22.TYPE.ToolPanel.call(this, "select-panel"), smkRef$22.TYPE.ToolInternalLayers.call(this), smkRef$22.TYPE.ToolFeatureList.call(this, function(e) {
 		return e.$viewer.selected;
 	}), this.internalLayers.push({
@@ -24136,7 +24140,7 @@ var factory$11 = Tool.define("SelectListTool", function() {
 smkRef$22.TYPE["tool-select-list"] = factory$11;
 //#endregion
 //#region src/smk/tool/select/tool-select-feature.ts
-var smkRef$21 = SMK$1, factory$10 = Tool.define("SelectFeatureTool", function() {
+var smkRef$21 = SMK$1, factory$10 = ToolStatic.define("SelectFeatureTool", function() {
 	smkRef$21.TYPE.ToolPanel.call(this, "tool-panel-feature"), smkRef$21.TYPE.ToolPanelFeature.call(this, function(e) {
 		return e.$viewer.selected;
 	}), this.parentId = "SelectListTool";
@@ -24189,7 +24193,7 @@ var smkRef$21 = SMK$1, factory$10 = Tool.define("SelectFeatureTool", function() 
 smkRef$21.TYPE["tool-select-feature"] = factory$10;
 //#endregion
 //#region src/smk/tool/select/tool-select.ts
-var smkRef$20 = SMK$1, factory$9 = Tool.defineComposite([factory$11, factory$10]);
+var smkRef$20 = SMK$1, factory$9 = ToolStatic.defineComposite([factory$11, factory$10]);
 smkRef$20.TYPE["tool-select"] = factory$9;
 //#endregion
 //#region src/smk/tool/query/panel-query.html?raw
@@ -24216,7 +24220,7 @@ function asyncIterator(e, t, n) {
 		if (i) return asyncIterator(e, t, n);
 	});
 }
-var factory$8 = Tool.define("QueryParametersTool", function() {
+var factory$8 = ToolStatic.define("QueryParametersTool", function() {
 	smkRef$19.TYPE.ToolWidget.call(this, "query-widget"), smkRef$19.TYPE.ToolPanel.call(this, "query-panel"), this.defineProp("description"), this.defineProp("parameters"), this.defineProp("within"), this.defineProp("command"), this.command = {
 		within: !0,
 		select: !0
@@ -24298,7 +24302,7 @@ Vue.component("query-results-panel", {
 		"command"
 	]
 });
-var factory$7 = Tool.define("QueryResultsTool", function() {
+var factory$7 = ToolStatic.define("QueryResultsTool", function() {
 	smkRef$18.TYPE.ToolPanel.call(this, "query-results-panel"), smkRef$18.TYPE.ToolInternalLayers.call(this), smkRef$18.TYPE.ToolFeatureList.call(this, function(e) {
 		return e.$viewer.queried[this.instance];
 	}), this.internalLayers.push({
@@ -24340,7 +24344,7 @@ var factory$7 = Tool.define("QueryResultsTool", function() {
 smkRef$18.TYPE["tool-query-results"] = factory$7;
 //#endregion
 //#region src/smk/tool/query/tool-query-feature.ts
-var smkRef$17 = SMK$1, factory$6 = Tool.define("QueryFeatureTool", function() {
+var smkRef$17 = SMK$1, factory$6 = ToolStatic.define("QueryFeatureTool", function() {
 	smkRef$17.TYPE.ToolPanel.call(this, "tool-panel-feature"), smkRef$17.TYPE.ToolPanelFeature.call(this, function(e) {
 		return e.$viewer.queried[this.instance];
 	}), this.parentId = "QueryResultsTool";
@@ -24401,7 +24405,7 @@ var smkRef$17 = SMK$1, factory$6 = Tool.define("QueryFeatureTool", function() {
 smkRef$17.TYPE["tool-query-feature"] = factory$6;
 //#endregion
 //#region src/smk/tool/query/tool-query.ts
-var smkRef$16 = SMK$1, factory$5 = Tool.defineComposite([
+var smkRef$16 = SMK$1, factory$5 = ToolStatic.defineComposite([
 	factory$8,
 	factory$7,
 	factory$6
@@ -24438,7 +24442,7 @@ Vue.component("directions-widget", { extends: smkRef$14.COMPONENT.ToolWidgetBase
 		"geocoderService"
 	]
 });
-var factory$4 = Tool.define("DirectionsWaypointsTool", function() {
+var factory$4 = ToolStatic.define("DirectionsWaypointsTool", function() {
 	smkRef$14.TYPE.ToolWidget.call(this, "directions-widget"), smkRef$14.TYPE.ToolPanel.call(this, "directions-panel"), this.defineProp("waypoints"), this.defineProp("hasRoute"), this.defineProp("optimal"), this.defineProp("geocoderService"), this.defineProp("routePlannerService"), this.defineProp("activating"), this.defineProp("directions"), this.defineProp("segmentLayers"), this.defineProp("waypointLayers"), this.waypoints = [], this.hasRoute = !1, this.activating = smkRef$14.UTIL.resolved(), this.directions = [];
 }, function(e) {
 	let t = this;
@@ -24644,7 +24648,7 @@ function positiveFloat(e, t) {
 	let n = parseFloat(e);
 	return !e || !n ? null : n < 0 ? t : n;
 }
-var factory$3 = Tool.define("DirectionsOptionsTool", function() {
+var factory$3 = ToolStatic.define("DirectionsOptionsTool", function() {
 	smkRef$13.TYPE.ToolPanel.call(this, "directions-options-panel"), this.defineProp("truck"), this.defineProp("optimal"), this.defineProp("roundTrip"), this.defineProp("criteria"), this.defineProp("truckRoute"), this.defineProp("truckHeight", { validate: positiveFloat }), this.defineProp("truckWidth", { validate: positiveFloat }), this.defineProp("truckLength", { validate: positiveFloat }), this.defineProp("truckWeight", { validate: positiveFloat }), this.defineProp("truckHeightUnit"), this.defineProp("truckWidthUnit"), this.defineProp("truckLengthUnit"), this.defineProp("truckWeightUnit"), this.defineProp("oversize"), this.defineProp("command"), this.defineProp("bespoke"), this.truck = !1, this.optimal = !1, this.roundTrip = !1, this.criteria = "shortest", this.truckRoute = null, this.truckHeight = null, this.truckWidth = null, this.truckLength = null, this.truckWeight = null, this.truckHeightUnit = 1, this.truckWidthUnit = 1, this.truckLengthUnit = 1, this.truckWeightUnit = 1, this.oversize = !1, this.command = {}, this.bespoke = {}, this.parentId = "DirectionsWaypointsTool";
 }, function(e) {
 	let t = this, n = e.getToolById(this.parentId), i = smkRef$13.UTIL.makeDelayedCall(function() {
@@ -24759,7 +24763,7 @@ Vue.component("route-panel", {
 		}
 	}
 });
-var factory$2 = Tool.define("DirectionsRouteTool", function() {
+var factory$2 = ToolStatic.define("DirectionsRouteTool", function() {
 	smkRef$12.TYPE.ToolPanel.call(this, "route-panel"), this.defineProp("directions"), this.defineProp("directionHighlight"), this.defineProp("directionPick"), this.directions = [], this.parentId = "DirectionsWaypointsTool";
 }, function(e) {
 	let t = this, n = e.getToolById(this.parentId);
@@ -24789,7 +24793,7 @@ var factory$2 = Tool.define("DirectionsRouteTool", function() {
 smkRef$12.TYPE["tool-directions-route"] = factory$2;
 //#endregion
 //#region src/smk/tool/directions/tool-directions.ts
-var smkRef$11 = SMK$1, factory$1 = Tool.defineComposite([
+var smkRef$11 = SMK$1, factory$1 = ToolStatic.defineComposite([
 	factory$4,
 	factory$3,
 	factory$2
@@ -39070,7 +39074,7 @@ Vue.component("mode-widget", {
 	extends: smkRef.COMPONENT.ToolWidgetBase,
 	template: widget_mode_default
 });
-var factory = Tool.define("ModeTool", function() {
+var factory = ToolStatic.define("ModeTool", function() {
 	smkRef.TYPE.ToolWidget.call(this, "mode-widget"), this.status = "2d", this.title = "Switch to 3D";
 }, function(e) {
 	let t = this;

@@ -10,7 +10,7 @@ declare const Vue: any
 
 const smkRef = SMK
 
-const factory = ( Tool as any ).define( 'IdentifyFeatureTool',
+const factory = Tool.define( 'IdentifyFeatureTool',
     function ( this: any ) {
         smkRef.TYPE.ToolPanel.call( this, 'tool-panel-feature' )
         smkRef.TYPE.ToolPanelFeature.call( this, function ( smk: any ) { return smk.$viewer.identified } )

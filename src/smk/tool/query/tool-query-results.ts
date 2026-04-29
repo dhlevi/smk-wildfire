@@ -17,7 +17,7 @@ Vue.component( 'query-results-panel', {
     props: [ 'tool', 'layers', 'highlightId', 'command' ],
 } )
 
-const factory = ( Tool as any ).define( 'QueryResultsTool',
+const factory = Tool.define( 'QueryResultsTool',
     function ( this: any ) {
         smkRef.TYPE.ToolPanel.call( this, 'query-results-panel' )
         smkRef.TYPE.ToolInternalLayers.call( this )

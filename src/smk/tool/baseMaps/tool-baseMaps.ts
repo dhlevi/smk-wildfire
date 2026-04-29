@@ -22,7 +22,7 @@ Vue.component( 'base-maps-panel', {
     props: [ 'current', 'basemaps', 'mapStyle' ],
 } )
 
-const factory = ( Tool as any ).define( 'BaseMapsTool',
+const factory = Tool.define( 'BaseMapsTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'base-maps-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'base-maps-panel' )

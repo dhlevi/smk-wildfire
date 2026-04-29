@@ -17,7 +17,7 @@ Vue.component( 'mode-widget', {
     template: widgetModeHtml,
 } )
 
-const factory = ( Tool as any ).define( 'ModeTool',
+const factory = Tool.define( 'ModeTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'mode-widget' )
         this.status = '2d'

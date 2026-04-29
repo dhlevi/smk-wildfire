@@ -11,7 +11,7 @@ declare const Vue: any
 
 const smkRef = SMK
 
-const factory = ( Tool as any ).define( 'ScaleTool',
+const factory = Tool.define( 'ScaleTool',
     function ( this: any ) {
         this.defineProp( 'showFactor' )
         this.defineProp( 'showBar' )

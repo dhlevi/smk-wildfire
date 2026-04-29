@@ -31,7 +31,7 @@ Vue.component( 'measure-panel', {
     },
 } )
 
-const factory = ( Tool as any ).define( 'MeasureTool',
+const factory = Tool.define( 'MeasureTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'measure-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'measure-panel' )

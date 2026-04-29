@@ -11,7 +11,7 @@ import { SMK } from '../../smk-ref'
 
 const smkRef = SMK
 
-const factory = ( Tool as any ).defineComposite( [
+const factory = Tool.defineComposite( [
     DirectionsWaypointsFactory,
     DirectionsOptionsFactory,
     DirectionsRouteFactory,

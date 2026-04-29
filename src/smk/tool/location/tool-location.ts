@@ -21,7 +21,7 @@ Vue.component( 'location-panel', {
     props: [ 'feature', 'tool', 'command', 'locationComponent', 'titleComp' ],
 } )
 
-const factory = ( Tool as any ).define( 'LocationTool',
+const factory = Tool.define( 'LocationTool',
     function ( this: any ) {
         smkRef.TYPE.ToolPanel.call( this, 'location-panel' )
         smkRef.TYPE.ToolInternalLayers.call( this )

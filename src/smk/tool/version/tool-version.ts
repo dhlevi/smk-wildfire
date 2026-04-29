@@ -21,7 +21,7 @@ Vue.component( 'version-panel', {
     props: [ 'build', 'config' ],
 } )
 
-const factory = ( Tool as any ).define( 'VersionTool',
+const factory = Tool.define( 'VersionTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'version-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'version-panel' )

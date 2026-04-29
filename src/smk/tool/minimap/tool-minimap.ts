@@ -8,7 +8,7 @@ import { SMK } from '../../smk-ref'
 
 const smkRef = SMK
 
-const factory = ( Tool as any ).define( 'MinimapTool' )
+const factory = Tool.define( 'MinimapTool' )
 
 smkRef.TYPE[ 'tool-minimap' ] = factory
 export default factory

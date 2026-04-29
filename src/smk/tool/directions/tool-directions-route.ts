@@ -49,7 +49,7 @@ Vue.component( 'route-panel', {
     },
 } )
 
-const factory = ( Tool as any ).define( 'DirectionsRouteTool',
+const factory = Tool.define( 'DirectionsRouteTool',
     function ( this: any ) {
         smkRef.TYPE.ToolPanel.call( this, 'route-panel' )
 

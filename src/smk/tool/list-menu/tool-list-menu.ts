@@ -21,7 +21,7 @@ Vue.component( 'list-menu-panel', {
     props: [ 'subWidgets' ],
 } )
 
-const factory = ( Tool as any ).define( 'ListMenuTool',
+const factory = Tool.define( 'ListMenuTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'list-menu-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'list-menu-panel' )

@@ -8,7 +8,7 @@ import { SMK } from '../../smk-ref'
 
 const smkRef = SMK
 
-const factory = ( Tool as any ).define( 'SelectFeatureTool',
+const factory = Tool.define( 'SelectFeatureTool',
     function ( this: any ) {
         smkRef.TYPE.ToolPanel.call( this, 'tool-panel-feature' )
         smkRef.TYPE.ToolPanelFeature.call( this, function ( smk: any ) { return smk.$viewer.selected } )

@@ -29,7 +29,7 @@ Vue.component( 'pan-widget', {
     },
 } )
 
-const factory = ( Tool as any ).define( 'PanTool', {
+const factory = Tool.define( 'PanTool', {
     construct( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'pan-widget' )
         this.defineProp( 'control' )

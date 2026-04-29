@@ -11,7 +11,7 @@ declare const Vue: any
 
 const smkRef = SMK
 
-const factory = ( Tool as any ).define( 'CoordinateTool',
+const factory = Tool.define( 'CoordinateTool',
     null,
     function ( this: any, smk: any ) {
         const self = this

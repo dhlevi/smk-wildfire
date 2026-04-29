@@ -20,7 +20,7 @@ Vue.component( 'legend-display', {
     },
 } )
 
-const factory = ( Tool as any ).define( 'LegendTool',
+const factory = Tool.define( 'LegendTool',
     null,
     function ( this: any, smk: any ) {
         const self = this

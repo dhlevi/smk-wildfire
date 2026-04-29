@@ -21,7 +21,7 @@ Vue.component( 'bookmarks-panel', {
     props: [ 'bookmarks' ],
 } )
 
-const factory = ( Tool as any ).define( 'BookmarksTool',
+const factory = Tool.define( 'BookmarksTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'bookmarks-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'bookmarks-panel' )

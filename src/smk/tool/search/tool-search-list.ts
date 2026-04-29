@@ -114,7 +114,7 @@ Vue.component( 'search-panel', {
     data() { return { search: null } },
 } )
 
-const factory = ( Tool as any ).define( 'SearchListTool',
+const factory = Tool.define( 'SearchListTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'search-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'search-panel' )

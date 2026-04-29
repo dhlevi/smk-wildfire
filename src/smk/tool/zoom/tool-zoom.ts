@@ -17,7 +17,7 @@ Vue.component( 'zoom-widget', {
     props: [ 'control' ],
 } )
 
-const factory = ( Tool as any ).define( 'ZoomTool', {
+const factory = Tool.define( 'ZoomTool', {
     construct( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'zoom-widget' )
         this.defineProp( 'control' )

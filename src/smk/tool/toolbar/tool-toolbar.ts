@@ -11,7 +11,7 @@ declare const Vue: any
 
 const smkRef = SMK
 
-const factory = ( Tool as any ).define( 'ToolBarTool',
+const factory = Tool.define( 'ToolBarTool',
     function ( this: any ) {
         this.model = {
             widgets: [] as any[],

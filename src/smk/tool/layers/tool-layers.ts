@@ -33,7 +33,7 @@ Vue.component( 'layers-panel', {
     props: [ 'contexts', 'allVisible', 'glyph', 'command', 'filter', 'legend' ],
 } )
 
-const factory = ( Tool as any ).define( 'LayersTool',
+const factory = Tool.define( 'LayersTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'layers-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'layers-panel' )

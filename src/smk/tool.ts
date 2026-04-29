@@ -11,6 +11,41 @@ import { SMK } from './smk-ref'
 declare const Vue: any
 
 // ---------------------------------------------------------------------------
+// Public types for the Tool.define factory
+// ---------------------------------------------------------------------------
+
+/**
+ * Options accepted by Tool.define().  May be passed positionally
+ * (construct, initialize, methods) or as a single object literal.
+ */
+export interface ToolDefineOptions {
+    construct?:  ( this: any ) => void
+    initialize?: ( this: any, smk: any ) => void
+    methods?:    Record<string, any>
+    events?:     string[]
+    [key: string]: any
+}
+
+/** A tool instance created by Tool.define()'s returned factory. */
+export type ToolInstance = any
+
+/** Factory returned by Tool.define() — produces tool instance(s) from a config. */
+export type ToolFactory = ( config: any ) => ToolInstance[]
+
+/** Static surface of the Tool function. */
+export interface ToolStatic {
+    ( this: any ): void
+    prototype: any
+    define(
+        name:        string,
+        construct?:  ToolDefineOptions | ToolDefineOptions[ 'construct' ],
+        initialize?: ToolDefineOptions[ 'initialize' ],
+        methods?:    ToolDefineOptions[ 'methods' ],
+    ): ToolFactory & { addInitializer?: ( init: Function ) => void }
+    defineComposite( toolDefs: ToolFactory[] ): ToolFactory
+}
+
+// ---------------------------------------------------------------------------
 // Tool event class
 // ---------------------------------------------------------------------------
 
@@ -132,20 +167,22 @@ Tool.prototype.modifyComponentProp = function ( propName: string, modify: Functi
 // Tool.define — factory that creates named tool constructor types
 // ---------------------------------------------------------------------------
 
-;( Tool as any ).define = function (
-    name: string,
-    construct?: any,
-    initialize?: Function,
-    methods?: any
-): ( config: any ) => any[] {
-    const option: any = {
-        construct,
+const ToolStatic = Tool as unknown as ToolStatic
+
+ToolStatic.define = function (
+    name,
+    construct,
+    initialize,
+    methods,
+) {
+    const option: ToolDefineOptions = {
+        construct: typeof construct === 'function' ? construct : undefined,
         initialize,
         methods,
     }
 
     if ( smkType( construct ) === 'object' ) {
-        Object.assign( option, construct )
+        Object.assign( option, construct as ToolDefineOptions )
     }
 
     const initializers: Function[] = []
@@ -185,16 +222,20 @@ Tool.prototype.modifyComponentProp = function ( propName: string, modify: Functi
         initializers.push( init )
     }
 
-    return function ( config: any ) {
+    const factory = function ( config: any ) {
         return [ ( new smk.TYPE[ name ]() ).configure( name, config ) ]
-    }
+    } as ToolFactory & { addInitializer?: ( init: Function ) => void }
+
+    factory.addInitializer = smk.TYPE[ name ].addInitializer
+
+    return factory
 }
 
 // ---------------------------------------------------------------------------
 // Tool.defineComposite
 // ---------------------------------------------------------------------------
 
-;( Tool as any ).defineComposite = function ( toolDefs: Array<( config: any ) => any[]> ) {
+ToolStatic.defineComposite = function ( toolDefs ) {
     return function ( config: any ) {
         return toolDefs.map( function ( t ) {
             return t( config )[ 0 ]
@@ -208,4 +249,4 @@ if ( typeof window !== 'undefined' ) {
     if ( smk && smk.TYPE ) smk.TYPE.Tool = Tool
 }
 
-export default Tool
+export default ToolStatic

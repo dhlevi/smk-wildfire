@@ -27,7 +27,7 @@ Vue.component( 'dropdown-panel', {
     },
 } )
 
-const factory = ( Tool as any ).define( 'DropdownTool',
+const factory = Tool.define( 'DropdownTool',
     function ( this: any ) {
         this.defineProp( 'subWidgets' )
         this.defineProp( 'subPanels' )

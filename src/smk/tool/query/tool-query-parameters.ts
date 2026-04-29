@@ -36,7 +36,7 @@ function asyncIterator( test: () => boolean, body: () => void, delay: number ): 
     } )
 }
 
-const factory = ( Tool as any ).define( 'QueryParametersTool',
+const factory = Tool.define( 'QueryParametersTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'query-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'query-panel' )

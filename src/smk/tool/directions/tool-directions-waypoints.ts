@@ -28,7 +28,7 @@ Vue.component( 'directions-panel', {
     props: [ 'waypoints', 'hasRoute', 'optimal', 'geocoderService' ],
 } )
 
-const factory = ( Tool as any ).define( 'DirectionsWaypointsTool',
+const factory = Tool.define( 'DirectionsWaypointsTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'directions-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'directions-panel' )

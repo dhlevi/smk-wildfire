@@ -21,7 +21,7 @@ Vue.component( 'select-panel', {
     props: [ 'layers', 'highlightId', 'command' ],
 } )
 
-const factory = ( Tool as any ).define( 'SelectListTool',
+const factory = Tool.define( 'SelectListTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'select-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'select-panel' )

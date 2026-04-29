@@ -17,7 +17,7 @@ Vue.component( 'current-location-widget', {
     template: widgetCurrentLocationHtml,
 } )
 
-const factory = ( Tool as any ).define( 'CurrentLocationTool',
+const factory = Tool.define( 'CurrentLocationTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'current-location-widget' )
         smkRef.TYPE.ToolInternalLayers.call( this )

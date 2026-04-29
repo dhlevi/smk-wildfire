@@ -15,7 +15,7 @@ Vue.component( 'markup-widget', {
     props: [ 'drawMode' ],
 } )
 
-const factory = ( Tool as any ).define( 'MarkupTool',
+const factory = Tool.define( 'MarkupTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'markup-widget' )
         this.defineProp( 'drawMode' )

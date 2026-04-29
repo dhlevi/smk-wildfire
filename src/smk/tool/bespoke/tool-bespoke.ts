@@ -21,7 +21,7 @@ Vue.component( 'bespoke-panel', {
     props:    [ 'content', 'component' ],
 } )
 
-const factory = ( Tool as any ).define( 'BespokeTool',
+const factory = Tool.define( 'BespokeTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'bespoke-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'bespoke-panel' )

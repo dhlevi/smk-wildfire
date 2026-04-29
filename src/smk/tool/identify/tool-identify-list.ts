@@ -29,7 +29,7 @@ Vue.component( 'identify-panel', {
     },
 } )
 
-const factory = ( Tool as any ).define( 'IdentifyListTool',
+const factory = Tool.define( 'IdentifyListTool',
     function ( this: any ) {
         smkRef.TYPE.ToolWidget.call( this, 'identify-widget' )
         smkRef.TYPE.ToolPanel.call( this, 'identify-panel' )

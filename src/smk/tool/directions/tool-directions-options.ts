@@ -50,7 +50,7 @@ function positiveFloat( newVal: any, oldVal: any ) {
     return i
 }
 
-const factory = ( Tool as any ).define( 'DirectionsOptionsTool',
+const factory = Tool.define( 'DirectionsOptionsTool',
     function ( this: any ) {
         smkRef.TYPE.ToolPanel.call( this, 'directions-options-panel' )
 
