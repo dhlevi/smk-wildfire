@@ -13,9 +13,11 @@
   ],
   "scripts": {
     "start": "concurrently --kill-others \"npm:build:watch\" \"npm:serve\"",
-    "build": "vite build",
+    "build": "vite build && vite build --config vite.config.standalone.js",
+    "build:lite": "vite build",
+    "build:standalone": "vite build --config vite.config.standalone.js",
     "build:watch": "vite build --watch",
-    "release": "vite build",
+    "release": "npm run build",
     "serve": "live-server . --open=debug --wait=100 --watch=dist/smk.umd.js,debug,test",
     "vite:dev": "vite",
     "vite:build": "vite build",

@@ -52,7 +52,6 @@ export default defineConfig( {
                 '@turf/turf',
                 'esri-leaflet',
                 'esri-leaflet-vector',
-                'jquery',
             ],
             output: {
                 globals: {
@@ -63,7 +62,6 @@ export default defineConfig( {
                     '@turf/turf':          'turf',
                     'esri-leaflet':        'L.esri',
                     'esri-leaflet-vector': 'L.esri.Vector',
-                    'jquery':              'jQuery',
                 },
             },
         },
