@@ -29,27 +29,26 @@ A web application can use this map as simply as this example:
 
 ### Testing exported map configuration
 
-If you wish to test this map configuration immediately, this export is packaged with a simple test server.
-It uses Grunt, and hence Node.JS.
-It is not the only way to serve this code to a web browser, this code could be served via Apache, or any other webserver.
+If you wish to test this map configuration immediately, the export ships with a small static web server.
+It is not the only way to serve this code to a web browser — the export is just a folder of static files, so it can equally be served via Apache, nginx, GitHub Pages, or any other web server.
 
-The simple test server requires [NodeJS](https://nodejs.org/en/) to be installed.
+The bundled test server requires [NodeJS](https://nodejs.org/en/) to be installed.
 
 Install node modules:
 
     > npm install --production
 
-Start grunt test server:
+Start the test server:
 
-    > grunt
+    > npm start
 
-Browser will open at [https://localhost:8443](https://localhost:8443).
+Your browser will open at [http://localhost:8080](http://localhost:8080).
 
 ### Doing development on smk-client
 
-If these is desire to make changes to `smk.js`, the full source code is included in the export in `smk-<version>-src.zip`.
+If you want to make changes to `smk.js`, the full source code is included in the export in `smk-<version>-src.zip`.
 
-To setup your environment for development, assuming the export is at `/smk-export`:
+The build is driven by [Vite](https://vitejs.dev/) and TypeScript. To set up your environment for development, assuming the export is at `/smk-export`:
 
     > cd /smk-export
 
@@ -57,14 +56,15 @@ To setup your environment for development, assuming the export is at `/smk-expor
     > npm install
 
     # Unzip source code into src/
-    > unzip ../smk-<version>-src.zip 
+    > unzip ../smk-<version>-src.zip
 
-    > cd src
+    # Build smk into dist/ (smk.umd.js, smk.es.js, smk.css)
+    > npm run build
 
-    # Build smk in development mode (unminified) into ../smk.js
-    > grunt develop 
+    # *OR* rebuild on every source change
+    > npm run build:watch
 
-    # *OR* Build smk in release mode (minified) into ../smk.js
-    > grunt release 
+    # *OR* run a dev server that watches src/ and reloads the browser
+    > npm start
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for more information on doing development on smk-client.

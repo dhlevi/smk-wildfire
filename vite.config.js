@@ -40,8 +40,32 @@ export default defineConfig( {
         emptyOutDir: false,
         sourcemap: true,
         rollupOptions: {
-            // External dependencies that are expected to be provided by the host page (e.g. leaflet, maplibre-gl, arcgis)
-            external: [],
+            // External dependencies that are expected to be provided by the host
+            // page (loaded via <script> tags from src/lib/*).  Listed here so that
+            // any future `import 'leaflet'` etc. resolves to the global rather
+            // than bundling a second copy.
+            external: [
+                'vue',
+                'leaflet',
+                'maplibre-gl',
+                'proj4',
+                '@turf/turf',
+                'esri-leaflet',
+                'esri-leaflet-vector',
+                'jquery',
+            ],
+            output: {
+                globals: {
+                    'vue':                 'Vue',
+                    'leaflet':             'L',
+                    'maplibre-gl':         'maplibregl',
+                    'proj4':               'proj4',
+                    '@turf/turf':          'turf',
+                    'esri-leaflet':        'L.esri',
+                    'esri-leaflet-vector': 'L.esri.Vector',
+                    'jquery':              'jQuery',
+                },
+            },
         },
     },
 
