@@ -174,7 +174,7 @@ export class Viewer {
             self.basemapType[ lowerId ] = fn
         }
 
-        this.initializeBasemaps( defineBaseMap, defineBaseMapType )
+        this.initializeBasemaps( defineBaseMap, defineBaseMapType, smk?.viewer )
 
         this.displayContextInitialized = makePromise<void>( ( res, rej ) => {
             self.initializeDisplayContext = () => {
@@ -299,10 +299,10 @@ export class Viewer {
     // Base map support
     // -------------------------------------------------------------------------
 
-    initializeBasemaps( defineBaseMap: Function, defineBaseMapType: Function ): void {
+    initializeBasemaps( defineBaseMap: Function, defineBaseMapType: Function, viewerCfg?: any ): void {
         // TODO: replace inc['base-maps'] with a direct import once base-maps.ts is converted
         const baseMapsSetup = SMK?._baseMaps
-        if ( baseMapsSetup ) baseMapsSetup( defineBaseMap, defineBaseMapType )
+        if ( baseMapsSetup ) baseMapsSetup( defineBaseMap, defineBaseMapType, viewerCfg )
 
         if ( window.SMK?.HANDLER?.has( 'viewer', 'defineBaseMap' ) )
             window.SMK.HANDLER.get( 'viewer', 'defineBaseMap' )!( defineBaseMap )

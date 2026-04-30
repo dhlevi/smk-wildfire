@@ -1,0 +1,424 @@
+/* ===========================================================================
+   SMK theme: modern
+
+   A polished, professional refresh of the SMK UI.
+
+   Design tokens:
+     - Typography: Inter (web font) with a robust system fallback stack.
+     - Palette:    Slate-based neutrals + a single accent (indigo).
+     - Surfaces:   Subtle elevation via layered shadows + 8px radii.
+     - Density:    Slightly more breathing room than the legacy themes.
+
+   Activate per-map by setting:
+       { "viewer": { "themes": [ "modern" ] } }
+
+   Or apply globally by adding `smk-theme-modern` to the map container.
+   ========================================================================== */
+
+/* Web font — keep it small and self-host-friendly via Google Fonts CSS API.
+   Hosts that don't want the network request can override @font-face or set
+   `--smk-font-sans` after this stylesheet loads. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.smk-theme-modern {
+    /* Design tokens (override these on .smk-theme-modern to retheme) */
+    --smk-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+    --smk-color-bg:        #ffffff;
+    --smk-color-bg-muted:  #f8fafc;     /* slate-50  */
+    --smk-color-border:    #e2e8f0;     /* slate-200 */
+    --smk-color-text:      #0f172a;     /* slate-900 */
+    --smk-color-text-mute: #475569;     /* slate-600 */
+    --smk-color-accent:    #4f46e5;     /* indigo-600 */
+    --smk-color-accent-bg: #eef2ff;     /* indigo-50  */
+    --smk-color-hover:     #f1f5f9;     /* slate-100 */
+    --smk-color-active:    #e0e7ff;     /* indigo-100 */
+    --smk-color-danger:    #dc2626;     /* red-600 */
+
+    --smk-radius-sm: 4px;
+    --smk-radius:    8px;
+    --smk-radius-lg: 12px;
+
+    --smk-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.06);
+    --smk-shadow:    0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+    --smk-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1),  0 4px 6px -4px rgba(15, 23, 42, 0.08);
+
+    --smk-font-size:    13px;
+    --smk-font-size-sm: 12px;
+    --smk-font-size-lg: 15px;
+    --smk-line-height:  1.5;
+
+    /* Override SMK base layout vars for a slightly roomier feel */
+    --overlay-padding: 10px;
+    --toolbar-height:  36px;
+    --panel-width:     320px;
+}
+
+/* --- Typography --------------------------------------------------------- */
+
+.smk-theme-modern.smk-map-frame,
+.smk-theme-modern .smk-overlay,
+.smk-theme-modern .smk-sidepanel,
+.smk-theme-modern .smk-toolbar {
+    font-family: var(--smk-font-sans);
+    font-size: var(--smk-font-size);
+    line-height: var(--smk-line-height);
+    color: var(--smk-color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.smk-theme-modern .smk-panel .smk-title,
+.smk-theme-modern .smk-panel .smk-header {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* --- Toolbar ----------------------------------------------------------- */
+
+.smk-theme-modern .smk-toolbar {
+    background-color: transparent;
+    box-shadow: none;
+    gap: 6px;
+}
+
+.smk-theme-modern .smk-tool {
+    background-color: var(--smk-color-bg);
+    color: var(--smk-color-text);
+    border: 1px solid var(--smk-color-border);
+    box-shadow: var(--smk-shadow-sm);
+    transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+    height: 30px;
+    border-radius: 20px;
+}
+
+.smk-theme-modern .smk-tool:hover {
+    background-color: var(--smk-color-hover);
+    box-shadow: var(--smk-shadow);
+    transform: translateY(-1px);
+}
+
+.smk-theme-modern .smk-tool.smk-tool-active {
+    background-color: var(--smk-color-accent-bg);
+    border-color: var(--smk-color-accent);
+    color: var(--smk-color-accent);
+    box-shadow: var(--smk-shadow);
+    height: 30px;
+    border-radius: 20px;
+}
+
+.smk-tool i {
+    margin: 3px;
+    background-color: #0000;
+    border: 0;
+    outline: 0;
+    width: 26px;
+    height: 26px;
+    margin: 3px;
+    padding: 0;
+}
+
+/* --- Side panel + cards ------------------------------------------------ */
+
+.smk-theme-modern .smk-sidepanel {
+    top: 40px;
+}
+
+.smk-theme-modern .smk-elastic-panel {
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
+    box-shadow: none;
+    gap: 6px;
+}
+
+.smk-theme-modern .smk-sidepanel .smk-panel .smk-header,
+.smk-theme-modern .smk-sidepanel .smk-panel .smk-body {
+    background-color: var(--smk-color-bg);
+    border: 1px solid var(--smk-color-border);
+    border-radius: 0px; /*var(--smk-radius);*/
+    /*box-shadow: var(--smk-shadow);*/
+    margin-left: 1px;
+    margin-right: 1px;
+}
+
+.smk-theme-modern .smk-sidepanel .smk-panel .smk-header {
+    z-index: 1;
+    margin-bottom: 0;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--smk-color-border);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.smk-theme-modern .smk-sidepanel .smk-panel .smk-body {
+    z-index: 2;
+    margin-left: 1px;
+    margin-right: 1px;
+    padding: 10px 12px;
+    border-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+/* --- Commands / buttons / inputs -------------------------------------- */
+
+.smk-theme-modern .smk-command {
+    display: inline-block;
+    color: var(--smk-color-text);
+    background-color: var(--smk-color-bg);
+    border: 1px solid var(--smk-color-border);
+    border-radius: var(--smk-radius-sm);
+    padding: 4px 10px;
+    font-size: var(--smk-font-size-sm);
+    font-weight: 500;
+    line-height: 1.4;
+    box-shadow: var(--smk-shadow-sm);
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.smk-theme-modern select.smk-command {
+    background-color: var(--smk-color-bg);
+    color: var(--smk-color-text);
+    border: 1px solid var(--smk-color-border);
+    border-radius: var(--smk-radius-sm);
+    padding: 4px 8px;
+    font-size: var(--smk-font-size-sm);
+    font-weight: 500;
+    box-shadow: var(--smk-shadow-sm);
+}
+
+.smk-theme-modern .smk-command:hover {
+    background-color: var(--smk-color-hover);
+    border-color: var(--smk-color-accent);
+    color: var(--smk-color-accent);
+}
+
+.smk-theme-modern .smk-command.smk-icon {
+    color: var(--smk-color-text);
+    background-color: transparent;
+    border: 1px solid transparent;
+    box-shadow: none;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    font-size: 22px;
+    font-weight: normal;
+    border-radius: var(--smk-radius-sm);
+}
+
+.smk-theme-modern .smk-panel .smk-header .smk-command.smk-icon,
+.smk-theme-modern .smk-panel .smk-commands .smk-command.smk-icon {
+    color: var(--smk-color-text);
+}
+
+.smk-theme-modern .smk-command.smk-icon:hover {
+    background-color: var(--smk-color-hover);
+    color: var(--smk-color-accent);
+    border-color: transparent;
+}
+
+.smk-theme-modern .smk-command.smk-disabled,
+.smk-theme-modern .smk-command.smk-disabled:hover {
+    color: #cbd5e1;     /* slate-300 */
+    background-color: transparent;
+    border-color: transparent;
+    font-style: normal;
+    cursor: not-allowed;
+}
+
+.smk-theme-modern .smk-active,
+.smk-theme-modern .smk-tool-active {
+    background-color: var(--smk-color-active);
+}
+
+.smk-theme-modern .smk-item {
+    border-radius: var(--smk-radius-sm);
+    padding: 4px 6px;
+    margin-bottom: 2px;
+}
+
+.smk-theme-modern .smk-item:hover {
+    background-color: var(--smk-color-hover);
+}
+
+/* Inputs / selects */
+.smk-theme-modern.smk-map-frame select,
+.smk-theme-modern .smk-map-frame select,
+.smk-theme-modern input[type="text"],
+.smk-theme-modern input[type="search"],
+.smk-theme-modern input[type="number"],
+.smk-theme-modern textarea {
+    background-color: var(--smk-color-bg);
+    color: var(--smk-color-text);
+    border: 1px solid var(--smk-color-border);
+    border-radius: var(--smk-radius-lg);
+    padding: 5px 8px;
+    font: inherit;
+    font-size: var(--smk-font-size-sm);
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.smk-theme-modern input:focus,
+.smk-theme-modern select:focus,
+.smk-theme-modern textarea:focus {
+    outline: none;
+    border-color: var(--smk-color-accent);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+/* Accessible focus ring for buttons / tools */
+.smk-theme-modern .smk-tool:focus-visible,
+.smk-theme-modern .smk-command:focus-visible,
+.smk-theme-modern .smk-item:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
+}
+
+/* --- Coordinate / address overlay ------------------------------------- */
+
+.smk-theme-modern .smk-coordinate {
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid var(--smk-color-border);
+    border-radius: var(--smk-radius);
+    padding: 6px 10px;
+    box-shadow: var(--smk-shadow-sm);
+    color: var(--smk-color-text-mute);
+}
+
+.smk-theme-modern .smk-coordinate .smk-ordinate label {
+    color: var(--smk-color-text-mute);
+    font-weight: 500;
+}
+
+.smk-theme-modern .smk-coordinate .smk-ordinate div {
+    color: var(--smk-color-text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- Status / messages ------------------------------------------------- */
+
+.smk-theme-modern .smk-status-message {
+    background-color: var(--smk-color-bg);
+    border: 1px solid var(--smk-color-border);
+    border-left: 3px solid var(--smk-color-accent);
+    border-radius: var(--smk-radius);
+    box-shadow: var(--smk-shadow);
+    padding: 8px 12px;
+}
+
+/* --- Leaflet / MapLibre overrides ------------------------------------- */
+
+.smk-theme-modern .leaflet-popup-content-wrapper,
+.smk-theme-modern .maplibregl-popup-content {
+    border-radius: var(--smk-radius);
+    box-shadow: var(--smk-shadow-lg);
+    border: 1px solid var(--smk-color-border);
+    font-family: var(--smk-font-sans);
+    color: var(--smk-color-text);
+}
+
+.smk-theme-modern .leaflet-popup-content,
+.smk-theme-modern .maplibregl-popup-content {
+    font-family: var(--smk-font-sans);
+    font-size: var(--smk-font-size);
+}
+
+.smk-theme-modern .leaflet-control-zoom a,
+.smk-theme-modern .maplibregl-ctrl-group button {
+    background-color: var(--smk-color-bg) !important;
+    color: var(--smk-color-text) !important;
+    border-color: var(--smk-color-border) !important;
+}
+
+.smk-theme-modern .leaflet-control-zoom a:hover,
+.smk-theme-modern .maplibregl-ctrl-group button:hover {
+    background-color: var(--smk-color-hover) !important;
+}
+
+.smk-theme-modern .leaflet-control,
+.smk-theme-modern .maplibregl-ctrl-group {
+    border-radius: var(--smk-radius) !important;
+    box-shadow: var(--smk-shadow) !important;
+}
+
+/* --- Scrollbar polish (WebKit) ---------------------------------------- */
+
+.smk-theme-modern ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.smk-theme-modern ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.smk-theme-modern ::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;          /* slate-300 */
+    border-radius: 999px;
+    border: 2px solid var(--smk-color-bg);
+}
+
+.smk-theme-modern ::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;          /* slate-400 */
+}
+
+/* --- Dark-mode opt-in -------------------------------------------------- */
+/* Activate by adding `smk-theme-modern-dark` alongside `smk-theme-modern`,
+   e.g. set { "viewer": { "themes": [ "modern", "modern-dark" ] } } and add a
+   second tiny CSS file, OR just set `data-color-scheme="dark"` on the map
+   container yourself. Tokens below kick in either way. */
+.smk-theme-modern[data-color-scheme="dark"],
+.smk-theme-modern-dark {
+    --smk-color-bg:        #0f172a;     /* slate-900 */
+    --smk-color-bg-muted:  #1e293b;     /* slate-800 */
+    --smk-color-border:    #334155;     /* slate-700 */
+    --smk-color-text:      #f1f5f9;     /* slate-100 */
+    --smk-color-text-mute: #94a3b8;     /* slate-400 */
+    --smk-color-accent:    #818cf8;     /* indigo-400 */
+    --smk-color-accent-bg: #1e1b4b;     /* indigo-950 */
+    --smk-color-hover:     #1e293b;
+    --smk-color-active:    #312e81;     /* indigo-900 */
+}
+
+/* overrides for search tool's clear button to position it inside the input on the right */
+.smk-tool.smk-search-tool .smk-clear-search {
+    position: absolute;
+    top: 1px;
+    right: 34px;
+}
+
+.smk-panel .smk-commands {
+    flex-wrap: wrap;
+    place-content: flex-start space-between;
+    align-items: center;
+    display: flex;
+    margin-left: 1px;
+    background: white;
+    margin-right: 1px;
+    margin-bottom: 0px;
+}
+
+.smk-enter-input .smk-input {
+    background-color: white;
+    border-radius: 8px;
+    justify-content: space-around;
+    align-items: center;
+    padding: 2px;
+    display: flex;
+}
+
+.smk-enter-input .smk-reset.smk-command.smk-icon {
+    height: 28px;
+}
+
+.smk-feature-list .smk-layer h2 {
+    top: -15px;
+}
+
+.smk-theme-modern .smk-coordinate {
+    border-radius: 0px;
+}

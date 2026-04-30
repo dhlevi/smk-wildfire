@@ -204,6 +204,7 @@ const esri3dAliases: Record<string, string> = {
 ViewerEsri3d.prototype.initializeBasemaps = function (
     defineBaseMap:     ( id: string, config?: any ) => any,
     defineBaseMapType: ( type: string, fn?: Function ) => any,
+    viewerCfg?:        any,
 ) {
     // Wrap defineBaseMap to inject esri3d alias into deprecated basemap configs
     function wrappedDefineBaseMap( id: string, def?: any ) {
@@ -242,7 +243,7 @@ ViewerEsri3d.prototype.initializeBasemaps = function (
         return [ L.esri.Static.staticBasemapTileLayer( cfg.style, Object.assign( { maxZoom: 30 }, cfg.option ) ) ]
     } )
 
-    Viewer.prototype.initializeBasemaps.call( this, wrappedDefineBaseMap, defineBaseMapType )
+    Viewer.prototype.initializeBasemaps.call( this, wrappedDefineBaseMap, defineBaseMapType, viewerCfg )
 }
 
 // ---------------------------------------------------------------------------

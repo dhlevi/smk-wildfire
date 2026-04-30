@@ -1573,7 +1573,7 @@ var ViewerEvent = SMKEvent.define([
 			if (!n) return t.basemapType[i];
 			t.basemapType[i] = n;
 		}
-		if (this.initializeBasemaps(i, a), this.displayContextInitialized = makePromise((n, i) => {
+		if (this.initializeBasemaps(i, a, e?.viewer), this.displayContextInitialized = makePromise((n, i) => {
 			t.initializeDisplayContext = () => {
 				try {
 					e.viewer.displayContext?.forEach((n) => {
@@ -1632,9 +1632,9 @@ var ViewerEvent = SMKEvent.define([
 		if (e < this.zoomScale[19]) return [19, 20];
 		for (let t = 2; t < 20; t += 1) if (e > this.zoomScale[t]) return [t - 1, t];
 	}
-	initializeBasemaps(e, t) {
-		let n = SMK$1?._baseMaps;
-		n && n(e, t), window.SMK?.HANDLER?.has("viewer", "defineBaseMap") && window.SMK.HANDLER.get("viewer", "defineBaseMap")(e), window.SMK?.HANDLER?.has("viewer", "defineBaseMapType") && window.SMK.HANDLER.get("viewer", "defineBaseMapType")(t);
+	initializeBasemaps(e, t, n) {
+		let i = SMK$1?._baseMaps;
+		i && i(e, t, n), window.SMK?.HANDLER?.has("viewer", "defineBaseMap") && window.SMK.HANDLER.get("viewer", "defineBaseMap")(e), window.SMK?.HANDLER?.has("viewer", "defineBaseMapType") && window.SMK.HANDLER.get("viewer", "defineBaseMapType")(t);
 	}
 	getBasemapIds() {
 		return Object.keys(this.basemap);
@@ -20787,7 +20787,8 @@ var version$1 = 8, sprite$1 = "https://tiles.arcgis.com/tiles/B6yKvIZqzuOr0jBR/a
 	layers,
 	metadata
 }, topoStyle = vector_basemap_topo_default, nightStyle = vector_basemap_night_default;
-function defineBaseMaps(e, t) {
+function defineBaseMaps(e, t, n) {
+	let i = n?.esriApiToken || "", a = !!i && i !== "** NEEDS AN API TOKEN **";
 	t("composite", function(n) {
 		return n.layers.reduce(function(i, a) {
 			let o = e(a);
@@ -20939,25 +20940,26 @@ function defineBaseMaps(e, t) {
 		},
 		url: "https://tiles.arcgis.com/tiles/B6yKvIZqzuOr0jBR/arcgis/rest/services/Canada_Hillshade/MapServer"
 	}), e("imagery-esri-v2", {
-		internal: !0,
+		internal: !a,
 		type: "esri-vector-basemap",
 		order: 23,
 		title: "Imagery",
 		key: "arcgis/imagery",
 		option: {
-			token: "** NEEDS AN API TOKEN **",
+			token: i,
 			maxNativeZoom: 19,
 			maxZoom: 30,
 			tileSize: 512,
 			zoomOffset: -1
 		}
 	}), e("streets-esri-v2", {
+		internal: !a,
 		type: "esri-vector-basemap",
 		order: 24,
 		title: "ESRI Streets",
 		key: "arcgis/streets",
 		option: {
-			token: "** NEEDS AN API TOKEN **",
+			token: i,
 			maxNativeZoom: 19,
 			maxZoom: 30
 		}
@@ -20969,6 +20971,26 @@ function defineBaseMaps(e, t) {
 		option: { style(e) {
 			return nightStyle;
 		} }
+	}), e("esri-imagery", {
+		type: "tile",
+		order: 26,
+		title: "ESRI Imagery",
+		url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+		attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+		option: {
+			maxNativeZoom: 19,
+			maxZoom: 30
+		}
+	}), e("openstreetmap", {
+		type: "tile",
+		order: 27,
+		title: "OpenStreetMap",
+		url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+		attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
+		option: {
+			maxNativeZoom: 19,
+			maxZoom: 30
+		}
 	});
 }
 if (typeof window < "u") {
@@ -21026,7 +21048,7 @@ smkRef$60 && (smkRef$60.TYPE ||= {}, smkRef$60.TYPE.Viewer || (smkRef$60.TYPE.Vi
 	};
 }, ViewerLeaflet.prototype.destroy = function() {
 	this.map.remove(), Viewer.prototype.destroy.call(this);
-}, ViewerLeaflet.prototype.initializeBasemaps = function(e, t) {
+}, ViewerLeaflet.prototype.initializeBasemaps = function(e, t, n) {
 	t("esri-basemap", function(e) {
 		let t = Object.assign({ detectRetina: !0 }, e.option), n = clone(L.esri.BasemapLayer.TILES[e.key].options), i = L.esri.basemapLayer(e.key, clone(t || {}));
 		return L.esri.BasemapLayer.TILES[e.key].options = n, [i];
@@ -21043,7 +21065,7 @@ smkRef$60 && (smkRef$60.TYPE ||= {}, smkRef$60.TYPE.Viewer || (smkRef$60.TYPE.Vi
 		}, e.option))];
 	}), t("esri-static-basemap-tile", function(e) {
 		return [L.esri.Static.staticBasemapTileLayer(e.style, Object.assign({ maxZoom: 30 }, e.option))];
-	}), Viewer.prototype.initializeBasemaps.call(this, e, t);
+	}), Viewer.prototype.initializeBasemaps.call(this, e, t, n);
 }, ViewerLeaflet.prototype.setBasemap = function(e) {
 	let t = this;
 	this.currentBasemap && this.currentBasemap.forEach((e) => t.map.removeLayer(e)), this.currentBasemap = this.createBasemapLayer(e), this.map.addLayer(this.currentBasemap[0]), this.currentBasemap[0].bringToBack && this.currentBasemap[0].bringToBack();
@@ -21981,8 +22003,8 @@ var esri3dAliases = {
 	"topography-hillshade": "terrain",
 	"streets-esri-v2": "streets"
 };
-ViewerEsri3d.prototype.initializeBasemaps = function(e, t) {
-	function n(t, n) {
+ViewerEsri3d.prototype.initializeBasemaps = function(e, t, n) {
+	function i(t, n) {
 		if (!n) return e(t);
 		let i = esri3dAliases[t.toLowerCase()];
 		return e(t, i ? Object.assign({}, n, { esri3d: i }) : n);
@@ -22003,7 +22025,7 @@ ViewerEsri3d.prototype.initializeBasemaps = function(e, t) {
 		}, e.option))];
 	}), t("esri-static-basemap-tile", function(e) {
 		return [L.esri.Static.staticBasemapTileLayer(e.style, Object.assign({ maxZoom: 30 }, e.option))];
-	}), Viewer.prototype.initializeBasemaps.call(this, n, t);
+	}), Viewer.prototype.initializeBasemaps.call(this, i, t, n);
 }, ViewerEsri3d.prototype.setBasemap = function(e) {
 	let t = this.basemap[e];
 	t?.esri3d && (this.map.basemap = t.esri3d), this.changedBaseMap({ baseMap: e });
@@ -22369,7 +22391,7 @@ ViewerMapLibre.prototype.initialize = function(e) {
 	});
 }, ViewerMapLibre.prototype.destroy = function() {
 	this.map && this.map.remove(), Viewer.prototype.destroy.call(this);
-}, ViewerMapLibre.prototype.initializeBasemaps = function(e, t) {
+}, ViewerMapLibre.prototype.initializeBasemaps = function(e, t, n) {
 	t("tile", function(e) {
 		return [L.tileLayer(e.url, Object.assign({ attribution: e.attribution }, e.option))];
 	}), t("esri-basemap", function(e) {
@@ -22386,7 +22408,7 @@ ViewerMapLibre.prototype.initialize = function(e) {
 		return L.esri?.Vector?.vectorTileLayer ? [L.esri.Vector.vectorTileLayer(e.url, Object.assign({ maxZoom: 30 }, e.option))] : [];
 	}), t("esri-static-basemap-tile", function(e) {
 		return L.esri?.Static?.staticBasemapTileLayer ? [L.esri.Static.staticBasemapTileLayer(e.style, Object.assign({ maxZoom: 30 }, e.option))] : [];
-	}), Viewer.prototype.initializeBasemaps.call(this, e, t);
+	}), Viewer.prototype.initializeBasemaps.call(this, e, t, n);
 };
 function basemapSpecForConfig(e) {
 	return specForConfig(e);
@@ -23488,8 +23510,8 @@ var factory$20 = ToolStatic.define("LayersTool", function() {
 		legend: !0,
 		themes: !1
 	}, this.glyph = {
-		visible: "visibility",
-		hidden: "visibility_off"
+		visible: "check_box",
+		hidden: "check_box_outline_blank"
 	};
 }, function(e) {
 	let t = this;

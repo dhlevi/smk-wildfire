@@ -121,6 +121,7 @@ ViewerLeaflet.prototype.destroy = function () {
 ViewerLeaflet.prototype.initializeBasemaps = function (
     defineBaseMap:     ( id: string, config?: any ) => any,
     defineBaseMapType: ( type: string, fn?: Function ) => any,
+    viewerCfg?:        any,
 ) {
     defineBaseMapType( 'esri-basemap', function ( cfg: any ) {
         const opt  = Object.assign( { detectRetina: true }, cfg.option )
@@ -150,7 +151,7 @@ ViewerLeaflet.prototype.initializeBasemaps = function (
         return [ L.esri.Static.staticBasemapTileLayer( cfg.style, Object.assign( { maxZoom: 30 }, cfg.option ) ) ]
     } )
 
-    Viewer.prototype.initializeBasemaps.call( this, defineBaseMap, defineBaseMapType )
+    Viewer.prototype.initializeBasemaps.call( this, defineBaseMap, defineBaseMapType, viewerCfg )
 }
 
 // ---------------------------------------------------------------------------

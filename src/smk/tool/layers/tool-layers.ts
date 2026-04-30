@@ -49,7 +49,7 @@ const factory = Tool.define( 'LayersTool',
         this.allVisible = true
         this.legend     = false
         this.command    = { allVisibility: true, filter: true, legend: true, themes: false }
-        this.glyph      = { visible: 'visibility', hidden: 'visibility_off' }
+        this.glyph      = { visible: 'check_box', hidden: 'check_box_outline_blank' }
     },
     function ( this: any, smk: any ) {
         const self = this

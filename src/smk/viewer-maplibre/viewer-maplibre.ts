@@ -195,6 +195,7 @@ ViewerMapLibre.prototype.destroy = function () {
 ViewerMapLibre.prototype.initializeBasemaps = function (
     defineBaseMap:     ( id: string, config?: any ) => any,
     defineBaseMapType: ( type: string, fn?: Function ) => any,
+    viewerCfg?:        any,
 ) {
     defineBaseMapType( 'tile', function ( cfg: any ) {
         return [ L.tileLayer( cfg.url, Object.assign( { attribution: cfg.attribution }, cfg.option ) ) ]
@@ -230,7 +231,7 @@ ViewerMapLibre.prototype.initializeBasemaps = function (
         return []
     } )
 
-    Viewer.prototype.initializeBasemaps.call( this, defineBaseMap, defineBaseMapType )
+    Viewer.prototype.initializeBasemaps.call( this, defineBaseMap, defineBaseMapType, viewerCfg )
 }
 
 // ---------------------------------------------------------------------------

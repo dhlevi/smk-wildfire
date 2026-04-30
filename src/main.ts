@@ -349,6 +349,7 @@ import './theme/alpha/alpha.css'
 import './theme/beta/beta.css'
 import './theme/delta/delta.css'
 import './theme/gamma/gamma.css'
+import './theme/modern/modern.css'
 import './theme/wf/wf.css'
 
 // ---------------------------------------------------------------------------

@@ -14,7 +14,13 @@ const nightStyle = nightStyleJson as any
 export function defineBaseMaps(
     defineBaseMap:     ( id: string, config?: any ) => any,
     defineBaseMapType: ( type: string, fn?: Function ) => any,
+    viewerCfg?:        any,
 ): void {
+    // Optional ArcGIS Online API key, set via viewer config:
+    //   { "viewer": { "esriApiToken": "<your-token>" } }
+    // When absent, the v2 vector basemaps that require a token are hidden.
+    const esriToken: string = viewerCfg?.esriApiToken || ''
+    const hasEsriToken      = !!esriToken && esriToken !== '** NEEDS AN API TOKEN **'
 
     defineBaseMapType( 'composite', function ( cfg: any ) {
         return cfg.layers.reduce( function ( acc: any[], ly: string ) {
@@ -132,15 +138,15 @@ export function defineBaseMaps(
     } )
 
     defineBaseMap( 'imagery-esri-v2', {
-        internal: true, type: 'esri-vector-basemap', order: 23, title: 'Imagery',
+        internal: !hasEsriToken, type: 'esri-vector-basemap', order: 23, title: 'Imagery',
         key: 'arcgis/imagery',
-        option: { token: '** NEEDS AN API TOKEN **', maxNativeZoom: 19, maxZoom: 30, tileSize: 512, zoomOffset: -1 },
+        option: { token: esriToken, maxNativeZoom: 19, maxZoom: 30, tileSize: 512, zoomOffset: -1 },
     } )
 
     defineBaseMap( 'streets-esri-v2', {
-        type: 'esri-vector-basemap', order: 24, title: 'ESRI Streets',
+        internal: !hasEsriToken, type: 'esri-vector-basemap', order: 24, title: 'ESRI Streets',
         key: 'arcgis/streets',
-        option: { token: '** NEEDS AN API TOKEN **', maxNativeZoom: 19, maxZoom: 30 },
+        option: { token: esriToken, maxNativeZoom: 19, maxZoom: 30 },
     } )
 
     defineBaseMap( 'night', {
@@ -149,6 +155,20 @@ export function defineBaseMaps(
         option: {
             style( _style: any ) { return nightStyle },
         },
+    } )
+
+    defineBaseMap( 'esri-imagery', {
+        type: 'tile', order: 26, title: 'ESRI Imagery',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+        option: { maxNativeZoom: 19, maxZoom: 30 },
+    } )
+
+    defineBaseMap( 'openstreetmap', {
+        type: 'tile', order: 27, title: 'OpenStreetMap',
+        url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        option: { maxNativeZoom: 19, maxZoom: 30 },
     } )
 }
 

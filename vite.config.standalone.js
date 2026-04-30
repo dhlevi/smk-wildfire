@@ -17,6 +17,10 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
 import { execSync } from 'child_process'
+import { createRequire } from 'module'
+
+const pkg = createRequire( import.meta.url )( './package.json' )
+const version = pkg.version || 'unknown'
 
 function git( cmd ) {
     try {
@@ -34,17 +38,18 @@ export default defineConfig( {
         __SMK_BRANCH__:      JSON.stringify( git( 'rev-parse --abbrev-ref HEAD' ) ),
         __SMK_LAST_COMMIT__: JSON.stringify( git( 'log -1 --format=%ci' ) ),
         __SMK_ORIGIN__:      JSON.stringify( git( 'remote get-url origin' ) ),
-        __SMK_VERSION__:     JSON.stringify( process.env.npm_package_version || 'unknown' ),
+        __SMK_VERSION__:     JSON.stringify( process.env.npm_package_version || version ),
     },
 
     build: {
         lib: {
             entry: resolve( import.meta.dirname, 'src/standalone-entry.ts' ),
             name: 'SMK',
-            fileName: () => 'smk.standalone.js',
+            fileName: () => `smk.${ version }.js`,
             formats: [ 'umd' ],
         },
         outDir: 'dist',
+        minify: 'terser',
         // Don't wipe the lite build that ran first
         emptyOutDir: false,
         sourcemap: true,
@@ -54,7 +59,7 @@ export default defineConfig( {
             // No externals — bundle everything
             output: {
                 assetFileNames: ( info ) => {
-                    if ( info.name && info.name.endsWith( '.css' ) ) return 'smk.standalone.css'
+                    if ( info.name && info.name.endsWith( '.css' ) ) return `smk.${ version }.css`
                     return info.name || 'asset-[hash][extname]'
                 },
             },
