@@ -1814,7 +1814,10 @@ var ViewerEvent = SMKEvent.define([
 		if (!t.every((e) => e.config.type === a)) return Promise.reject(/* @__PURE__ */ Error("types don't match"));
 		if (this.layerIdPromise[e]) return this.layerIdPromise[e];
 		let o = window.SMK?.TYPE?.Layer;
-		return o?.[a]?.[i.type]?.create ? this.layerIdPromise[e] = resolved().then(() => o[a][i.type].create.call(i, t, n)).then((n) => this.afterCreateViewerLayer(e, a, t, n)) : Promise.reject(/* @__PURE__ */ Error(`can't create viewer layer of type "${a}"`));
+		return o?.[a]?.[i.type]?.create ? (a === "vector" && t.forEach((e) => {
+			let t = e.config;
+			t.data && !e.loadCache && (e.loadCache = t.data, t.isInternal = !0), t.dataProvider && (t.isInternal = !0);
+		}), this.layerIdPromise[e] = resolved().then(() => o[a][i.type].create.call(i, t, n)).then((n) => (a === "vector" && attachDataProviders(t, i), this.afterCreateViewerLayer(e, a, t, n)))) : Promise.reject(/* @__PURE__ */ Error(`can't create viewer layer of type "${a}"`));
 	}
 	afterCreateViewerLayer(e, t, n, i) {
 		return i._smk_type = t, i._smk_id = e, i;
@@ -1920,8 +1923,6 @@ var ViewerEvent = SMKEvent.define([
 		}).then((e) => findNearestSite(e).then((e) => Object.assign(e, { current: !0 }))));
 	}
 };
-//#endregion
-//#region src/smk/merge-config.ts
 Object.setPrototypeOf(Viewer.prototype, ViewerEvent.prototype), Viewer.prototype.constructor = Viewer, Viewer.prototype.zoomScale = [], [
 	void 0,
 	173451547.7127784,
@@ -1945,7 +1946,37 @@ Object.setPrototypeOf(Viewer.prototype, ViewerEvent.prototype), Viewer.prototype
 	690.8367988270104
 ].forEach((e, t) => {
 	e !== void 0 && (Viewer.prototype.zoomScale[t] = e);
-}), typeof window < "u" && window.SMK && (window.SMK.TYPE.Viewer = Viewer), init_util();
+}), typeof window < "u" && window.SMK && (window.SMK.TYPE.Viewer = Viewer);
+function attachDataProviders(e, t) {
+	let n = window.SMK?.dataProviders;
+	n && e.forEach((e) => {
+		let i = e.config?.dataProvider;
+		if (!i) return;
+		let a = n.get(i);
+		if (!a) {
+			console.warn(`vector layer "${e.config.id}": dataProvider "${i}" is not registered`);
+			return;
+		}
+		let o;
+		try {
+			o = a(e.config, t);
+		} catch (t) {
+			console.warn(`vector layer "${e.config.id}": dataProvider "${i}" threw`, t);
+			return;
+		}
+		let s = (t) => {
+			e.load?.(t);
+		};
+		if (o) if (typeof o.then == "function") o.then(s, (t) => console.warn(`vector layer "${e.config.id}": dataProvider "${i}" rejected`, t));
+		else if (typeof o == "function") {
+			let t = o(s);
+			typeof t == "function" && (e._smk_dataProviderUnsubscribe = t);
+		} else s(o);
+	});
+}
+//#endregion
+//#region src/smk/merge-config.ts
+init_util();
 var pathMatchers = [];
 function addPathMatchStrategy(e, t) {
 	pathMatchers.push({
@@ -23515,7 +23546,7 @@ var factory$20 = ToolStatic.define("LayersTool", function() {
 	};
 }, function(e) {
 	let t = this;
-	t.changedActive(function() {
+	Array.isArray(t.display) && t.display.length && (e.$viewer.defaultLayerDisplay = t.display), t.changedActive(function() {
 		t.active ? (t.contexts = e.$viewer.getDisplayContexts(), smkRef$31.HANDLER.get(t.id, "activated")(e, t)) : smkRef$31.HANDLER.get(t.id, "deactivated")(e, t);
 	}), e.on(this.id, {
 		activate: function() {
@@ -40800,10 +40831,26 @@ function initializeSmkMap(e) {
 	if (e.id in t.MAP) throw Error("An SMK map with smk-id \"" + e.id + "\" already exists");
 	return console.log("Creating map \"" + e.id + "\":", JSON.parse(JSON.stringify(e))), (t.MAP[e.id] = new t.TYPE.SmkMap(e)).initialize();
 }
-init_util(), typeof window < "u" && (window.SMK || (window.SMK = {}), window.SMK.TYPE || (window.SMK.TYPE = {}), window.SMK.UTIL || (window.SMK.UTIL = {}), window.SMK.HANDLER || (window.SMK.HANDLER = {
+if (init_util(), typeof window < "u" && (window.SMK || (window.SMK = {}), window.SMK.TYPE || (window.SMK.TYPE = {}), window.SMK.UTIL || (window.SMK.UTIL = {}), window.SMK.HANDLER || (window.SMK.HANDLER = {
 	has: () => !1,
 	get: () => null
-}), window.SMK.TYPE.Viewer || (window.SMK.TYPE.Viewer = {}), window.SMK.TYPE.Layer || (window.SMK.TYPE.Layer = {}));
+}), window.SMK.TYPE.Viewer || (window.SMK.TYPE.Viewer = {}), window.SMK.TYPE.Layer || (window.SMK.TYPE.Layer = {}), !window.SMK.dataProviders)) {
+	let e = {};
+	window.SMK.dataProviders = {
+		register(t, n) {
+			e[t] = n;
+		},
+		unregister(t) {
+			delete e[t];
+		},
+		get(t) {
+			return e[t] || null;
+		},
+		has(t) {
+			return !!e[t];
+		}
+	};
+}
 //#endregion
 export { ClusterLayer, EsriDynamicLayer, EsriFeatureLayer, EsriTiledLayer, FeatureSet, FeatureSet as featureSet, Layer, Layer as layer, LayerDisplay, LayerDisplayContext, Query, QueryParameter, SMKEvent, SMKEvent as event, UTIL, UTIL as util, VectorLayer, Viewer, Viewer as viewer, WmsLayer };
 

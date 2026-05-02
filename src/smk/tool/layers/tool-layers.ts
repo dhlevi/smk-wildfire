@@ -54,6 +54,15 @@ const factory = Tool.define( 'LayersTool',
     function ( this: any, smk: any ) {
         const self = this
 
+        // If a `display` array was supplied via tool config (e.g.
+        //   { type: 'layers', display: [ { type: 'folder', ... }, ... ] }
+        // ), use it as the default layer display tree.  This is picked up
+        // by viewer.initializeDisplayContext() (which runs after tool init)
+        // when no `viewer.displayContext` config has set the 'layers' context.
+        if ( Array.isArray( self.display ) && self.display.length ) {
+            smk.$viewer.defaultLayerDisplay = self.display
+        }
+
         self.changedActive( function () {
             if ( self.active ) {
                 self.contexts = smk.$viewer.getDisplayContexts()
