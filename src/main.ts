@@ -115,6 +115,35 @@ if ( typeof window !== 'undefined' ) {
     if ( !window.SMK.HANDLER )    ( window.SMK as any ).HANDLER    = { has: () => false, get: () => null }
     if ( !window.SMK.TYPE.Viewer ) window.SMK.TYPE.Viewer          = {} as any
     if ( !window.SMK.TYPE.Layer )  window.SMK.TYPE.Layer           = {} as any
+
+    // ----------------------------------------------------------------------
+    // Vector data providers — runtime registry for dynamic / in-memory
+    // data sources used by `vector` layer configs:
+    //
+    //     SMK.dataProviders.register( 'liveFires', ( layerCfg, smk ) => {
+    //         // 1) Promise / GeoJSON for a one-shot load
+    //         return fetch( '/api/fires' ).then( r => r.json() )
+    //
+    //         // 2) Subscriber form - live updates; return an unsubscribe fn
+    //         //    return ( push ) => {
+    //         //        const off = store.on( 'change', s => push( s.geojson ) )
+    //         //        return off
+    //         //    }
+    //     } )
+    //
+    // Used in layer config as:
+    //     { "type": "vector", "id": "fires", "isInternal": true,
+    //       "dataProvider": "liveFires" }
+    // ----------------------------------------------------------------------
+    if ( !( window.SMK as any ).dataProviders ) {
+        const _providers: Record<string, Function> = {}
+        ;( window.SMK as any ).dataProviders = {
+            register( name: string, fn: Function ) { _providers[ name ] = fn },
+            unregister( name: string ) { delete _providers[ name ] },
+            get( name: string ) { return _providers[ name ] || null },
+            has( name: string ) { return !!_providers[ name ] },
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -22573,14 +22573,23 @@ ViewerMapLibre.prototype.addViewerLayer = function(e) {
 	e.id && e.type && !t.map.getLayer(e.id) && (t.map.addLayer(e), t.viewerLayers[e._smk_id || e.id] = e);
 }, ViewerMapLibre.prototype.positionViewerLayer = function(e, t) {
 	if (!e) return;
-	let n = specLayers(e);
-	if (n.length > 0) {
-		n.forEach((e) => {
-			self_hasLayer(this, e.id) && this.map.moveLayer(e.id);
-		});
-		return;
-	}
-	e.id && self_hasLayer(this, e.id) && this.map.moveLayer(e.id);
+	let n = this;
+	e._smk_zOrder = t;
+	let i = specLayers(e), a = i.length ? i.map((e) => e.id) : e.id ? [e.id] : [];
+	if (!a.length) return;
+	let o, s = Infinity;
+	Object.keys(n.viewerLayers).forEach((i) => {
+		let a = n.viewerLayers[i];
+		if (a === e) return;
+		let c = a._smk_zOrder;
+		if (typeof c != "number" || c <= t || c >= s) return;
+		let l = specLayers(a).map((e) => e.id)[0] || a.id;
+		l && n.map.getLayer(l) && (s = c, o = l);
+	}), a.forEach((e) => {
+		if (self_hasLayer(n, e)) try {
+			n.map.moveLayer(e, o);
+		} catch {}
+	});
 };
 function self_hasLayer(e, t) {
 	return !!(t && e.map.getLayer(t));

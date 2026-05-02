@@ -598,9 +598,38 @@ export class Viewer {
         if ( !LayerType?.[ type ]?.[ self.type ]?.create )
             return Promise.reject( new Error( `can't create viewer layer of type "${ type }"` ) )
 
+        // ------------------------------------------------------------------
+        // Dynamic data sources for vector layers
+        //
+        //  cfg.data         — inline GeoJSON FeatureCollection (or Feature)
+        //  cfg.dataProvider — name of a function in SMK.dataProviders
+        //
+        // For inline data, pre-populate `loadCache` so the adapter's existing
+        // post-create flush picks it up and skips the dataUrl fetch.
+        //
+        // For dataProviders, defer until after the adapter has wired up
+        // `loadLayer` / `clearLayer`, then call the provider — supporting
+        // GeoJSON, Promise<GeoJSON>, or a `( push ) => unsubscribe` form.
+        // ------------------------------------------------------------------
+        if ( type === 'vector' ) {
+            layers.forEach( ( ly: any ) => {
+                const cfg = ly.config
+                if ( cfg.data && !ly.loadCache ) {
+                    ly.loadCache    = cfg.data
+                    cfg.isInternal  = true
+                }
+                if ( cfg.dataProvider ) {
+                    cfg.isInternal = true
+                }
+            } )
+        }
+
         return ( this.layerIdPromise[ id ] = resolved()
             .then( () => LayerType[ type ][ self.type ].create.call( self, layers, zIndex ) )
-            .then( ( ly: any ) => this.afterCreateViewerLayer( id, type, layers, ly ) )
+            .then( ( ly: any ) => {
+                if ( type === 'vector' ) attachDataProviders( layers, self )
+                return this.afterCreateViewerLayer( id, type, layers, ly )
+            } )
         )
     }
 
@@ -851,6 +880,54 @@ Viewer.prototype.zoomScale = []
 
 if ( typeof window !== 'undefined' && window.SMK ) {
     window.SMK.TYPE.Viewer = Viewer as any
+}
+
+// ---------------------------------------------------------------------------
+// attachDataProviders — wire `cfg.dataProvider` to the layer's load hook
+// once the adapter has finished `.create()` (and therefore wired loadLayer).
+// Supports three return shapes from the provider:
+//   1. GeoJSON object                 → one-shot load
+//   2. Promise<GeoJSON>               → one-shot load on resolve
+//   3. ( push ) => unsubscribe        → live updates; unsubscribe stored on
+//                                       the layer for later cleanup
+// ---------------------------------------------------------------------------
+
+function attachDataProviders( layers: any[], viewer: any ): void {
+    const reg = ( window as any ).SMK?.dataProviders
+    if ( !reg ) return
+
+    layers.forEach( ( ly: any ) => {
+        const name = ly.config?.dataProvider
+        if ( !name ) return
+        const fn = reg.get( name )
+        if ( !fn ) {
+            console.warn( `vector layer "${ ly.config.id }": dataProvider "${ name }" is not registered` )
+            return
+        }
+
+        let result: any
+        try {
+            result = fn( ly.config, viewer )
+        } catch ( e ) {
+            console.warn( `vector layer "${ ly.config.id }": dataProvider "${ name }" threw`, e )
+            return
+        }
+
+        const push = ( data: any ) => { ly.load?.( data ) }
+
+        if ( !result ) return
+        if ( typeof result.then === 'function' ) {
+            result.then( push, ( e: any ) =>
+                console.warn( `vector layer "${ ly.config.id }": dataProvider "${ name }" rejected`, e ) )
+        } else if ( typeof result === 'function' ) {
+            // Subscriber form — provider returned a `( push ) => unsubscribe`
+            const unsub = result( push )
+            if ( typeof unsub === 'function' ) ly._smk_dataProviderUnsubscribe = unsub
+        } else {
+            // Treat anything else as data (GeoJSON FeatureCollection / Feature)
+            push( result )
+        }
+    } )
 }
 
 export default Viewer

@@ -482,17 +482,43 @@ ViewerMapLibre.prototype.addViewerLayer = function ( viewerLayer: any ) {
     }
 }
 
-ViewerMapLibre.prototype.positionViewerLayer = function ( viewerLayer: any, _zOrder: number ) {
+ViewerMapLibre.prototype.positionViewerLayer = function ( viewerLayer: any, zOrder: number ) {
     if ( !viewerLayer ) return
+    const self = this
+
+    // Remember the layer stacking, Higher zOrder == on top.
+    viewerLayer._smk_zOrder = zOrder
+
     const layers = specLayers( viewerLayer )
-    if ( layers.length > 0 ) {
-        // MapLibre uses insertion order for z; move each to top in order.
-        layers.forEach( ( ly: any ) => {
-            if ( self_hasLayer( this, ly.id ) ) this.map.moveLayer( ly.id )
-        } )
-        return
-    }
-    if ( viewerLayer.id && self_hasLayer( this, viewerLayer.id ) ) this.map.moveLayer( viewerLayer.id )
+    const ids: string[] = layers.length
+        ? layers.map( ( l: any ) => l.id )
+        : ( viewerLayer.id ? [ viewerLayer.id ] : [] )
+
+    if ( !ids.length ) return
+
+    // Find the next-higher-zOrder viewer layer; we want the layer
+    // to render directly below. use maplibres moveLayer( id, beforeId )
+    let beforeId: string | undefined
+    let bestZ = Infinity
+    Object.keys( self.viewerLayers ).forEach( ( key: string ) => {
+        const vl = self.viewerLayers[ key ]
+        if ( vl === viewerLayer ) return
+        const z = vl._smk_zOrder
+        if ( typeof z !== 'number' || z <= zOrder ) return
+        if ( z >= bestZ ) return
+        const otherIds = specLayers( vl ).map( ( l: any ) => l.id )
+        const firstId  = otherIds[ 0 ] || vl.id
+        if ( firstId && self.map.getLayer( firstId ) ) {
+            bestZ    = z
+            beforeId = firstId
+        }
+    } )
+
+    // moveLayer is a no-op if the layer is already in the right position
+    ids.forEach( ( id: string ) => {
+        if ( !self_hasLayer( self, id ) ) return
+        try { self.map.moveLayer( id, beforeId ) } catch ( e ) { /* ignore */ }
+    } )
 }
 
 function self_hasLayer( self: any, id: string ): boolean {
