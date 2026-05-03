@@ -40161,72 +40161,213 @@ VectorMapLibreLayer.create = function(e, t) {
 			e && (e.properties ||= {}, e.properties._smk_label = h(e.properties));
 		}), e;
 	}
-	let v = a.strokeColor || a.color || "#3388ff", y = a.strokeWidth || a.weight || 2, x = (a.strokeOpacity == null ? a.opacity == null ? 1 : a.opacity : a.strokeOpacity) * d, S = a.fillColor || v, C = (a.fillOpacity == null ? .3 : a.fillOpacity) * d, w = a.radius || 5, T = {
-		sourceId: o,
-		source: {
-			type: "geojson",
-			data: EMPTY
-		},
-		layers: [
-			{
-				id: s,
-				type: "fill",
-				source: o,
-				filter: [
-					"in",
-					["geometry-type"],
-					["literal", ["Polygon", "MultiPolygon"]]
-				],
-				paint: {
-					"fill-color": S,
-					"fill-opacity": C,
-					"fill-outline-color": v
-				}
-			},
-			{
-				id: c,
-				type: "line",
-				source: o,
-				filter: [
-					"in",
-					["geometry-type"],
-					["literal", [
-						"LineString",
-						"MultiLineString",
-						"Polygon",
-						"MultiPolygon"
-					]]
-				],
-				paint: {
-					"line-color": v,
-					"line-width": y,
-					"line-opacity": x
-				}
-			},
-			{
-				id: l,
-				type: "circle",
-				source: o,
-				filter: [
-					"in",
-					["geometry-type"],
-					["literal", ["Point", "MultiPoint"]]
-				],
-				paint: {
-					"circle-radius": w,
-					"circle-color": S,
-					"circle-opacity": C || x,
-					"circle-stroke-color": v,
-					"circle-stroke-width": Math.max(1, y - 1)
-				}
-			}
-		]
+	let v = a.strokeColor || a.color || "#3388ff", y = a.strokeWidth || a.weight || 2, x = (a.strokeOpacity == null ? a.opacity == null ? 1 : a.opacity : a.strokeOpacity) * d, S = a.fillColor || v, C = (a.fillOpacity == null ? .3 : a.fillOpacity) * d, w = a.radius || 5, T = i.cluster === !0 ? {} : i.cluster && typeof i.cluster == "object" ? i.cluster : null, E = o + "_cluster", D = o + "_cluster_count", O = o + "_unclustered", k = {
+		type: "geojson",
+		data: EMPTY
 	};
+	T && (k.cluster = !0, k.clusterRadius = T.radius == null ? 50 : T.radius, k.clusterMaxZoom = T.maxZoom == null ? 14 : T.maxZoom, T.minPoints != null && (k.clusterMinPoints = T.minPoints));
+	let A = {
+		sourceId: o,
+		source: k,
+		layers: [{
+			id: s,
+			type: "fill",
+			source: o,
+			filter: [
+				"in",
+				["geometry-type"],
+				["literal", ["Polygon", "MultiPolygon"]]
+			],
+			paint: {
+				"fill-color": S,
+				"fill-opacity": C,
+				"fill-outline-color": v
+			}
+		}, {
+			id: c,
+			type: "line",
+			source: o,
+			filter: [
+				"in",
+				["geometry-type"],
+				["literal", [
+					"LineString",
+					"MultiLineString",
+					"Polygon",
+					"MultiPolygon"
+				]]
+			],
+			paint: {
+				"line-color": v,
+				"line-width": y,
+				"line-opacity": x
+			}
+		}]
+	};
+	if (T) {
+		let e = Array.isArray(T.steps) && T.steps.length ? T.steps : [[10, "#f1f075"], [50, "#f28cb1"]], t = [
+			"step",
+			["get", "point_count"],
+			T.color || S
+		], n = [
+			"step",
+			["get", "point_count"],
+			w * 3
+		];
+		e.forEach((e, i) => {
+			let a = Array.isArray(e) ? e[0] : e.threshold, o = Array.isArray(e) ? e[1] : e.color;
+			t.push(a, o), n.push(a, w * (4 + i * 1.5));
+		}), A.layers.push({
+			id: E,
+			type: "circle",
+			source: o,
+			filter: ["has", "point_count"],
+			paint: {
+				"circle-color": t,
+				"circle-radius": n,
+				"circle-opacity": (T.opacity == null ? .85 : T.opacity) * d,
+				"circle-stroke-color": v,
+				"circle-stroke-width": 1
+			}
+		}), A.layers.push({
+			id: D,
+			type: "symbol",
+			source: o,
+			filter: ["has", "point_count"],
+			layout: {
+				"text-field": ["get", "point_count_abbreviated"],
+				"text-font": T.font || ["Open Sans Regular", "Arial Unicode MS Regular"],
+				"text-size": T.textSize == null ? 12 : T.textSize,
+				"text-allow-overlap": !0
+			},
+			paint: { "text-color": T.textColor || "#222" }
+		}), A.layers.push({
+			id: O,
+			type: "circle",
+			source: o,
+			filter: ["!", ["has", "point_count"]],
+			paint: {
+				"circle-radius": w,
+				"circle-color": S,
+				"circle-opacity": C || x,
+				"circle-stroke-color": v,
+				"circle-stroke-width": Math.max(1, y - 1)
+			}
+		}), A._smk_onAdd = function(e) {
+			function t(t) {
+				let n = e.queryRenderedFeatures(t.point, { layers: [E] }), i = n && n[0];
+				if (!i) return;
+				let a = e.getSource(o);
+				!a || !a.getClusterExpansionZoom || a.getClusterExpansionZoom(i.properties.cluster_id).then((t) => {
+					e.easeTo({
+						center: i.geometry.coordinates,
+						zoom: t
+					});
+				}).catch(() => {});
+			}
+			return e.on("click", E, t), e.on("mouseenter", E, () => {
+				e.getCanvas().style.cursor = "pointer";
+			}), e.on("mouseleave", E, () => {
+				e.getCanvas().style.cursor = "";
+			}), function() {
+				e.off("click", E, t);
+			};
+		};
+	} else A.layers.push({
+		id: l,
+		type: "circle",
+		source: o,
+		filter: [
+			"in",
+			["geometry-type"],
+			["literal", ["Point", "MultiPoint"]]
+		],
+		paint: {
+			"circle-radius": w,
+			"circle-color": S,
+			"circle-opacity": C || x,
+			"circle-stroke-color": v,
+			"circle-stroke-width": Math.max(1, y - 1)
+		}
+	});
+	let j = i.heatmap === !0 ? {} : i.heatmap && typeof i.heatmap == "object" ? i.heatmap : null;
+	if (j) {
+		let e = o + "_heat", t = j.minZoom == null ? 0 : j.minZoom, n = j.maxZoom == null ? 15 : j.maxZoom, i = j.weight == null ? j.weightField ? [
+			"coalesce",
+			["to-number", ["get", j.weightField]],
+			0
+		] : 1 : j.weight, a = Array.isArray(j.colorRamp) && j.colorRamp.length ? j.colorRamp : [
+			[0, "rgba(33,102,172,0)"],
+			[.2, "rgb(103,169,207)"],
+			[.4, "rgb(209,229,240)"],
+			[.6, "rgb(253,219,199)"],
+			[.8, "rgb(239,138,98)"],
+			[1, "rgb(178,24,43)"]
+		], s = [
+			"interpolate",
+			["linear"],
+			["heatmap-density"]
+		];
+		a.forEach((e) => {
+			let t = Array.isArray(e) ? e[0] : e.t, n = Array.isArray(e) ? e[1] : e.color;
+			s.push(t, n);
+		});
+		function c(e, i, a) {
+			if (e == null) return [
+				"interpolate",
+				["linear"],
+				["zoom"],
+				t,
+				i,
+				n,
+				a
+			];
+			if (Array.isArray(e)) {
+				let t = [
+					"interpolate",
+					["linear"],
+					["zoom"]
+				];
+				return e.forEach((e) => {
+					t.push(e[0], e[1]);
+				}), t;
+			}
+			return e;
+		}
+		A.layers.push({
+			id: e,
+			type: "heatmap",
+			source: o,
+			filter: [
+				"in",
+				["geometry-type"],
+				["literal", ["Point", "MultiPoint"]]
+			],
+			maxzoom: n + (j.showPoints === !1 ? 24 : 1),
+			minzoom: t,
+			paint: {
+				"heatmap-weight": i,
+				"heatmap-intensity": c(j.intensity, 1, 3),
+				"heatmap-radius": c(j.radius, 8, 30),
+				"heatmap-color": s,
+				"heatmap-opacity": j.opacity == null ? [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					n - 1,
+					d,
+					n + 1,
+					0
+				] : j.opacity
+			}
+		});
+	}
 	if (p) {
 		let e = f.placement === "line" || f.placement === "line-center" ? f.placement : "point", t = {
 			id: u,
 			type: "symbol",
 			source: o,
+			...T ? { filter: ["!", ["has", "point_count"]] } : {},
 			minzoom: f.minZoom == null ? 0 : f.minZoom,
 			maxzoom: f.maxZoom == null ? 24 : f.maxZoom,
 			layout: {
@@ -40246,45 +40387,48 @@ VectorMapLibreLayer.create = function(e, t) {
 				"text-opacity": (f.opacity == null ? 1 : f.opacity) * d
 			}
 		};
-		T.layers.push(t);
+		A.layers.push(t);
 	}
-	let E = e[0];
-	E.loadLayer = function(e) {
-		let t = _(e), i = n.map && n.map.getSource && n.map.getSource(o);
-		i ? i.setData(t || EMPTY) : E.loadCache = t;
-	}, E.clearLayer = function() {
-		let e = n.map && n.map.getSource && n.map.getSource(o);
-		e && e.setData(EMPTY), E.loadCache = null;
-	};
-	function D(e) {
-		let t = _(e);
-		t && (T.source.data = t);
+	let M = e[0];
+	M.loadLayer = function(e) {
+		let t = _(e) || EMPTY;
+		A.source.data = t, M.loadCache = t;
 		let i = n.map && n.map.getSource && n.map.getSource(o);
-		return i && t && i.setData(t), T;
+		i && i.setData(t);
+	}, M.clearLayer = function() {
+		A.source.data = EMPTY, M.loadCache = null;
+		let e = n.map && n.map.getSource && n.map.getSource(o);
+		e && e.setData(EMPTY);
+	};
+	function N(e) {
+		let t = _(e);
+		t && (A.source.data = t);
+		let i = n.map && n.map.getSource && n.map.getSource(o);
+		return i && t && i.setData(t), A;
 	}
-	function O() {
-		if (E.loadCache) {
-			let e = E.loadCache;
-			E.loadCache = null, E.loadLayer(e);
+	function P() {
+		if (M.loadCache) {
+			let e = M.loadCache;
+			M.loadCache = null, M.loadLayer(e);
 		}
-		return T;
+		return A;
 	}
 	return (i.projection ? getProjection(i.projection) : Promise.resolve((e) => e)).then(function(e) {
 		function t(t) {
 			return i.projection && t ? reprojectGeoJSON(t, e) : t;
 		}
-		if (i.isInternal) return O();
+		if (i.isInternal) return P();
 		let a = i.dataUrl ? n.resolveAttachmentUrl(i.dataUrl, i.id, "json") : null;
-		if (!a) return O();
+		if (!a) return P();
 		if (a.startsWith("data:")) try {
-			return D(t(JSON.parse(decodeURIComponent(a.replace(/^data:application\/json,/, "")))));
+			return N(t(JSON.parse(decodeURIComponent(a.replace(/^data:application\/json,/, "")))));
 		} catch (e) {
-			return console.warn("vector maplibre layer \"" + i.id + "\" inline parse failed:", e), O();
+			return console.warn("vector maplibre layer \"" + i.id + "\" inline parse failed:", e), P();
 		}
 		return fetch(a).then((e) => {
 			if (!e.ok) throw Error("Failed requesting " + a + ": " + e.status);
 			return e.json();
-		}).then((e) => D(t(e))).catch((e) => (console.warn("vector maplibre layer \"" + i.id + "\" load failed:", e), O()));
+		}).then((e) => N(t(e))).catch((e) => (console.warn("vector maplibre layer \"" + i.id + "\" load failed:", e), P()));
 	});
 };
 //#endregion
