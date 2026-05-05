@@ -11,6 +11,8 @@
       "layerName": "WAA_TRAPLINE_AREAS_SVW",
       "styleName": "WAA_TRAPLINE_AREAS_SVW",
       "geometryAttribute": "GEOMETRY",
+      "titleAttribute": "FEATURE_AREA_SQM",
+      "titleFormat": "<%= (value * 100).toFixed(2) %>%",
       "attributes": [
         {
           "name": "FEATURE_AREA_SQM",

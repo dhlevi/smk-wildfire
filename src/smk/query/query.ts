@@ -22,7 +22,7 @@
  */
 
 import { SMKEvent }             from '../event'
-import { makePromise, resolved, asyncReduce } from '../util'
+import { makePromise, resolved, asyncReduce, featureTitle } from '../util'
 import { SMK } from '../smk-ref'
 
 // ---------------------------------------------------------------------------
@@ -401,9 +401,7 @@ export namespace Query {
                 .then( ( feats: any[] ) => {
                     if ( !feats?.length ) throw new Error( 'no results' )
                     return feats.map( ( f, i ) => {
-                        f.title = layerConfig.titleAttribute
-                            ? f.properties[ layerConfig.titleAttribute ]
-                            : `Feature #${ i + 1 }`
+                        f.title = featureTitle( layerConfig, f, `Feature #${ i + 1 }` )
                         return f
                     } )
                 } )
@@ -460,9 +458,7 @@ export namespace Query {
                 .then( ( d: any ) => {
                     if ( !d?.features?.length ) throw new Error( 'no features' )
                     return d.features.map( ( f: any, i: number ) => {
-                        f.title = layerConfig.titleAttribute
-                            ? f.properties[ layerConfig.titleAttribute ]
-                            : `Feature #${ i + 1 }`
+                        f.title = featureTitle( layerConfig, f, `Feature #${ i + 1 }` )
                         return f
                     } )
                 } )
@@ -529,9 +525,7 @@ export namespace Query {
                 .then( ( d: any ) => {
                     if ( !d?.features?.length ) throw new Error( 'no features' )
                     return d.features.map( ( f: any, i: number ) => {
-                        f.title = layerConfig.titleAttribute
-                            ? f.properties[ layerConfig.titleAttribute ]
-                            : `Feature #${ i + 1 }`
+                        f.title = featureTitle( layerConfig, f, `Feature #${ i + 1 }` )
                         return f
                     } )
                 } )
@@ -590,9 +584,7 @@ export namespace Query {
                 .then( ( d: any ) => {
                     if ( !d?.features?.length ) throw new Error( 'no features' )
                     return d.features.map( ( f: any, i: number ) => {
-                        f.title = layerConfig.titleAttribute
-                            ? f.properties[ layerConfig.titleAttribute ]
-                            : `Feature #${ i + 1 }`
+                        f.title = featureTitle( layerConfig, f, `Feature #${ i + 1 }` )
                         return f
                     } )
                 } )

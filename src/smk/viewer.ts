@@ -26,6 +26,7 @@ import {
     getMetersPerUnit,
     findNearestSite,
     makeMutex,
+    featureTitle,
 } from './util'
 import type { Layer }    from './layer/layer'
 import { SMK } from './smk-ref'
@@ -706,7 +707,10 @@ export class Viewer {
                     .then( ( features: any[] ) => {
                         if ( !lock.held() ) throw IdentifyDiscardedError()
                         features.forEach( ( f, i ) => {
-                            if ( ly.config.titleAttribute ) {
+                            if ( ly.config.titleFormat ) {
+                                f.title = featureTitle( ly.config, f, `Feature #${ i + 1 }` )
+                            }
+                            else if ( ly.config.titleAttribute ) {
                                 const m = ly.config.titleAttribute.match( /^(.+?)(:[/](.+)[/])?$/ )
                                 if ( m ) {
                                     f.title = m[ 2 ]

@@ -17,6 +17,7 @@ Click on a property name for more information:
     <a href="#metadataurl-property"         >"metadataUrl"</a>:         null,
     <a href="#popuptemplate-property"       >"popupTemplate"</a>:       null,
     <a href="#titleattribute-property"      >"titleAttribute"</a>:      null,
+    <a href="#titleformat-property"         >"titleFormat"</a>:         null,
     <a href="#attributes-property"          >"attributes"</a>:          null,
     <a href="#queries-property"             >"queries"</a>:             null,
     <a href="#version-property"             >"version"</a>:             '1.1.1',

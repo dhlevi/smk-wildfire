@@ -19,7 +19,7 @@
  */
 
 import { Layer }                                    from './layer'
-import { makePromise, resolved, getProjection, reprojectGeoJSON } from '../util'
+import { makePromise, resolved, getProjection, reprojectGeoJSON, featureTitle } from '../util'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -308,9 +308,7 @@ class WmsLayer extends Layer {
             .then( ( d: any ) => {
                 if ( !d?.features?.length ) throw new Error( 'no features' )
                 return d.features.map( ( f: any, i: number ) => {
-                    f.title = cfg.titleAttribute
-                        ? f.properties[ cfg.titleAttribute ]
-                        : `Feature #${ i + 1 }`
+                    f.title = featureTitle( cfg, f, `Feature #${ i + 1 }` )
                     return f
                 } )
             } )

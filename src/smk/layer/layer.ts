@@ -43,6 +43,7 @@ export interface LayerConfig {
     minScale?:    number
     maxScale?:    number
     titleAttribute?: string
+    titleFormat?:    string
     popupTemplate?:  string
     queries?:        any[]
     tolerance?:      number

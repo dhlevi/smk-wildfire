@@ -149,6 +149,54 @@ export function templateReplace(
 }
 
 // ---------------------------------------------------------------------------
+// Feature title resolution — used by Identify list, query results, etc.
+// Honours
+//   cfg.titleFormat — template string with `<%= expr %>` tokens evaluated
+//        with `feature`, `properties`, and `value` (the raw titleAttribute
+//        value) in scope.  Bare attribute names (e.g. `<%= NAME %>`) are
+//        looked up directly on the feature properties as a fast path.
+//   cfg.titleAttribute — feature.properties[ titleAttribute ].
+//   fallback is standard identify fallback to feature #
+// ---------------------------------------------------------------------------
+
+const titleFormatCache: Record<string, ( feature: any, properties: any, value: any ) => any> = {}
+
+export function featureTitle(
+    cfg:      { titleAttribute?: string, titleFormat?: string } | null | undefined,
+    feature:  any,
+    fallback: string
+): string {
+    const properties = ( feature && feature.properties ) || {}
+    const rawValue   = cfg && cfg.titleAttribute ? properties[ cfg.titleAttribute ] : undefined
+
+    if ( cfg && cfg.titleFormat ) {
+        try {
+            return templateReplace( cfg.titleFormat, function ( token ) {
+                if ( token in properties ) return properties[ token ]
+                let fn = titleFormatCache[ token ]
+                if ( !fn ) {
+                    try {
+                        // eslint-disable-next-line no-new-func
+                        fn = new Function( 'feature', 'properties', 'value', 'return (' + token + ')' ) as any
+                        titleFormatCache[ token ] = fn
+                    }
+                    catch { return null }
+                }
+                try {
+                    const r = fn( feature, properties, rawValue )
+                    return r == null ? '' : String( r )
+                }
+                catch { return null }
+            } )
+        }
+        catch { /* fall through to titleAttribute / fallback */ }
+    }
+
+    if ( cfg && cfg.titleAttribute ) return rawValue
+    return fallback
+}
+
+// ---------------------------------------------------------------------------
 // Deep equality
 // ---------------------------------------------------------------------------
 
