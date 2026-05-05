@@ -100,6 +100,88 @@ These are the possible values:
 - `"DarkGray"`
 - `"Gray"`
 - `"StamenTonerLight"`
+- `"bc-roads"`         — *MapLibre + Leaflet.* BC BaseMap (vector tiles, public, no token).
+- `"bc-roads-raster"`  — Raster fallback for the BC BaseMap.
+- `"topography"`       — Canada Topographic vector + hillshade composite.
+- `"openstreetmap"`    — OpenStreetMap raster.
+- `"esri-imagery"`     — Public ESRI World Imagery (raster).
+
+Additional ESRI v2 vector basemaps (`imagery-esri-v2`, `streets-esri-v2`) are
+registered but require an ESRI API token; see
+[`src/smk/base-maps.ts`](https://github.com/bcgov/smk-wildfire/blob/master/src/smk/base-maps.ts).
+
+### Adding a custom basemap
+
+Basemaps are registered in code via `defineBaseMap( id, cfg )` in
+[`src/smk/base-maps.ts`](https://github.com/bcgov/smk-wildfire/blob/master/src/smk/base-maps.ts).
+The `cfg.type` selects the basemap implementation.  The MapLibre viewer
+adds three vector-capable types in addition to the legacy raster types:
+
+#### `"esri-vector-tile"` — ESRI VectorTileServer
+
+For vector tile services published by ArcGIS Server / ArcGIS Online.  The
+style is auto-discovered at `<url>/resources/styles/root.json` (override
+with `styleUrl`) and the source URL is rewritten to the explicit
+`<url>/tile/{z}/{y}/{x}.pbf` form.
+
+```js
+defineBaseMap( 'bc-roads', {
+    type:  'esri-vector-tile',
+    title: 'BC BaseMap Vector',
+    url:   'https://tiles.arcgis.com/tiles/ubm4tcTYICKBpist/arcgis/rest/services/BC_BASEMAP_20240307/VectorTileServer',
+    // optional:
+    styleUrl:        '...root.json',          // override the default style URL
+    transformLayers: ( layers ) => layers,    // mutate / filter MapLibre layers
+} )
+```
+
+Under Leaflet this falls back to `esri-leaflet-vector` (which requires
+`L.esri.Vector.vectorTileLayer`).
+
+#### `"maplibre-style"` — Remote MapLibre style.json
+
+Loads any standards-compliant MapLibre / Mapbox `style.json`, namespaces
+its sources and layers under the basemap id (so they cannot collide with
+viewer layers), and resolves relative `glyphs` / `sprite` / `tiles` URLs.
+
+```js
+defineBaseMap( 'my-vector', {
+    type:        'maplibre-style',
+    title:       'My Vector Style',
+    url:         'https://tiles.example.com/styles/my-style/style.json',
+    attribution: '© Example',
+    // transformLayers: layers => layers.filter( l => l.id !== 'highway-shields' )
+} )
+```
+
+MapLibre only — under Leaflet the basemap registers but renders as blank
+in the basemap chooser preview.
+
+#### `"vector-tile"` — Direct MVT source with inline style
+
+For a single MVT endpoint where you want to author the MapLibre layers
+inline rather than load a `style.json`.
+
+```js
+defineBaseMap( 'my-mvt', {
+    type:  'vector-tile',
+    title: 'My MVT',
+    tiles: [ 'https://tiles.example.com/v1/{z}/{x}/{y}.pbf' ],
+    // or: tileJsonUrl: 'https://tiles.example.com/v1.json'
+    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+    layers: [
+        { id: 'land',  type: 'fill', 'source-layer': 'land',  paint: { 'fill-color': '#eee' } },
+        { id: 'roads', type: 'line', 'source-layer': 'roads', paint: { 'line-color': '#888' } }
+    ],
+    option: { minzoom: 0, maxzoom: 14 }
+} )
+```
+
+MapLibre only.
+
+All three vector basemap types load asynchronously.  Switching basemaps
+before the previous load completes is safe — in-flight loads that are
+superseded are discarded automatically.
 
 
 ## ActiveTool Property

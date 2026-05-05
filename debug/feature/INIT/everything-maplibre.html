@@ -53,7 +53,7 @@
             SMK.INIT( {
                 containerSel: '#smk-map-frame',
                 config: [
-                    { viewer: { type: 'maplibre', themes: [ 'modern' ] } },
+                    { viewer: { type: 'maplibre', themes: [ 'modern' ], baseMap: 'bc-roads' } },
                     // Dynamic vector layer driven by the registered provider above
                     { layers: [
                         {

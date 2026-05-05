@@ -21,6 +21,8 @@ Click on a property name for more information:
     <a href="#queries-property"             >"queries"</a>:             null,
     <a href="#useclustering-property"       >"useClustering"</a>:       false,
     <a href="#useheatmap-property"          >"useHeatmap"</a>:          false,
+    <a href="#cluster-property"             >"cluster"</a>:             null,
+    <a href="#heatmap-property"             >"heatmap"</a>:             null,
     <a href="#style-property"               >"style"</a>:               null,
     <a href="#label-property"               >"label"</a>:               null,
     <a href="#dataUrl-property"             >"dataUrl"</a>:             null
@@ -56,6 +58,90 @@ The default is `false`.
 If `true`, the layer should use heatmap clustering.
 Only relevant for point geometry layers.
 The default is `false`.
+
+
+## Cluster Property
+`"cluster": Boolean | Object`
+
+*MapLibre viewer only.*  Aggregate overlapping points into clickable
+cluster bubbles.  Clicking a cluster eases the map to its expansion zoom.
+Only Point / MultiPoint geometry is clustered; polygons and lines pass
+through unchanged.
+
+Shorthand: `"cluster": true` enables clustering with sensible defaults.
+
+Object form supports:
+
+| Property    | Type      | Description |
+|-------------|-----------|-------------|
+| `radius`    | `Number`  | Cluster pixel radius. Defaults to `50`. |
+| `maxZoom`   | `Number`  | Maximum zoom at which features cluster. Defaults to `14`. |
+| `minPoints` | `Number`  | Minimum points to form a cluster. |
+| `color`     | `String`  | Default cluster bubble fill colour. |
+| `textColor` | `String`  | Cluster count text colour. Defaults to `#222`. |
+| `textSize`  | `Number`  | Cluster count font size in pixels. Defaults to `12`. |
+| `font`      | `Array`   | Ordered list of font names (must exist in the basemap glyphs). |
+| `opacity`   | `Number`  | Cluster bubble opacity, `0` – `1`. Defaults to `0.85`. |
+| `steps`     | `Array`   | `[ [count, color], ... ]` thresholds — bubble colour and radius are stepped at each `count`. |
+
+Example:
+
+```json
+{
+    "type": "vector",
+    "id":   "bc-fires",
+    "dataProvider": "bc-out-of-control-fires",
+    "cluster": {
+        "radius":    40,
+        "maxZoom":   10,
+        "color":     "#b00020",
+        "textColor": "#fff",
+        "steps":  [ [ 5, "#ffb199" ], [ 20, "#ff5252" ], [ 50, "#b00020" ] ]
+    }
+}
+```
+
+
+## Heatmap Property
+`"heatmap": Boolean | Object`
+
+*MapLibre viewer only.*  Render the layer as a density heatmap.  Only
+Point / MultiPoint geometry contributes to the heatmap; other geometry
+is still drawn by the normal style.
+
+Shorthand: `"heatmap": true` enables the heatmap with sensible defaults.
+
+Object form supports:
+
+| Property      | Type                | Description |
+|---------------|---------------------|-------------|
+| `weight`      | `Number` \| Expr.   | Per-feature weight. Defaults to `1`. |
+| `weightField` | `String`            | Convenience: use this feature property as the weight (coerced to number, missing → `0`). |
+| `intensity`   | `Number` \| Stops   | Heatmap intensity. Stops form: `[ [zoom, value], ... ]`. Defaults to `1` → `3`. |
+| `radius`      | `Number` \| Stops   | Pixel radius. Stops form: `[ [zoom, value], ... ]`. Defaults to `8` → `30`. |
+| `opacity`     | `Number` \| Stops   | Heatmap opacity. Defaults to a fade-out near `maxZoom`. |
+| `colorRamp`   | `Array`             | `[ [t, color], ... ]` palette for `heatmap-density`, `t` in `0`–`1`. Defaults to MapLibre's blue→red ramp. |
+| `minZoom`     | `Number`            | Heatmap appears at this zoom and above. Defaults to `0`. |
+| `maxZoom`     | `Number`            | Heatmap fades out beyond this zoom. Defaults to `15`. |
+| `showPoints`  | `Boolean`           | If `true` (default), the underlying points are also drawn above `maxZoom`. |
+
+Cluster and heatmap are independent and may be used together.
+
+Example:
+
+```json
+{
+    "type": "vector",
+    "id":   "bc-fires-heatmap",
+    "dataProvider": "bc-out-of-control-fires",
+    "heatmap": {
+        "maxZoom":   9,
+        "radius":    [ [ 0, 4 ], [ 6, 18 ], [ 9, 36 ] ],
+        "intensity": [ [ 0, 0.6 ], [ 9, 2.5 ] ],
+        "showPoints": true
+    }
+}
+```
 
 
 ## Style Property

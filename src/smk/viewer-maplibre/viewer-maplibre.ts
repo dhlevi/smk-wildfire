@@ -64,6 +64,7 @@ ViewerMapLibre.prototype.initialize = function ( smk: any ) {
     this.deadViewerLayer  = {}
     this.basemapSourceIds = []      // tracks current basemap source ids
     this.basemapLayerIds  = []      // tracks current basemap layer ids
+    this.basemapTracker     = 0       // increments each setBasemap; async builders ignore stale results
     this.viewerLayers     = {}      // id -> spec
     this.acetate          = {}
     this.mode             = '2d'    // '2d' | '3d'
@@ -231,6 +232,12 @@ ViewerMapLibre.prototype.initializeBasemaps = function (
         return []
     } )
 
+    // Vector-only basemap types — no Leaflet equivalent for the thumbnail
+    // mini-map; return [] so the basemap is registered but the preview is
+    // simply blank in the baseMaps tool.
+    defineBaseMapType( 'vector-tile',     function () { return [] } )
+    defineBaseMapType( 'maplibre-style',  function () { return [] } )
+
     Viewer.prototype.initializeBasemaps.call( this, defineBaseMap, defineBaseMapType, viewerCfg )
 }
 
@@ -238,11 +245,11 @@ ViewerMapLibre.prototype.initializeBasemaps = function (
 // MapLibre style spec builders used by setBasemap()
 // ---------------------------------------------------------------------------
 
-export function basemapSpecForConfig( cfg: any ): MapLibreBasemapSpec[] {
+export function basemapSpecForConfig( cfg: any ): MapLibreBasemapSpec[] | Promise<MapLibreBasemapSpec[]> {
     return specForConfig( cfg )
 }
 
-function specForConfig( cfg: any ): MapLibreBasemapSpec[] {
+function specForConfig( cfg: any, _map?: any ): MapLibreBasemapSpec[] | Promise<MapLibreBasemapSpec[]> {
     switch ( cfg.type ) {
         case 'tile':
             return [ rasterSpec( cfg.id, [ resolveTileUrl( cfg.url ) ], cfg ) ]
@@ -262,8 +269,29 @@ function specForConfig( cfg: any ): MapLibreBasemapSpec[] {
             return [ rasterSpec( cfg.id, [ tileUrl ], cfg ) ]
         }
 
-        case 'esri-vector-basemap':
+        // Direct vector tile source — provide either `tiles: [ '...{z}/{x}/{y}.pbf' ]`
+        // or `url: '...{z}/{x}/{y}.pbf'`, plus the `layers` array of
+        // MapLibre style layers (each must reference the source by its
+        // generated id, e.g. `'smk-bm-' + cfg.id`).
+        case 'vector-tile':
+            return [ vectorTileSpec( cfg ) ]
+
+        // Full MapLibre / Mapbox style.json — fetched, parsed, and merged
+        // (sources + layers + glyphs + sprite) into the running map.
+        // Config: { id, type:'maplibre-style', url, transformLayers? (fn) }
+        case 'maplibre-style':
+            return loadStyleSpec( cfg )
+
+        // ESRI vector tile service — points at the VectorTileServer root,
+        // e.g. https://.../arcgis/rest/services/.../VectorTileServer
+        // We discover the style at /resources/styles/root.json (override
+        // with cfg.styleUrl) and reuse the maplibre-style plumbing, with
+        // ESRI-specific URL fix-ups so source/glyphs/sprite resolve and
+        // the TileJSON-ish source root returns JSON (`?f=json`).
         case 'esri-vector-tile':
+            return loadEsriVectorTileSpec( cfg )
+
+        case 'esri-vector-basemap':
         case 'esri-static-basemap-tile':
             console.warn( 'maplibre viewer: basemap type "' + cfg.type + '" (' + cfg.id + ') not yet supported' )
             return []
@@ -275,9 +303,13 @@ function specForConfig( cfg: any ): MapLibreBasemapSpec[] {
 }
 
 interface MapLibreBasemapSpec {
-    sourceId: string
-    source:   any
-    layer:    any
+    sourceId?: string
+    source?:   any
+    sources?:  Record<string, any>
+    layer?:    any
+    layers?:   any[]
+    glyphs?:   string
+    sprite?:   string
 }
 
 function rasterSpec( id: string, tiles: string[], cfg: any ): MapLibreBasemapSpec {
@@ -299,8 +331,149 @@ function rasterSpec( id: string, tiles: string[], cfg: any ): MapLibreBasemapSpe
     }
 }
 
+// vector-tile: synchronous; caller supplies a `layers` array with style for
+// each `source-layer` they want to render (matching Mapbox/MapLibre layer
+// spec). Source id defaults to `smk-bm-<id>`; if your layers use a different
+// `source` name, set `cfg.sourceId`.
+function vectorTileSpec( cfg: any ): MapLibreBasemapSpec {
+    const sourceId = cfg.sourceId || ( 'smk-bm-' + cfg.id )
+    const opt      = cfg.option || {}
+    const tiles: string[] = Array.isArray( cfg.tiles )
+        ? cfg.tiles.map( resolveTileUrl )
+        : ( cfg.url ? [ resolveTileUrl( cfg.url ) ] : [] )
+
+    const source: any = { type: 'vector', attribution: cfg.attribution || '' }
+    if ( cfg.tileJsonUrl ) source.url = cfg.tileJsonUrl       // TileJSON discovery
+    else                   source.tiles = tiles
+    if ( opt.minzoom != null ) source.minzoom = opt.minzoom
+    if ( opt.maxzoom != null ) source.maxzoom = opt.maxzoom
+    if ( cfg.scheme )          source.scheme  = cfg.scheme    // 'tms' for y-flipped
+
+    // Auto-bind each style layer to our source id unless caller specified one.
+    const layers = ( cfg.layers || [] ).map( ( ly: any ) => Object.assign(
+        { source: sourceId }, ly,
+        ly.id ? null : { id: 'smk-bm-' + cfg.id + '-' + Math.random().toString( 36 ).slice( 2, 7 ) },
+    ) )
+
+    return {
+        sourceId,
+        source,
+        layers,
+        glyphs: cfg.glyphs,
+        sprite: cfg.sprite,
+    }
+}
+
+// maplibre-style: fetch and merge a remote style.json. Sources are namespaced
+// with our basemap id so they can't collide with viewer layer source ids.
+function loadStyleSpec( cfg: any ): Promise<MapLibreBasemapSpec[]> {
+    if ( !cfg.url ) return Promise.resolve( [] )
+    return fetch( cfg.url, { credentials: 'omit' } )
+        .then( ( r ) => {
+            if ( !r.ok ) throw new Error( 'style.json fetch ' + r.status + ' ' + cfg.url )
+            return r.json()
+        } )
+        .then( ( style: any ) => {
+            const prefix    = 'smk-bm-' + cfg.id + '__'
+            const sources: Record<string, any> = {}
+            const sourceMap: Record<string, string> = {}
+            Object.keys( style.sources || {} ).forEach( ( sid: string ) => {
+                const newId = prefix + sid
+                sources[ newId ] = resolveStyleUrls( style.sources[ sid ], cfg.url )
+                sourceMap[ sid ] = newId
+            } )
+
+            let layers = ( style.layers || [] )
+                .filter( ( ly: any ) => ly.type !== 'background' )
+                .map( ( ly: any ) => {
+                    const out = Object.assign( {}, ly, { id: prefix + ly.id } )
+                    if ( ly.source && sourceMap[ ly.source ] ) out.source = sourceMap[ ly.source ]
+                    return out
+                } )
+            if ( typeof cfg.transformLayers === 'function' ) {
+                try { layers = cfg.transformLayers( layers ) || layers }
+                catch ( e ) { console.warn( 'maplibre viewer: transformLayers failed', e ) }
+            }
+
+            return [ {
+                sources,
+                layers,
+                glyphs: style.glyphs ? resolveStyleUrl( style.glyphs, cfg.url ) : undefined,
+                sprite: style.sprite ? resolveStyleUrl( style.sprite, cfg.url ) : undefined,
+            } as MapLibreBasemapSpec ]
+        } )
+}
+
+// esri-vector-tile: discover the style at <root>/resources/styles/root.json
+// (override with cfg.styleUrl), then reuse the maplibre-style merge logic.
+// ESRI vector sources have `url: "../../"` (the VectorTileServer root); we
+// rewrite each vector source to explicit `tiles` because MapLibre's TileJSON
+// discovery doesn't understand ESRI's VectorTileServer JSON response shape.
+function loadEsriVectorTileSpec( cfg: any ): Promise<MapLibreBasemapSpec[]> {
+    if ( !cfg.url ) return Promise.resolve( [] )
+    const root     = cfg.url.replace( /\/+$/, '' )
+    const styleUrl = cfg.styleUrl || ( root + '/resources/styles/root.json' )
+    return fetch( styleUrl, { credentials: 'omit' } )
+        .then( ( r ) => {
+            if ( !r.ok ) throw new Error( 'esri vector style fetch ' + r.status + ' ' + styleUrl )
+            return r.json()
+        } )
+        .then( ( style: any ) => {
+            const prefix    = 'smk-bm-' + cfg.id + '__'
+            const sources: Record<string, any> = {}
+            const sourceMap: Record<string, string> = {}
+            Object.keys( style.sources || {} ).forEach( ( sid: string ) => {
+                const newId = prefix + sid
+                const src   = Object.assign( {}, style.sources[ sid ] )
+                if ( src.type === 'vector' ) {
+                    // Force explicit tile URL — bypasses ESRI's non-TileJSON root.
+                    src.tiles = [ root + '/tile/{z}/{y}/{x}.pbf' ]
+                    delete src.url
+                    if ( cfg.attribution && !src.attribution ) src.attribution = cfg.attribution
+                    if ( src.minzoom == null ) src.minzoom = 0
+                    if ( src.maxzoom == null ) src.maxzoom = 22
+                }
+                else {
+                    Object.assign( src, resolveStyleUrls( src, styleUrl ) )
+                }
+                sources[ newId ] = src
+                sourceMap[ sid ] = newId
+            } )
+
+            let layers = ( style.layers || [] )
+                .filter( ( ly: any ) => ly.type !== 'background' )
+                .map( ( ly: any ) => {
+                    const out = Object.assign( {}, ly, { id: prefix + ly.id } )
+                    if ( ly.source && sourceMap[ ly.source ] ) out.source = sourceMap[ ly.source ]
+                    return out
+                } )
+            if ( typeof cfg.transformLayers === 'function' ) {
+                try { layers = cfg.transformLayers( layers ) || layers }
+                catch ( e ) { console.warn( 'maplibre viewer: transformLayers failed', e ) }
+            }
+
+            return [ {
+                sources,
+                layers,
+                glyphs: style.glyphs ? resolveStyleUrl( style.glyphs, styleUrl ) : undefined,
+                sprite: style.sprite ? resolveStyleUrl( style.sprite, styleUrl ) : undefined,
+            } as MapLibreBasemapSpec ]
+        } )
+}
+
+function resolveStyleUrl( u: string, baseUrl: string ): string {
+    try { return new URL( u, baseUrl ).toString() } catch { return u }
+}
+
+function resolveStyleUrls( source: any, baseUrl: string ): any {
+    const out = Object.assign( {}, source )
+    if ( typeof out.url === 'string' )  out.url = resolveStyleUrl( out.url, baseUrl )
+    if ( Array.isArray( out.tiles ) )   out.tiles = out.tiles.map( ( t: string ) => resolveStyleUrl( t, baseUrl ) )
+    return out
+}
+
 function resolveTileUrl( url: string ): string {
-    // Esri's `{s}.arcgisonline.com` subdomain rotation has been retired —
+    // Esri's `{s}.arcgisonline.com` subdomain rotation has been retired
     // collapse to the canonical `server.arcgisonline.com` host.  Other `{s}`
     // patterns fall back to a single subdomain ("a").
     let out = url.replace( /\{s\}\.arcgisonline\.com/g, 'server.arcgisonline.com' )
@@ -324,6 +497,10 @@ function lookupEsriBasemapUrl( key: string ): string | null {
 ViewerMapLibre.prototype.setBasemap = function ( basemapId: string ) {
     const self = this
 
+    // Bump token; any in-flight async spec build will be ignored once a newer
+    // setBasemap() supersedes it.
+    const token = ++this.basemapTracker
+
     this.basemapLayerIds.forEach( ( lid: string ) => {
         if ( self.map.getLayer( lid ) ) self.map.removeLayer( lid )
     } )
@@ -333,30 +510,58 @@ ViewerMapLibre.prototype.setBasemap = function ( basemapId: string ) {
     this.basemapLayerIds  = []
     this.basemapSourceIds = []
 
-    // NOTE: do NOT use this.createBasemapLayer() here — that returns Leaflet
+    // Reset glyphs/sprite to the empty-style defaults whenever we switch
+    // basemaps (a previous maplibre-style basemap may have set them).
+    try {
+        if ( typeof self.map.setSprite === 'function' ) self.map.setSprite( null )
+        if ( typeof self.map.setGlyphs === 'function' )
+            self.map.setGlyphs( EMPTY_STYLE.glyphs )
+    } catch { /* ignore — older versions */ }
+
+    // NOTE: do NOT use this.createBasemapLayer() here. That returns Leaflet
     // layers (registered for the baseMaps tool's thumbnail mini-maps).  We
     // build MapLibre style fragments from the stored config instead.
-    const cfg   = this.getBasemapConfig( basemapId )
-    const specs = specForConfig( cfg )
+    const cfg     = this.getBasemapConfig( basemapId )
+    const builder = specForConfig( cfg, self.map )
 
-    if ( !specs || specs.length === 0 ) {
-        console.warn( 'maplibre viewer: no basemap spec produced for "' + basemapId + '"' )
-        this.changedBaseMap( { baseMap: basemapId } )
-        return
-    }
-
-    // Insert basemap layers at the bottom (before the first existing layer).
-    const firstId = self.map.getStyle()?.layers?.[ 0 ]?.id
-    specs.forEach( ( spec: any ) => {
-        if ( !self.map.getSource( spec.sourceId ) ) {
-            self.map.addSource( spec.sourceId, spec.source )
+    Promise.resolve( builder ).then( ( specs: MapLibreBasemapSpec[] ) => {
+        if ( token !== self.basemapTracker ) return         // superseded
+        if ( !specs || specs.length === 0 ) {
+            console.warn( 'maplibre viewer: no basemap spec produced for "' + basemapId + '"' )
+            self.changedBaseMap( { baseMap: basemapId } )
+            return
         }
-        self.map.addLayer( spec.layer, firstId )
-        self.basemapSourceIds.push( spec.sourceId )
-        self.basemapLayerIds.push( spec.layer.id )
-    } )
 
-    this.changedBaseMap( { baseMap: basemapId } )
+        // Insert basemap layers at the bottom (before the first existing layer).
+        const firstId = self.map.getStyle()?.layers?.[ 0 ]?.id
+        specs.forEach( ( spec: any ) => {
+            // Optional style-level resources for vector basemaps
+            if ( spec.glyphs && typeof self.map.setGlyphs === 'function' ) {
+                try { self.map.setGlyphs( spec.glyphs ) } catch { /* ignore */ }
+            }
+            if ( spec.sprite && typeof self.map.setSprite === 'function' ) {
+                try { self.map.setSprite( spec.sprite ) } catch { /* ignore */ }
+            }
+            const sources = spec.sources
+                ? Object.entries( spec.sources )
+                : ( spec.sourceId && spec.source ? [ [ spec.sourceId, spec.source ] ] : [] )
+            sources.forEach( ( [ sid, src ]: any ) => {
+                if ( !self.map.getSource( sid ) ) self.map.addSource( sid, src )
+                self.basemapSourceIds.push( sid )
+            } )
+            const layers = spec.layers || ( spec.layer ? [ spec.layer ] : [] )
+            layers.forEach( ( ly: any ) => {
+                if ( !self.map.getLayer( ly.id ) ) self.map.addLayer( ly, firstId )
+                self.basemapLayerIds.push( ly.id )
+            } )
+        } )
+
+        self.changedBaseMap( { baseMap: basemapId } )
+    } ).catch( ( e: any ) => {
+        if ( token !== self.basemapTracker ) return
+        console.warn( 'maplibre viewer: basemap "' + basemapId + '" failed to load:', e )
+        self.changedBaseMap( { baseMap: basemapId } )
+    } )
 }
 
 ViewerMapLibre.prototype.setView = function ( opt: any ) {

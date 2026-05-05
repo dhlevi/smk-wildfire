@@ -35,6 +35,7 @@ export default defineConfig( {
             formats: [ 'es', 'umd' ],
         },
         outDir: 'dist',
+        minify: 'terser',
         // During transition: Grunt also writes dist/smk.js; keep emptyOutDir off to keep
         // original smk.js in place  (should be functionally the same as the new versions)
         emptyOutDir: false,

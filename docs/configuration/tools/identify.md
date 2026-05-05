@@ -30,9 +30,21 @@ This is default configuration for the Identify tool (click on a property name fo
     <a href="#attributemode-property"  >"attributeMode"</a>:  "default",
     <a href="#radius-property"         >"radius"</a>:         5,
     <a href="#radiusunit-property"     >"radiusUnit"</a>:     "px",
+    <a href="#autoidentify-property"   >"autoIdentify"</a>:   false,
     <a href="#internallayers-property" >"internalLayers"</a>: [ ... ]
 } ] }
 </pre>
+
+## AutoIdentify Property
+`"autoIdentify": Boolean`
+
+*Leaflet and MapLibre viewers only.*  When `true`, a single click on the
+map runs Identify regardless of which tool is currently active — there is
+no need to first select the Identify tool.  Pans and drags do not
+trigger Identify.  Defaults to `false`.
+
+The handler runs at a lower priority than the location, directions, and
+search picks, so those tools still take precedence when active.
 
 {% include_relative include/type-property.md %}
 {% include_relative include/title-property.md %}
