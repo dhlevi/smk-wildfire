@@ -40,11 +40,17 @@ const factory = Tool.define( 'IdentifyListTool',
         this.defineProp( 'command' )
         this.defineProp( 'radius' )
         this.defineProp( 'radiusUnit' )
+        // When true (and the viewer is leaflet/maplibre, need to fix esri3d handler)
+        // tun identify on mouse click without requiring the identify tool to be active
+        // even if the identify tool isn't the active tool. Other
+        // consumers (location, directions, etc.) are bypassed.
+        this.defineProp( 'autoIdentify' )
 
-        this.tool       = {}
-        this.command    = { select: true, radius: false, radiusUnit: false, nearBy: true }
-        this.radius     = 5
-        this.radiusUnit = 'px'
+        this.tool         = {}
+        this.command      = { select: true, radius: false, radiusUnit: false, nearBy: true }
+        this.radius       = 5
+        this.radiusUnit   = 'px'
+        this.autoIdentify = false
 
         // Internal layers required by ToolFeatureList (highlight) and identify (search area etc.)
         this.internalLayers.push(
@@ -210,6 +216,19 @@ const factory = Tool.define( 'IdentifyListTool',
         }
 
         // --- pick handlers ----------------------------------------------------
+
+        // Top-priority handler — only active when `autoIdentify` is enabled
+        // on a 2D viewer (leaflet / maplibre). Leaflet's `click` and
+        // MapLibre's `click` events already discriminate against drags, so
+        // a pan won't reach pickedLocation in the first place.
+        smk.$viewer.handlePick( 4, function ( location: any ) {
+            if ( !self.autoIdentify ) return
+            const vt = smk.$viewer.type
+            if ( vt !== 'leaflet' && vt !== 'maplibre' ) return
+            self.active = true
+            return self.startIdentify( location )
+                .then( function () { return true }, function () { return true } )
+        } )
 
         // fallback handler if nothing else uses pick
         smk.$viewer.handlePick( 0, function ( location: any ) {

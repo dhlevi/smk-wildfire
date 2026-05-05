@@ -8,7 +8,7 @@ import { SMK } from '../../../smk-ref'
 
 const smkRef = SMK
 
-// Patches DirectionsWaypointsTool (not DirectionsTool — that name never existed;
+// Patches DirectionsWaypointsTool (not DirectionsTool (that name never existed?)
 // Leaflet equivalent uses DirectionsWaypointsTool.addInitializer)
 smkRef.TYPE.DirectionsWaypointsTool.addInitializer( function ( this: any, smk: any ) {
     if ( !smk.$viewer.view ) return   // not an esri3d viewer

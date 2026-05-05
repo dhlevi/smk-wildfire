@@ -23,10 +23,80 @@
     <body>
         <div id="smk-map-frame"></div>
         <script>
+            // ----------------------------------------------------------------
+            // Dynamic data provider example
+            //
+            // Registers an in-memory data source for vector layers.  The
+            // provider is invoked when the layer is created — it can return
+            // GeoJSON, a Promise<GeoJSON>, or a `( push ) => unsubscribe`
+            // function for live updates.
+            //
+            // Below: one-shot fetch + a 60s auto-refresh subscription.
+            // ----------------------------------------------------------------
+            SMK.dataProviders.register( 'bc-out-of-control-fires', function () {
+                var URL = 'https://wildfiresituation.nrs.gov.bc.ca/wfnews-api/publicPublishedIncident/features?stageOfControl=OUT_CNTRL'
+
+                function load() {
+                    return fetch( URL ).then( function ( r ) { return r.json() } )
+                }
+
+                // Subscriber form: push initial + refresh every 60s.
+                return function ( push ) {
+                    load().then( push ).catch( function ( e ) { console.warn( 'fires load failed', e ) } )
+                    var timer = setInterval( function () {
+                        load().then( push ).catch( function () { /* ignore */ } )
+                    }, 60000 )
+                    return function () { clearInterval( timer ) }   // unsubscribe
+                }
+            } )
+
             SMK.INIT( {
                 containerSel: '#smk-map-frame',
                 config: [
                     { viewer: { type: 'maplibre', themes: [ 'modern' ] } },
+                    // Dynamic vector layer driven by the registered provider above
+                    { layers: [
+                        {
+                            type: 'vector',
+                            id:   'bc-fires-out-of-control',
+                            title: 'BC Fires (Out of Control) — live',
+                            isVisible: true,
+                            dataProvider: 'bc-out-of-control-fires',
+                            style: {
+                                strokeColor: '#b00020',
+                                fillColor:   '#ff5252',
+                                fillOpacity: 0.8,
+                                strokeWidth: 1,
+                                radius:      7
+                            },
+                            label: { field: 'incident_name', color: '#222', haloColor: '#fff', size: 11, offset: [ 0, 1.2 ] },
+                            cluster: {
+                                radius:    40,
+                                maxZoom:   10,
+                                color:     '#b00020',
+                                textColor: '#fff',
+                                steps: [
+                                    [ 5,   '#ffb199' ],
+                                    [ 20,  '#ff5252' ],
+                                    [ 50,  '#b00020' ]
+                                ]
+                            }
+                        },
+                        {
+                            type: 'vector',
+                            id:   'bc-fires-heatmap',
+                            title: 'BC Fires (Out of Control) — heatmap',
+                            isVisible: false,
+                            dataProvider: 'bc-out-of-control-fires',
+                            style: { fillColor: '#b00020', strokeColor: '#b00020', radius: 4 },
+                            heatmap: {
+                                maxZoom:    9,
+                                radius:     [ [ 0, 4 ], [ 6, 18 ], [ 9, 36 ] ],
+                                intensity:  [ [ 0, 0.6 ], [ 9, 2.5 ] ],
+                                showPoints: true
+                            }
+                        }
+                    ] },
                     '../../../debug/layer/basemapping-gba-railway-tracks-sp-railway-tracks.json',
                     '../../../debug/layer/forest-tenure-ften-map-notatn-poly.json',
                     '../../../debug/layer/forest-tenure-ften-recreation-poly.json',
@@ -71,8 +141,73 @@
                             { type: 'about',         enabled: true, position: 'toolbar', icon: 'help',         title: 'About' },
                             { type: 'baseMaps',      enabled: true, position: 'toolbar', icon: 'map',          mapStyle: { width: '110px', height: '110px' } },
                             { type: 'search',        enabled: true, position: 'toolbar', icon: 'search' },
-                            { type: 'identify',      enabled: true, position: 'toolbar', icon: 'info_outline' },
-                            { type: 'layers',        enabled: true, position: 'toolbar', icon: 'layers' },
+                            { type: 'identify',      enabled: true, autoIdentify: true, position: 'toolbar', icon: 'info_outline' },
+                            { type: 'layers',        enabled: true, position: 'toolbar', icon: 'layers',
+                                display: [
+                                    { type: 'folder', id: 'live-data', title: 'Live Data', isExpanded: true, items: [
+                                        { id: 'bc-fires-out-of-control' },
+                                        { id: 'bc-fires-heatmap' },
+                                    ] },
+                                    { type: 'folder', id: 'railways', title: 'Railways', isExpanded: false, items: [
+                                        { id: 'basemapping-gba-railway-tracks-sp-railway-tracks' },
+                                        { id: 'whse-basemapping-gba-railway-tracks' },
+                                        { id: 'whse-basemapping-gba-railway-tracks-names' },
+                                        { id: 'whse-basemapping-gba-railway-tracks-railway-ties' },
+                                        { id: 'whse-basemapping-gba-railway-tracks-skytrain' },
+                                        { id: 'whse-basemapping-gba-railway-tracks-skytrain-line-names' },
+                                    ] },
+                                    { type: 'folder', id: 'forest-tenure', title: 'Forest Tenure', isExpanded: false, items: [
+                                        { id: 'forest-tenure-ften-map-notatn-poly' },
+                                        { id: 'forest-tenure-ften-recreation-poly' },
+                                    ] },
+                                    { type: 'folder', id: 'land-act', title: 'Land Act', isExpanded: false, items: [
+                                        { type: 'group', id: 'land-act-interests', title: 'Interests', items: [
+                                            { id: 'INT_LAND_ACT_CROWN_GRANT_SVW' },
+                                            { id: 'INT_LAND_ACT_INCLUSION_SVW' },
+                                            { id: 'INT_LAND_ACT_INVENTORY_SVW' },
+                                            { id: 'INT_LAND_ACT_LEASE_SVW' },
+                                            { id: 'INT_LAND_ACT_LICENCE_SVW' },
+                                            { id: 'INT_LAND_ACT_PERMISSION_SVW' },
+                                            { id: 'INT_LAND_ACT_PERMIT_SVW' },
+                                            { id: 'INT_LAND_ACT_RESERVE_SVW' },
+                                            { id: 'INT_LAND_ACT_RIGHT_OF_WAY_SVW' },
+                                        ] },
+                                        { id: 'INT_DA_SVW' },
+                                        { id: 'INT_OA_SVW' },
+                                    ] },
+                                    { type: 'folder', id: 'parcels-tenures', title: 'Parcels & Tenures', isExpanded: false, items: [
+                                        { id: 'SURVEY_PARCELS_SVW' },
+                                        { id: 'protected-lands-access-restrictions' },
+                                        { id: 'whse-tantalis-ta-survey-parcels-svw' },
+                                        { id: 'whse-tantalis-ta-crown-leases-svw' },
+                                    ] },
+                                    { type: 'folder', id: 'trails-rec', title: 'Trails & Recreation', isExpanded: false, items: [
+                                        { id: 'trailhead-rstbc-test' },
+                                        { id: 'WAA_GUIDE_OUTFITTER_AREA_SVW' },
+                                        { id: 'WAA_TRAPLINE_AREAS_SVW' },
+                                    ] },
+                                    { type: 'folder', id: 'infrastructure', title: 'Infrastructure', isExpanded: false, items: [
+                                        { id: 'imagery-and-base-maps-drp-bctc-transmission-lines' },
+                                        { id: 'TRANSPORTATION_CORRIDOR_SVW' },
+                                        { id: 'whse-basemapping-trim-water-lines' },
+                                    ] },
+                                    { type: 'folder', id: 'wms-services', title: 'WMS Services', isExpanded: false, items: [
+                                        { id: 'wms-imagery-and-base-maps-gsr-frph-early-childcare' },
+                                        { id: 'wms-imagery-and-base-maps-gsr-frph-hlth-professional' },
+                                        { id: 'wms-imagery-and-base-maps-gsr-frph-service-directory' },
+                                        { id: 'wms-imagery-and-base-maps-gsr-frph-tourism' },
+                                        { id: 'wms-imagery-and-base-maps-gsr-schools-k-to-12' },
+                                    ] },
+                                    { type: 'folder', id: 'vector-samples', title: 'Vector Samples', isExpanded: false, items: [
+                                        { id: 'sample-4-points' },
+                                        { id: 'sample-3-polygons' },
+                                        { id: 'sample-3-linestrings' },
+                                        { id: 'sample-1-multipolygon' },
+                                        { id: 'sample-multipoint' },
+                                        { id: 'sample-mixed' },
+                                    ] },
+                                ]
+                            },
                             { type: 'legend',        enabled: true, position: 'toolbar', icon: 'list' },
                             { type: 'measure',       enabled: true, position: 'toolbar', icon: 'straighten' },
                             { type: 'markup',        enabled: true, position: 'toolbar', icon: 'edit' },

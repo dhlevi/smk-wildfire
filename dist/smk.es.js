@@ -23674,12 +23674,12 @@ Vue.component("identify-widget", { extends: smkRef$28.COMPONENT.ToolWidgetBase }
 var factory$17 = ToolStatic.define("IdentifyListTool", function() {
 	smkRef$28.TYPE.ToolWidget.call(this, "identify-widget"), smkRef$28.TYPE.ToolPanel.call(this, "identify-panel"), smkRef$28.TYPE.ToolInternalLayers.call(this), smkRef$28.TYPE.ToolFeatureList.call(this, function(e) {
 		return e.$viewer.identified;
-	}), this.defineProp("tool"), this.defineProp("command"), this.defineProp("radius"), this.defineProp("radiusUnit"), this.tool = {}, this.command = {
+	}), this.defineProp("tool"), this.defineProp("command"), this.defineProp("radius"), this.defineProp("radiusUnit"), this.defineProp("autoIdentify"), this.tool = {}, this.command = {
 		select: !0,
 		radius: !1,
 		radiusUnit: !1,
 		nearBy: !0
-	}, this.radius = 5, this.radiusUnit = "px", this.internalLayers.push({
+	}, this.radius = 5, this.radiusUnit = "px", this.autoIdentify = !1, this.internalLayers.push({
 		id: "highlight-polygon",
 		style: {
 			fill: !0,
@@ -23799,7 +23799,15 @@ var factory$17 = ToolStatic.define("IdentifyListTool", function() {
 		});
 	}, this.restartIdentify = function() {
 		t.searchLocation && t.startIdentify(t.searchLocation);
-	}, e.$viewer.handlePick(0, function(e) {
+	}, e.$viewer.handlePick(4, function(n) {
+		if (!t.autoIdentify) return;
+		let i = e.$viewer.type;
+		if (!(i !== "leaflet" && i !== "maplibre")) return t.active = !0, t.startIdentify(n).then(function() {
+			return !0;
+		}, function() {
+			return !0;
+		});
+	}), e.$viewer.handlePick(0, function(e) {
 		return t.startIdentify(e).then(function() {
 			return !0;
 		}, function() {
